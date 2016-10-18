@@ -2,7 +2,8 @@ import React from 'react'
 import './VirkailijanLisaysLomake.css'
 
 import VirkailijanTiedot from '../VirkailijanTiedot/VirkailijanTiedot'
-import VirkailijanLisaysOrganisaatioon from '../VirkailijanLisaysOrganisaatioon/VirkailijanLisaysOrganisaatioon'
+import VirkailijanLisaysOrganisaatioon from 
+  '../VirkailijanLisaysOrganisaatioon/VirkailijanLisaysOrganisaatioon'
 
 class VirkailijanLisaysLomake extends React.Component {
   render() {
@@ -17,9 +18,12 @@ class VirkailijanLisaysLomake extends React.Component {
           uiLang={uiLang} />
         <VirkailijanLisaysOrganisaatioon
           organisaatiot={this.props.organisations}
+          addedOrgs={this.props.addedOrgs}
           l10n={l10n}
           uiLang={uiLang} />
-        <button onClick={this.handleSubmit}>{l10n['VIRKAILIJAN_LISAYS_TALLENNA']}</button>
+        <button onClick={this.handleSubmit}>
+          {l10n['VIRKAILIJAN_LISAYS_TALLENNA']}
+        </button>
       </form>
     );
   }
@@ -29,4 +33,4 @@ class VirkailijanLisaysLomake extends React.Component {
   }
 }
 
-export default VirkailijanLisaysLomake;
+export default VirkailijanLisaysLomake

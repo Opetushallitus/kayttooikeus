@@ -1,7 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import Bacon from 'baconjs'
+
+import organisations from './organisations'
+
 import VirkailijanLisaysLomake from './components/VirkailijanLisaysLomake/VirkailijanLisaysLomake'
 import './index.css'
+
+const appState = Bacon.combineTemplate({
+  addedOrgs: organisations.toProperty([])
+})
 
 const mockData = {
   l10n: {
@@ -13,6 +21,7 @@ const mockData = {
       'VIRKAILIJAN_LISAYS_ORGANISAATIOON_OTSIKKO': 'Virkalijan lisäys organisaatioon',
       'VIRKAILIJAN_LISAYS_ORGANISAATIOON_ORGANISAATIO': 'Organisaatio',
       'VIRKAILIJAN_LISAYS_ORGANISAATIOON_MYONNA_KAYTTOOIKEUKSIA': 'Myönnä käyttöoikeuksia',
+      'VIRKAILIJAN_LISAYS_ORGANISAATIOON_LISAA': 'Lisää organisaatio...',
       'VIRKAILIJAN_LISAYS_TALLENNA': 'Tallenna ja lähetä itserekisteröitymissähköposti'
     }
   },
@@ -52,7 +61,12 @@ const mockData = {
   ]
 } 
 
-ReactDOM.render(
-  <VirkailijanLisaysLomake {...mockData} />,
-  document.getElementById('root')
-)
+appState.onValue(appState => {
+  console.log(appState)
+  ReactDOM.render(
+    <VirkailijanLisaysLomake {...mockData} {...appState} />,
+    document.getElementById('root')
+  )
+})
+
+

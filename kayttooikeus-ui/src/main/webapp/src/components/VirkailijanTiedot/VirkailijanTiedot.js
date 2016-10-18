@@ -7,15 +7,16 @@ class VirkailijanTiedot extends React.Component {
   }
 
   render() {
+    const L = this.props.l10n 
     return (
       <fieldset>
         <h2>Virkailijan tiedot</h2>
         <div>
-          <label htmlFor="email">Sähköposti</label>
+          <label htmlFor="email">{L['VIRKAILIJAN_TIEDOT_SPOSTI']}</label>
           <input type="text" id="email"/>
         </div>
         <div>
-          <label htmlFor="lang">Kieli</label>
+          <label htmlFor="lang">{L['VIRKAILIJAN_TIEDOT_KIELI']}</label>
           <select id="lang">
             {this.props.kielet.map(this.renderKieli)}
           </select>
