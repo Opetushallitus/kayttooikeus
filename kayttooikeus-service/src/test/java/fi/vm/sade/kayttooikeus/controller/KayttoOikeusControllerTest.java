@@ -14,9 +14,15 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static java.util.Collections.singletonList;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.anyString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -70,5 +76,28 @@ public class KayttoOikeusControllerTest extends AbstractControllerTest {
         this.mvc.perform(post("/kayttooikeus/expirationReminders")
                 .param("year", "2015").param("month", "1").param("day", "1"))
             .andExpect(status().isOk()).andExpect(content().string(is("1")));
+    }
+
+    @Test
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI")
+    public void getHaettuKayttooikeusRyhmasByOidTest() throws Exception{
+        Map<String, List<Integer>> kayttooikeusRyhmasByOrganisaatio
+                = Collections.singletonMap("1.0.0.1.0", Collections.singletonList(12000));
+        String expectedContent = "{  \"1.0.0.1.0\": [" +
+                "    12000" +
+                "  ]}";
+        given(this.kayttoOikeusService.findKayttooikeusryhmatAndOrganisaatioByHenkiloOid(anyString()))
+                .willReturn(kayttooikeusRyhmasByOrganisaatio);
+        this.mvc.perform(get("/kayttooikeusryhma/ryhmasByOrganisaatio/1.0.0.1.0").accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk()).andExpect(content().json(expectedContent));
+    }
+
+    @Test
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI")
+    public void getHaettuKayttooikeusRyhmasByOidInvalidDataTest() throws Exception{
+        given(this.kayttoOikeusService.findKayttooikeusryhmatAndOrganisaatioByHenkiloOid(anyString()))
+                .willThrow(new NullPointerException("null_ryhma_id"));
+        this.mvc.perform(get("/kayttooikeusryhma/ryhmasByOrganisaatio/1.0.0.1.0").accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isInternalServerError());
     }
 }

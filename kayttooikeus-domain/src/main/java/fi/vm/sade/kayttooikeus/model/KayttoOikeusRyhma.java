@@ -22,7 +22,7 @@ public class KayttoOikeusRyhma extends IdentifiableAndVersionedEntity {
     @JoinTable(name = "kayttooikeusryhma_kayttooikeus", inverseJoinColumns = @JoinColumn(name = "kayttooikeus_id",
                 referencedColumnName = "id"), joinColumns = @JoinColumn(name = "kayttooikeusryhma_id",
                 referencedColumnName = "id"))
-    private Set<KayttoOikeus> kayttoOikeus = new HashSet<KayttoOikeus>();
+    private Set<KayttoOikeus> kayttoOikeus = new HashSet<>();
     
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "textgroup_id")
@@ -30,7 +30,7 @@ public class KayttoOikeusRyhma extends IdentifiableAndVersionedEntity {
     
     @OneToMany(mappedBy = "kayttoOikeusRyhma", cascade = { CascadeType.MERGE, CascadeType.PERSIST,
             CascadeType.REFRESH }, fetch = FetchType.LAZY)
-    private Set<OrganisaatioViite> organisaatioViite = new HashSet<OrganisaatioViite>();
+    private Set<OrganisaatioViite> organisaatioViite = new HashSet<>();
     
     @Column(name = "hidden", nullable = false)
     private boolean hidden;

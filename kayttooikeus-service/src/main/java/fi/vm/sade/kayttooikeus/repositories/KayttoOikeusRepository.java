@@ -1,5 +1,6 @@
 package fi.vm.sade.kayttooikeus.repositories;
 
+import com.querydsl.core.Tuple;
 import fi.vm.sade.kayttooikeus.repositories.dto.ExpiringKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.dto.KayttoOikeusHistoriaDto;
 import fi.vm.sade.kayttooikeus.dto.PalveluKayttoOikeusDto;
@@ -16,4 +17,6 @@ public interface KayttoOikeusRepository {
     List<KayttoOikeusHistoriaDto> listMyonnettyKayttoOikeusHistoriaForHenkilo(String henkiloOid);
     
     List<ExpiringKayttoOikeusDto> findSoonToBeExpiredTapahtumas(LocalDate now, Period...expireThresholds);
+
+    List<Tuple> findOrganisaatioOidAndRyhmaIdByHenkiloOid(String oid);
 }
