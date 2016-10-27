@@ -1,8 +1,9 @@
 package fi.vm.sade.kayttooikeus.controller;
 
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.Authorization;
 import fi.vm.sade.kayttooikeus.dto.KayttoOikeusHistoriaDto;
 import fi.vm.sade.kayttooikeus.dto.PalveluKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
@@ -59,7 +60,7 @@ public class KayttoOikeusController {
     @PreAuthorize("hasAnyRole('ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
     @ApiOperation(value = "Lähettää muistutusviestit henkilöille joilla on käyttöoikeus päättymässä.",
             notes = "Tämä on alustavasti vain automaattisen sähköpostimuistutuksen testausta varten.",
-            authorizations = "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI",
+            authorizations = @Authorization("ROLE_APP_HENKILONHALLINTA_OPHREKISTERI"),
             produces = TEXT_PLAIN, response = Integer.class)
     @RequestMapping(value = "/expirationReminders", method = RequestMethod.POST, produces = TEXT_PLAIN)
     public String sendExpirationReminders(@ApiParam("Vuosi") @RequestParam("year") int year,
