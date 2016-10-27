@@ -17,6 +17,4 @@ public interface KayttoOikeusRepository {
     List<KayttoOikeusHistoriaDto> listMyonnettyKayttoOikeusHistoriaForHenkilo(String henkiloOid);
     
     List<ExpiringKayttoOikeusDto> findSoonToBeExpiredTapahtumas(LocalDate now, Period...expireThresholds);
-
-    List<Tuple> findOrganisaatioOidAndRyhmaIdByHenkiloOid(String oid);
 }

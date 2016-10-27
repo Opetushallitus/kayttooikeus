@@ -65,7 +65,7 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
     @Override
     @Transactional(readOnly = true)
     public Map<String, List<Integer>> findKayttooikeusryhmatAndOrganisaatioByHenkiloOid(String henkiloOid)  {
-        List<Tuple> results = this.kayttoOikeusRepository.findOrganisaatioOidAndRyhmaIdByHenkiloOid(henkiloOid);
+        List<Tuple> results = this.kayttoOikeusRyhmaRepository.findOrganisaatioOidAndRyhmaIdByHenkiloOid(henkiloOid);
 
         HashMap<String, List<Integer>> kayttooikeusRyhmasByOrganisation = new HashMap<>();
         QOrganisaatioHenkilo organisaatioHenkilo = QOrganisaatioHenkilo.organisaatioHenkilo;
