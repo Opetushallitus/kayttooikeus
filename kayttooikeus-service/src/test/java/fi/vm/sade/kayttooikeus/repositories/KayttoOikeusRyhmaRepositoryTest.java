@@ -45,7 +45,7 @@ public class KayttoOikeusRyhmaRepositoryTest extends AbstractRepositoryTest {
                 = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
         MyonnettyKayttoOikeusRyhmaTapahtuma tapahtuma = populate(myonnettyKayttoOikeus(
                 organisaatioHenkilo(henkilo("1.2.3.4.5"), "1.0.0.102.0"),
-                kayttoOikeusRyhma("RYHMA").withKuvaus(text("FI", "Kuvaus")).withCustomId(20L)
+                kayttoOikeusRyhma("RYHMA").withKuvaus(text("FI", "Kuvaus"))
                         .withOikeus(oikeus("HENKILOHALLINTA", "READ"))
         ).voimassaAlkaen(new LocalDate().minusMonths(3))
                 .voimassaPaattyen(new LocalDate().plusMonths(3)));
