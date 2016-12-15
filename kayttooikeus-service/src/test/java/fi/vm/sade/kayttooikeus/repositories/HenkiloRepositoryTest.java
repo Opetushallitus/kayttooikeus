@@ -2,6 +2,7 @@ package fi.vm.sade.kayttooikeus.repositories;
 
 import fi.vm.sade.kayttooikeus.dto.HenkiloTyyppi;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
+import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class HenkiloRepositoryTest {
     HenkiloRepository henkiloRepository;
 
     @Autowired
+    HenkiloHibernateRepository henkiloHibernateRepository;
+
+    @Autowired
     TestEntityManager testEntityManager;
 
     @Test
@@ -40,4 +44,34 @@ public class HenkiloRepositoryTest {
         Optional<Henkilo> returnHenkilo = this.henkiloRepository.findByOidHenkilo("1.2.3.4.5");
         assertThat(returnHenkilo).isEmpty();
     }
+
+    @Test
+    public void getUsernameByOidHenkilo() {
+        Henkilo henkilo = new Henkilo();
+        henkilo.setHenkiloTyyppi(HenkiloTyyppi.OPPIJA);
+        henkilo.setOidHenkilo("1.2.3.4.5");
+
+        Kayttajatiedot kayttajatiedot = new Kayttajatiedot();
+        kayttajatiedot.setUsername("username");
+        kayttajatiedot.setHenkilo(henkilo);
+        henkilo.setKayttajatiedot(kayttajatiedot);
+        this.testEntityManager.persist(henkilo);
+        this.testEntityManager.persistAndFlush(kayttajatiedot);
+
+        Optional<String> username = this.henkiloHibernateRepository.getUsernameByOidHenkilo("1.2.3.4.5");
+        assertThat(username).hasValue("username");
+    }
+
+    @Test
+    public void getUsernameByOidHenkiloUsernameNull() {
+        Henkilo henkilo = new Henkilo();
+        henkilo.setHenkiloTyyppi(HenkiloTyyppi.OPPIJA);
+        henkilo.setOidHenkilo("1.2.3.4.5");
+        this.testEntityManager.persist(henkilo);
+
+        Optional<String> username = this.henkiloHibernateRepository.getUsernameByOidHenkilo("1.2.3.4.5");
+        assertThat(username).isEmpty();
+    }
+
+
 }

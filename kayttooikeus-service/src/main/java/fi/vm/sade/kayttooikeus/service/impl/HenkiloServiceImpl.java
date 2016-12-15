@@ -5,6 +5,7 @@ import fi.vm.sade.kayttooikeus.dto.OrganisaatioOidsSearchDto;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloHibernateRepository;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
+import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,5 +40,11 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
                 .stream()
                 .filter(henkiloOid -> permissionCheckerService.hasInternalAccess(henkiloOid, allowedRoles, roles))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getUsernameByOidHenkilo(String oidHenkilo) {
+        return this.henkiloHibernateRepository.getUsernameByOidHenkilo(oidHenkilo)
+                .orElseThrow(() -> new NotFoundException("Username not found by given henkilo oid"));
     }
 }

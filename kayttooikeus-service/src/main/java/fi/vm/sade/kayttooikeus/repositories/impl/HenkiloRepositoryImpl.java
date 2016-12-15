@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 import static fi.vm.sade.kayttooikeus.model.QHenkilo.henkilo;
 import static fi.vm.sade.kayttooikeus.model.QKayttajatiedot.kayttajatiedot;
@@ -46,5 +47,13 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
                 .select(henkilo.oidHenkilo)
                 .where(booleanBuilder)
                 .fetch();
+    }
+
+    @Override
+    public Optional<String> getUsernameByOidHenkilo(String oid) {
+        return Optional.ofNullable(jpa().from(henkilo)
+                .select(henkilo.kayttajatiedot.username)
+                .where(henkilo.oidHenkilo.eq(oid))
+                .fetchFirst());
     }
 }
