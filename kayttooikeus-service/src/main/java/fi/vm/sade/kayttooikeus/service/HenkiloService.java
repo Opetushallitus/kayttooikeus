@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface HenkiloService {
     List<String> findHenkilos(OrganisaatioOidsSearchDto organisaatioOidsSearchDto);
+
+    String getUsernameByOidHenkilo(String oidHenkilo);
 }

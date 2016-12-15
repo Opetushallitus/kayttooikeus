@@ -60,4 +60,13 @@ public class HenkiloController {
         return henkiloService.findHenkilos(organisaatioOidsSearchDto);
     }
 
+    @ApiOperation(value = "Hakee henkilön oidia vastaavan käyttäjänimen.")
+    @PreAuthorize("hasRole('ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @RequestMapping(value = "/{oid}/username", method = RequestMethod.GET)
+    public String findUsernameByHenkiloOid(@PathVariable String oid) {
+        return henkiloService.getUsernameByOidHenkilo(oid);
+    }
+
+
+
 }
