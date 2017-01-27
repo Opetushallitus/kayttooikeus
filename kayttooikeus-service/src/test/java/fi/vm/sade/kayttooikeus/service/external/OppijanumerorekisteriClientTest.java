@@ -1,6 +1,9 @@
 package fi.vm.sade.kayttooikeus.service.external;
 
 
+import static fi.vm.sade.kayttooikeus.dto.YhteystietojenTyypit.KOTIOSOITE;
+import static fi.vm.sade.kayttooikeus.dto.YhteystietojenTyypit.PRIORITY_ORDER;
+import static fi.vm.sade.kayttooikeus.dto.YhteystietojenTyypit.TYOOSOITE;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloPerustietoDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkilonYhteystiedotViewDto;
 import org.junit.Test;
@@ -13,9 +16,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoRyhmaKuvaus.KOTIOSOITE;
-import static fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoRyhmaKuvaus.PRIORITY_ORDER;
-import static fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoRyhmaKuvaus.TYOOSOITE;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static net.jadler.Jadler.onRequest;

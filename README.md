@@ -50,7 +50,6 @@ tai jos tämä on yleisempi vaihtoehto, niin vaihtoehtoisesti kayttooikeus.yml-t
 ja ylikirjoita tämä tarvittaessa.
 
 ## Kääntäminen
-Jotta kaikki riippuvuudet voidaan latada, täytyy omaan .m2/settings.xml tiedostoon laittaa artifaktoryn snapshot ja release osoitteet. Kysy tarkemmin joltain kehittäjältä tai etsi wikistä.
 
     mvn clean install
 

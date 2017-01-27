@@ -25,9 +25,9 @@ spring:
 hikari:
   datasource:
     driver-class-name: org.postgresql.Driver
-    jdbc-url: jdbc:postgresql://{{host_postgresql_authentication}}:{{port_postgresql}}/authentication
-    username: {{host_postgresql_authentication_user}}
-    password: {{host_postgresql_authentication_password}}
+    jdbc-url: jdbc:postgresql://{{postgresql_kayttooikeus_host}}:{{port_postgresql}}/authentication
+    username: {{postgresql_kayttooikeus_user}}
+    password: {{postgresql_kayttooikeus_password}}
     connection-test-query: SELECT 1
     maximum-pool-size: {{host_postgresql_authentication_max_active}}
     connection-timeout: {{host_postgresql_authentication_max_wait}}

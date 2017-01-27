@@ -3,6 +3,7 @@ package fi.vm.sade.kayttooikeus.service.impl;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.dto.AsiointikieliDto;
 import fi.vm.sade.kayttooikeus.dto.IdentifiedHenkiloTypeDto;
+import fi.vm.sade.kayttooikeus.dto.YhteystietojenTyypit;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.Identification;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloRepository;
@@ -13,7 +14,6 @@ import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloPerustietoDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkilonYhteystiedotViewDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoRyhmaKuvaus;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -105,7 +105,7 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
         }
 
         if (yhteystiedotDto != null) {
-            String email = yhteystiedotDto.get(YhteystietoRyhmaKuvaus.PRIORITY_ORDER).getSahkoposti();
+            String email = yhteystiedotDto.get(YhteystietojenTyypit.PRIORITY_ORDER).getSahkoposti();
             if (!StringUtils.isEmpty(email)) {
                 dto.setEmail(email);
                 identification.setEmail(email);

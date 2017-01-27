@@ -4,6 +4,7 @@ import fi.vm.sade.kayttooikeus.dto.AccessRightTypeDto;
 import fi.vm.sade.kayttooikeus.dto.GroupTypeDto;
 import fi.vm.sade.kayttooikeus.dto.HenkiloTyyppi;
 import fi.vm.sade.kayttooikeus.dto.IdentifiedHenkiloTypeDto;
+import fi.vm.sade.kayttooikeus.dto.YhteystietojenTyypit;
 import fi.vm.sade.kayttooikeus.model.Identification;
 import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.repositories.IdentificationRepository;
@@ -13,7 +14,6 @@ import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloPerustietoDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkilonYhteystiedotViewDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.YhteystiedotDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoRyhmaKuvaus;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -128,7 +128,7 @@ public class IdentificationServiceTest extends AbstractServiceIntegrationTest {
         HenkilonYhteystiedotViewDto tiedot = new HenkilonYhteystiedotViewDto();
         YhteystiedotDto yhteystiedotDto = new YhteystiedotDto();
         yhteystiedotDto.setSahkoposti("test@test.com");
-        tiedot.put(YhteystietoRyhmaKuvaus.TYOOSOITE, yhteystiedotDto);
+        tiedot.put(YhteystietojenTyypit.TYOOSOITE, yhteystiedotDto);
         given(oppijanumerorekisteriClient.getYhteystiedotByOid("1.2.3.4.5")).willReturn(tiedot);
 
         IdentifiedHenkiloTypeDto dto = identificationService.findByTokenAndInvalidateToken("12345");
@@ -187,7 +187,7 @@ public class IdentificationServiceTest extends AbstractServiceIntegrationTest {
         HenkilonYhteystiedotViewDto tiedot = new HenkilonYhteystiedotViewDto();
         YhteystiedotDto yhteystiedotDto = new YhteystiedotDto();
         yhteystiedotDto.setSahkoposti("test@test.com");
-        tiedot.put(YhteystietoRyhmaKuvaus.TYOOSOITE, yhteystiedotDto);
+        tiedot.put(YhteystietojenTyypit.TYOOSOITE, yhteystiedotDto);
         given(oppijanumerorekisteriClient.getYhteystiedotByOid("1.2.3.4.5")).willReturn(tiedot);
 
         populate(identification("haka", "identifier", henkilo("1.2.3.4.5")).withAuthToken("12345"));
