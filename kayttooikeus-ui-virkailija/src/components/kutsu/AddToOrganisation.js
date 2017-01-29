@@ -43,10 +43,10 @@ const AddToOrganisation = React.createClass({
 
   changeOrganization: function(oldOid, e) {
     const selectedOrganization = R.find(R.pathEq(['oid'], e.target.value))(this.props.orgs);
-    console.info('changeOrganization', e.target.value, selectedOrganization);
     if (selectedOrganization) {
       changeOrganization(oldOid, selectedOrganization, this.props.omaOid);
 
+      // TODO: try to listen to when the input box size actually changes instead of having a hardcoded timeout
       setTimeout(() => {
         let parent = $(`option[value="${selectedOrganization.oid}"]`).parent().parent();
         let removeIcon = parent.find('.remove-icon.after');

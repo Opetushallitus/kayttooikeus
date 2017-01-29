@@ -26,6 +26,7 @@ public @interface ApplicationTest {
         public void beforeTestClass(TestContext testContext) throws Exception {
             int port = portNumberBySystemPropertyOrFree("test.port");
             System.setProperty("host-virkailija", "localhost:"+port);
+            System.setProperty("host-cas", "localhost:"+port);
             System.setProperty("url-virkailija", "http://localhost:"+port);
             System.setProperty("cas.fallback-user-details-provider-url", "http://localhost:"+port+"/userDetails/");
             System.setProperty("organisaatio-service.baseUrl", "http://localhost:"+port);
