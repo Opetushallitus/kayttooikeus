@@ -11,7 +11,7 @@ body .select2-container .select2-selection--single {
 }
 body .select2-container--default .select2-selection--single, body .select2-dropdown,
 body .select2-container--default .select2-selection--multiple {
-    border-radius: 0;
+    border-radius: 2px;
     min-width: 268px;
 }
 body  .select2-container--default .select2-results__option--highlighted[aria-selected],
@@ -52,6 +52,7 @@ body .select2-search--dropdown input {
 }
 
 body .select2-selection{
+    height: 40px;
     padding-top: 5px;
 }
 

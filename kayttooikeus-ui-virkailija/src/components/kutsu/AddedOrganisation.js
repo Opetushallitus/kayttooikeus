@@ -5,6 +5,7 @@ import organisations from '../../logic/organisations'
 import { toLocalizedText } from '../../logic/localizabletext'
 import Select2 from 'select';
 import OrgSelect2 from './OrgSelect2'
+import { repositionSelectionArrows } from './AddToOrganisation'
 
 import './AddedOrganisation.css'
 
@@ -61,6 +62,7 @@ const AddedOrganisation = React.createClass({
   removeAddedOrg: function(oid, e) {
     e.preventDefault();
     organisations.removeByOid(oid);
+    setTimeout(() => repositionSelectionArrows(), 0);
   },
 
   selectPermissions: function(e) {
@@ -71,12 +73,14 @@ const AddedOrganisation = React.createClass({
     const selectedPermissions = R.filter((permission) => selectedIds.includes(permission.ryhmaId), this.props.addedOrg.selectablePermissions);
     this.props.addedOrg.selectedPermissions = R.union(this.props.addedOrg.selectedPermissions, selectedPermissions);
     organisations.updated();
+    repositionSelectionArrows();
   },
 
   removeAddedPermission: function(id, e) {
     e.preventDefault();
     this.props.addedOrg.selectedPermissions = R.reject(permission => permission.ryhmaId === id, this.props.addedOrg.selectedPermissions);
     organisations.updated();
+    setTimeout(() => repositionSelectionArrows(), 0);
   }
 
 });

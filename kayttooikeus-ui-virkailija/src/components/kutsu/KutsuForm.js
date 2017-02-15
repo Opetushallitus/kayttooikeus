@@ -43,6 +43,8 @@ const KutsuForm = React.createClass({
                 <AddToOrganisation l10n={L} uiLang={uiLang} omaOid={this.props.omaOid}
                                    orgs={this.props.organizationsFlatInHierarchyOrder} addedOrgs={this.props.addedOrgs}/>
 
+                <hr />
+
                 <div className="kutsuFormFooter row">
                     <Button className="action" action={this.openConfirmationModal} disabled={!this.isValid()}>
                         {L['VIRKAILIJAN_LISAYS_TALLENNA']}

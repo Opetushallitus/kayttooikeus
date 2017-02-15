@@ -53,7 +53,7 @@
     "baconjs": "^0.7.88",
     "fetch-mock": "^5.5.0",
     "oph-urls-js": "Opetushallitus/oph-urls-js#master",
-    "virkailija-styles": "Opetushallitus/virkailija-styles",
+    "virkailija-styles": "Opetushallitus/virkailija-styles#master",
     "modal": "file:../kayttooikeus-ui-common/modal",
     "select": "file:../kayttooikeus-ui-common/select",
     "button": "file:../kayttooikeus-ui-common/button",

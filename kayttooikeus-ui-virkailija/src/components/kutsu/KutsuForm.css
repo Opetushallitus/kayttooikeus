@@ -1,8 +1,10 @@
 .kutsuFormWrapper {
-  padding-top: 40px;
+  padding-top: 15px;
 }
 .kutsuFormHeader, .kutsuFormFooter {
+  margin-left: 15px;
 }
+
 .basic-info, .add-to-organisation {
 }
 
@@ -15,5 +17,6 @@
 }
 
 .missingInfo {
+  color: #666666;
   padding-left: 10px;
 }

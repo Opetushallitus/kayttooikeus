@@ -11,7 +11,7 @@ const OrgSelect2 = React.createClass({
         
         const {data, ...props} = this.props;
         const opts = (props.options || (props.options = {}));
-        opts.templateResult  = result => $(`<span style="padding-left:${LEVEL_PADDING*(result.level-1)}px"></span>`).text(result.text);
+        opts.templateResult  = result => $(`<span style="padding-left:${LEVEL_PADDING*(result.level-2)}px"></span>`).text(result.text);
         const filterData = term => org => org.id === this.props.value || (term && org.searchText && org.searchText.indexOf(term) >= 0);
         props.passData = true;
         if (data.length < SHOW_ALL_IF_LESS_RESULTS_THAN) {
