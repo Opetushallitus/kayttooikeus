@@ -63,7 +63,7 @@ public class KayttoOikeusRyhmaPopulator implements Populator<KayttoOikeusRyhma> 
             KayttoOikeusRyhma r = new KayttoOikeusRyhma();
             r.setNimi(kuvaus.apply(entityManager));
             r.setTunniste(tunniste);
-            r.setHidden(hidden);
+            r.setPassivoitu(hidden);
             entityManager.persist(r);
             return r;
         });

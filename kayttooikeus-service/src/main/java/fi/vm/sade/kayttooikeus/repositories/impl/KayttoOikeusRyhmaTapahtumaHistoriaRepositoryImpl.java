@@ -28,7 +28,7 @@ public class KayttoOikeusRyhmaTapahtumaHistoriaRepositoryImpl extends AbstractRe
 
         BooleanBuilder booleanBuilder = new BooleanBuilder()
                 .and(korth.tila.in(Arrays.asList(HYLATTY, PERUUTETTU, SULJETTU)))
-                .and(kor.hidden.eq(false))
+                .and(kor.passivoitu.eq(false))
                 .and(oh.henkilo.oidHenkilo.eq(henkiloOid));
 
         if (StringUtils.isNotBlank(organisaatioOid)) {

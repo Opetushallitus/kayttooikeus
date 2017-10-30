@@ -41,7 +41,7 @@ public class HaettuKayttooikeusRyhmaRepositoryImpl implements HaettuKayttooikeus
             query.leftJoin(qKayttoOikeusRyhma.kayttoOikeus, qKayttoOikeus);
         }
         query.where(criteriaFunction.apply(qAnomus, qKayttoOikeus, qHaettuKayttoOikeusRyhma));
-        query.where(qKayttoOikeusRyhma.hidden.isFalse());
+        query.where(qKayttoOikeusRyhma.passivoitu.isFalse());
 
         if (limit != null) {
             query.limit(limit);

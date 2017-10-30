@@ -27,7 +27,7 @@ public class CreateUtil {
                 .build();
         KayttoOikeusRyhma kayttoOikeusRyhma = KayttoOikeusRyhma.builder()
                 .tunniste(tunniste)
-                .hidden(false)
+                .passivoitu(false)
                 .build();
         return new HaettuKayttoOikeusRyhma(anomus, kayttoOikeusRyhma, LocalDateTime.now(), KayttoOikeudenTila.ANOTTU);
     }
@@ -43,7 +43,7 @@ public class CreateUtil {
     public static HaettuKayttooikeusryhmaDto createHaettuKattyooikeusryhmaDto(Long haettuRyhmaId, String organisaatioOid,
                                                                                KayttoOikeudenTila tila) {
         KayttoOikeusRyhmaDto kayttoOikeusRyhmaDto = new KayttoOikeusRyhmaDto(1001L, "Kayttooikeusryhma x",
-                "10", newArrayList(), new TextGroupDto(2001L), new TextGroupDto(2002L));
+                "10", newArrayList(), new TextGroupDto(2001L), new TextGroupDto(2002L), false, false);
         return new HaettuKayttooikeusryhmaDto(haettuRyhmaId, createAnomusDto(organisaatioOid), kayttoOikeusRyhmaDto, LocalDateTime.now(), tila);
     }
 
@@ -53,7 +53,7 @@ public class CreateUtil {
 
     public static KayttoOikeusRyhma createKayttooikeusryhma(Long id) {
         KayttoOikeusRyhma kayttoOikeusRyhma = new KayttoOikeusRyhma("Kayttooikeusryhma x", Collections.<KayttoOikeus>emptySet(),
-                new TextGroup(), new TextGroup(), Sets.newHashSet(), false, "10");
+                new TextGroup(), new TextGroup(), Sets.newHashSet(), false, "10", false);
         kayttoOikeusRyhma.setId(id);
         return kayttoOikeusRyhma;
     }

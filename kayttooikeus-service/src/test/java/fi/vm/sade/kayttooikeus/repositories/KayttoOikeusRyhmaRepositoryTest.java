@@ -171,7 +171,7 @@ public class KayttoOikeusRyhmaRepositoryTest extends AbstractRepositoryTest {
 
         KayttoOikeusRyhma kor = new KayttoOikeusRyhma();
         kor.setTunniste("TEST");
-        kor.setHidden(false);
+        kor.setPassivoitu(false);
         TextGroup textGroup = new TextGroup();
         textGroup.addText(new Text(textGroup, "FI", "kuvaus"));
         kor.setNimi(textGroup);

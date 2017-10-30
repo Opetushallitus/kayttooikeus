@@ -29,7 +29,8 @@ public class KayttoOikeusRyhmaRepositoryImpl extends BaseRepositoryImpl<KayttoOi
                 kayttoOikeusRyhma.tunniste.as("tunniste"),
                 kayttoOikeusRyhma.rooliRajoite.as("rooliRajoite"),
                 kayttoOikeusRyhma.nimi.id.as("nimiId"),
-                kayttoOikeusRyhma.kuvaus.id.as("kuvausId"));
+                kayttoOikeusRyhma.kuvaus.id.as("kuvausId"),
+                kayttoOikeusRyhma.passivoitu.as("passivoitu"));
     }
 
     @Override
@@ -39,7 +40,7 @@ public class KayttoOikeusRyhmaRepositoryImpl extends BaseRepositoryImpl<KayttoOi
         }
 
         BooleanBuilder booleanBuilder = new BooleanBuilder()
-                .and(kayttoOikeusRyhma.hidden.eq(false))
+                .and(kayttoOikeusRyhma.passivoitu.eq(false))
                 .and(kayttoOikeusRyhma.id.in(idList));
 
         return jpa().from(kayttoOikeusRyhma)
@@ -53,7 +54,7 @@ public class KayttoOikeusRyhmaRepositoryImpl extends BaseRepositoryImpl<KayttoOi
     @Override
     public Optional<KayttoOikeusRyhma> findByRyhmaId(Long id) {
         return Optional.ofNullable(from(kayttoOikeusRyhma)
-                .where(kayttoOikeusRyhma.hidden.eq(false)
+                .where(kayttoOikeusRyhma.passivoitu.eq(false)
                         .and(kayttoOikeusRyhma.id.eq(id)))
                 .distinct()
                 .select(kayttoOikeusRyhma).fetchFirst());
@@ -71,7 +72,7 @@ public class KayttoOikeusRyhmaRepositoryImpl extends BaseRepositoryImpl<KayttoOi
     public List<KayttoOikeusRyhmaDto> listAll() {
         return jpa().from(kayttoOikeusRyhma)
                 .leftJoin(kayttoOikeusRyhma.nimi)
-                .where(kayttoOikeusRyhma.hidden.eq(false))
+                .where(kayttoOikeusRyhma.passivoitu.eq(false))
                 .orderBy(kayttoOikeusRyhma.id.asc())
                 .select(KayttoOikeusRyhmaDtoBean())
                 .fetch();
@@ -90,7 +91,7 @@ public class KayttoOikeusRyhmaRepositoryImpl extends BaseRepositoryImpl<KayttoOi
                 .innerJoin(organisaatioHenkilo.myonnettyKayttoOikeusRyhmas, mkt)
                 .innerJoin(mkt.kayttoOikeusRyhma, kayttoOikeusRyhma);
         query.where(henkilo.oidHenkilo.eq(oid)
-                .and(kayttoOikeusRyhma.hidden.isFalse())
+                .and(kayttoOikeusRyhma.passivoitu.isFalse())
                 .and(organisaatioHenkilo.passivoitu.isFalse())
                 .and(mkt.tila.eq(KayttoOikeudenTila.MYONNETTY).or(mkt.tila.eq(KayttoOikeudenTila.UUSITTU)))
                 .and(mkt.voimassaAlkuPvm.before(LocalDate.now()))
@@ -102,7 +103,7 @@ public class KayttoOikeusRyhmaRepositoryImpl extends BaseRepositoryImpl<KayttoOi
     public List<KayttoOikeusRyhmaDto> findKayttoOikeusRyhmasByKayttoOikeusIds(List<Long> kayttoOikeusIds) {
         BooleanBuilder booleanBuilder = new BooleanBuilder()
                 .and(kayttoOikeus.id.in(kayttoOikeusIds))
-                .and(kayttoOikeusRyhma.hidden.eq(false));
+                .and(kayttoOikeusRyhma.passivoitu.eq(false));
 
         return jpa().from(kayttoOikeusRyhma)
                 .innerJoin(kayttoOikeusRyhma.kayttoOikeus, kayttoOikeus)

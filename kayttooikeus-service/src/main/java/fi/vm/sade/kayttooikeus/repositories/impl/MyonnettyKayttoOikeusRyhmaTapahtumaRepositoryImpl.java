@@ -64,7 +64,7 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryImpl implements Myonne
     public List<MyonnettyKayttoOikeusDto> findByHenkiloInOrganisaatio(String henkiloOid, String organisaatioOid) {
         BooleanBuilder booleanBuilder = new BooleanBuilder()
                 .and(myonnettyKayttoOikeusRyhmaTapahtuma.organisaatioHenkilo.henkilo.oidHenkilo.eq(henkiloOid))
-                .and(myonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma.hidden.eq(false));
+                .and(myonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma.passivoitu.eq(false));
 
         if (!StringUtils.isEmpty(organisaatioOid)) {
             booleanBuilder.and(organisaatioHenkilo.organisaatioOid.eq(organisaatioOid));
@@ -167,7 +167,7 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryImpl implements Myonne
                 .innerJoin(kayttoOikeus.palvelu, palvelu)
                 .where(criteria.condition(kayttajatiedot, henkilo, kayttoOikeusRyhma))
                 .where(organisaatioHenkilo.passivoitu.isFalse())
-                .where(kayttoOikeusRyhma.hidden.isFalse())
+                .where(kayttoOikeusRyhma.passivoitu.isFalse())
                 .orderBy(henkilo.oidHenkilo.desc())
                 ;
         if(limit != null) {
