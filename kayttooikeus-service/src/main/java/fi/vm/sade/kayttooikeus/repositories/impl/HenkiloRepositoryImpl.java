@@ -21,6 +21,7 @@ import static java.util.stream.Collectors.toSet;
 import fi.vm.sade.kayttooikeus.model.QKayttoOikeusRyhma;
 import fi.vm.sade.kayttooikeus.model.QMyonnettyKayttoOikeusRyhmaTapahtuma;
 import fi.vm.sade.kayttooikeus.model.QOrganisaatioHenkilo;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.stream.Collectors;
@@ -125,9 +126,6 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
         QKayttajatiedot qKayttajatiedot = QKayttajatiedot.kayttajatiedot;
 
         JPAQuery<Tuple> query = jpa().from(qHenkilo)
-                // Not excluding henkilos without organisation (different condition on where)
-                .leftJoin(qHenkilo.organisaatioHenkilos, qOrganisaatioHenkilo)
-                .leftJoin(qOrganisaatioHenkilo.myonnettyKayttoOikeusRyhmas, qMyonnettyKayttoOikeusRyhmaTapahtuma)
                 .leftJoin(qHenkilo.kayttajatiedot, qKayttajatiedot)
                 // Organisaatiohenkilos need to be added later (enrichment)
                 .select(qHenkilo.sukunimiCached,
@@ -135,6 +133,21 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
                         qHenkilo.oidHenkilo,
                         qHenkilo.kayttajatiedot.username)
                 .distinct();
+
+        if (!CollectionUtils.isEmpty(criteria.getOrganisaatioOids()) || Boolean.FALSE.equals(criteria.getNoOrganisation())) {
+            // Exclude henkilos without active organisation
+            query.innerJoin(qHenkilo.organisaatioHenkilos, qOrganisaatioHenkilo)
+                    .on(qOrganisaatioHenkilo.passivoitu.isFalse());
+            if (!CollectionUtils.isEmpty(criteria.getOrganisaatioOids())) {
+                query.on(qOrganisaatioHenkilo.organisaatioOid.in(criteria.getOrganisaatioOids()));
+            }
+            query.leftJoin(qOrganisaatioHenkilo.myonnettyKayttoOikeusRyhmas, qMyonnettyKayttoOikeusRyhmaTapahtuma);
+        }
+        else {
+            // Not excluding henkilos without organisation
+            query.leftJoin(qHenkilo.organisaatioHenkilos, qOrganisaatioHenkilo)
+                    .leftJoin(qOrganisaatioHenkilo.myonnettyKayttoOikeusRyhmas, qMyonnettyKayttoOikeusRyhmaTapahtuma);
+        }
 
         if (offset != null) {
             query.offset(offset);

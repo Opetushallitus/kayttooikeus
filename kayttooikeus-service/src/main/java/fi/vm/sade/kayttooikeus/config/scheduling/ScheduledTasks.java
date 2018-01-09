@@ -89,7 +89,7 @@ public class ScheduledTasks {
     private void populateNewHenkiloCache() {
         log.info("Henkilötietojen uuden cachen luominen alkaa");
         Long count = 1000L;
-        for(long page = 0; !this.henkiloCacheService.saveAll(page*count, count, null); page++) {
+        for (long page = 0; !this.henkiloCacheService.saveAll(page*count, count, null); page++) {
             // Escape condition in case of inifine loop (100M+ henkilos)
             if (page > 100000) {
                 log.error("Infinite loop detected with page "+ page + " and count " + count + ". Henkilo cache might not be fully updated!");
@@ -108,7 +108,7 @@ public class ScheduledTasks {
         LocalDateTime now = LocalDateTime.now();
         List<String> modifiedOidHenkiloList = new ArrayList<>();
         long amount = 1000L;
-        for(long offset = 0; offset == 0 || !modifiedOidHenkiloList.isEmpty() || !(modifiedOidHenkiloList.size() < amount); offset++) {
+        for (long offset = 0; offset == 0 || !modifiedOidHenkiloList.isEmpty() || !(modifiedOidHenkiloList.size() < amount); offset++) {
             modifiedOidHenkiloList = this.oppijanumerorekisteriClient
                     .getModifiedSince(scheduleTimestamps.getModified(),offset*amount, amount);
             if (!modifiedOidHenkiloList.isEmpty()) {
