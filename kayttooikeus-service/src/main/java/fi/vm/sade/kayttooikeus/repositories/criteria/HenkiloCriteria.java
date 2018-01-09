@@ -33,7 +33,6 @@ import java.util.Set;
 @AllArgsConstructor
 public class HenkiloCriteria {
     // Henkilo
-    private String hetu;
     private Boolean passivoitu;
     private Boolean duplikaatti;
     private String nameQuery;
