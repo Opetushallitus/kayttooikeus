@@ -16,7 +16,6 @@ import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
@@ -132,9 +131,6 @@ public class CasController {
                 queryParams = new HashMap<String, String>() {{
                     put("temporaryKutsuToken", temporaryKutsuToken);
                 }};
-
-
-
                 response.sendRedirect(this.ophProperties.url("henkilo-ui.rekisteroidy", queryParams));
             } catch (NotFoundException e) {
                 response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vanhakutsu"));
