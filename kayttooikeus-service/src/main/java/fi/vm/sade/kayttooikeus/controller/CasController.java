@@ -121,7 +121,7 @@ public class CasController {
         Map<String, String> queryParams;
         if (StringUtils.hasLength(kutsuToken)) {
             try {
-                // Dekoodataan etunimet ja sukunimi käsin
+                // Dekoodataan etunimet ja sukunimi käsin, koska shibboleth ASCII-enkoodatut request headerit UTF-8 -merkistössä
                 Charset windows1252 = Charset.forName("Windows-1252");
                 Charset utf8 = Charset.forName("UTF-8");
                 etunimet = new String(etunimet.getBytes(windows1252), utf8);
