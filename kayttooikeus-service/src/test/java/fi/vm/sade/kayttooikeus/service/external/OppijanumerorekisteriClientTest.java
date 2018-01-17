@@ -19,9 +19,13 @@ import static fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoTyyppi.YHTEYSTIETO
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static net.jadler.Jadler.onRequest;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.springframework.http.HttpStatus;
 
 @RunWith(SpringRunner.class)
 public class OppijanumerorekisteriClientTest extends AbstractClientTest {
@@ -97,5 +101,42 @@ public class OppijanumerorekisteriClientTest extends AbstractClientTest {
         assertEquals("yhteystietotyyppi2email@emai.fi", henkiloDto.getYhteystiedotRyhma().iterator().next().getYhteystieto()
                 .stream().filter(yhteystietoDto -> yhteystietoDto.getYhteystietoTyyppi().equals(YHTEYSTIETO_SAHKOPOSTI))
                 .findFirst().orElse(new YhteystietoDto()).getYhteystietoArvo());
+    }
+
+    @Test
+    public void getHenkiloByHetuWithOkResponse() {
+        casAuthenticated("test");
+        onRequest().havingMethod(is("GET"))
+                .havingPath(is("/oppijanumerorekisteri-service/henkilo/hetu=160198-943U"))
+                .respond().withStatus(OK).withContentType(MediaType.APPLICATION_JSON_UTF8.getType())
+                .withBody(jsonResource("classpath:henkilo/henkiloDto.json"));
+
+        Optional<HenkiloDto> henkiloByHetu = client.getHenkiloByHetu("160198-943U");
+
+        assertThat(henkiloByHetu).map(HenkiloDto::getOidHenkilo).hasValue("1.2.3.4.5");
+    }
+
+    @Test
+    public void getHenkiloByHetuWithNotFoundResponse() {
+        casAuthenticated("test");
+        onRequest().havingMethod(is("GET"))
+                .havingPath(is("/oppijanumerorekisteri-service/henkilo/hetu=160198-943U"))
+                .respond().withStatus(HttpStatus.NOT_FOUND.value());
+
+        Optional<HenkiloDto> henkiloByHetu = client.getHenkiloByHetu("160198-943U");
+
+        assertThat(henkiloByHetu).isEmpty();
+    }
+
+    @Test
+    public void getHenkiloByHetuWithUnexceptedResponse() {
+        casAuthenticated("test");
+        onRequest().havingMethod(is("GET"))
+                .havingPath(is("/oppijanumerorekisteri-service/henkilo/hetu=160198-943U"))
+                .respond().withStatus(HttpStatus.BAD_GATEWAY.value());
+
+        Throwable henkiloByHetu = catchThrowable(() -> client.getHenkiloByHetu("160198-943U"));
+
+        assertThat(henkiloByHetu).isInstanceOf(ExternalServiceException.class);
     }
 }

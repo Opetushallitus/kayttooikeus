@@ -43,6 +43,8 @@ public class YhteystietoUtilTest {
                     YhteystietoTyyppi.YHTEYSTIETO_POSTINUMERO)).hasValue("arvo2");
             softly.assertThat(YhteystietoUtil.getYhteystietoArvo(yhteystietoRyhmat,
                     YhteystietoTyyppi.YHTEYSTIETO_KAUPUNKI)).hasValue("arvo3");
+            softly.assertThat(YhteystietoUtil.getYhteystietoArvo(null,
+                    YhteystietoTyyppi.YHTEYSTIETO_MAA)).isEmpty();
         });
     }
 

@@ -40,6 +40,7 @@ public class HenkiloCacheServiceImpl implements HenkiloCacheService {
                     .orElseGet(() -> this.henkiloDataRepository.save(new Henkilo(henkiloHakuDto.getOidHenkilo())));
             matchingHenkilo.setEtunimetCached(henkiloHakuDto.getEtunimet());
             matchingHenkilo.setSukunimiCached(henkiloHakuDto.getSukunimi());
+            matchingHenkilo.setKutsumanimiCached(henkiloHakuDto.getKutsumanimi());
             matchingHenkilo.setDuplicateCached(henkiloHakuDto.getDuplicate());
             matchingHenkilo.setPassivoituCached(henkiloHakuDto.getPassivoitu());
             matchingHenkilo.setHetuCached(henkiloHakuDto.getHetu());

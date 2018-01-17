@@ -17,4 +17,6 @@ public interface TunnistusTokenDataRepository extends CrudRepository<TunnistusTo
     default Optional<TunnistusToken> findByValidLoginToken(String loginToken) {
         return findByAikaleimaGreaterThanAndLoginTokenAndKaytettyIsNull(LocalDateTime.now().minusMinutes(10), loginToken);
     }
+
+    Optional<TunnistusToken> findByLoginToken(String loginToken);
 }

@@ -22,6 +22,8 @@ public interface KayttajatiedotService {
 
     void changePasswordAsAdmin(String oid, String newPassword);
 
+    void changePasswordAsAdmin(String oid, String newPassword, LdapSynchronizationType ldapSynchronizationType);
+
     void throwIfUsernameExists(String username);
 
     void throwIfUsernameIsNotValid(String username);

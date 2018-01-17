@@ -1,7 +1,11 @@
 package fi.vm.sade.kayttooikeus.service.external;
 
-import fi.vm.sade.oppijanumerorekisteri.dto.*;
-
+import fi.vm.sade.kayttooikeus.service.dto.HenkiloVahvaTunnistusDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloCreateDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloHakuPerustietoDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloPerustietoDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -33,6 +37,8 @@ public interface OppijanumerorekisteriClient {
     HenkiloPerustietoDto getPerustietoByOid(String oidHenkilo);
 
     HenkiloDto getHenkiloByOid(String oid);
+
+    Optional<HenkiloDto> getHenkiloByHetu(String hetu);
 
     Set<String> listOidByYhteystieto(String arvo);
 

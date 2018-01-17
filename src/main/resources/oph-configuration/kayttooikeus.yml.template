@@ -21,18 +21,16 @@ spring:
       autodetection: class,hbm
     current-session-context-class: org.springframework.orm.hibernate5.SpringSessionContext
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-
-hikari:
   datasource:
+    type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: org.postgresql.Driver
-    jdbc-url: jdbc:postgresql://{{postgresql_kayttooikeus_host}}:{{port_postgresql}}/authentication?ApplicationName=kayttooikeus-service
+    url: jdbc:postgresql://{{postgresql_kayttooikeus_host}}:{{port_postgresql}}/authentication?ApplicationName=kayttooikeus-service
     username: {{postgresql_kayttooikeus_user}}
     password: {{postgresql_kayttooikeus_password}}
-    connection-test-query: SELECT 1
-    maximum-pool-size: {{host_postgresql_authentication_max_active}}
-    connection-timeout: {{host_postgresql_authentication_max_wait}}
-    max-lifetime: 60000
-
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 10000
+      max-lifetime: 900000
 cas:
   ldap:
     url: ldap://{{host_ldap}}/dc=opintopolku,dc=fi

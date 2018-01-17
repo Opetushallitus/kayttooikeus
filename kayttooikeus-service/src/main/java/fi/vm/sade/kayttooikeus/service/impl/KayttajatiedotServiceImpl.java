@@ -116,10 +116,15 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
     }
 
     @Override
-    @Transactional
     public void changePasswordAsAdmin(String oid, String newPassword) {
+        changePasswordAsAdmin(oid, newPassword, LdapSynchronizationType.ASAP);
+    }
+
+    @Override
+    @Transactional
+    public void changePasswordAsAdmin(String oid, String newPassword, LdapSynchronizationType ldapSynchronizationType) {
         this.cryptoService.throwIfNotStrongPassword(newPassword);
-        this.changePassword(oid, newPassword);
+        this.changePassword(oid, newPassword, ldapSynchronizationType);
     }
 
     @Override
@@ -138,10 +143,10 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
         }
     }
 
-    private void changePassword(String oid, String newPassword) {
+    private void changePassword(String oid, String newPassword, LdapSynchronizationType ldapSynchronizationType) {
         setPasswordForHenkilo(oid, newPassword);
         // Trigger ASAP priority update to LDAP
-        ldapSynchronizationService.updateHenkiloAsap(oid);
+        ldapSynchronizationType.getAction().accept(ldapSynchronizationService, oid);
     }
 
     private void setPasswordForHenkilo(String oidHenkilo, String password) {

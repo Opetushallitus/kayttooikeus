@@ -5,11 +5,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.vm.sade.generic.rest.CachingRestClient;
 import fi.vm.sade.kayttooikeus.config.properties.ServiceUsersProperties;
+import fi.vm.sade.kayttooikeus.service.dto.HenkiloVahvaTunnistusDto;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.ExternalServiceException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.util.FunctionalUtils;
-import fi.vm.sade.oppijanumerorekisteri.dto.*;
 import fi.vm.sade.properties.OphProperties;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +27,13 @@ import java.util.stream.Stream;
 
 import static fi.vm.sade.kayttooikeus.service.external.ExternalServiceException.mapper;
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.retrying;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloCreateDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloHakuPerustietoDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloPerustietoDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
 import static java.util.Collections.singletonList;
+import java.util.function.BiFunction;
 import static java.util.stream.Collectors.toSet;
 
 @Component
@@ -167,6 +173,16 @@ public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriCli
     }
 
     @Override
+    public Optional<HenkiloDto> getHenkiloByHetu(String hetu) {
+        String url = this.urlProperties.url("oppijanumerorekisteri-service.henkilo.henkiloByHetu", hetu);
+
+        return retrying(FunctionalUtils.<HenkiloDto>io(
+                () -> this.objectMapper.readerFor(HenkiloDto.class)
+                        .readValue(this.serviceAccountClient.get(url))), 2)
+                .get().as(new ResponseToOptional<>(url));
+    }
+
+    @Override
     public Set<String> listOidByYhteystieto(String arvo) {
         String url = urlProperties.url("oppijanumerorekisteri-service.henkilo.oidByYhteystieto", arvo);
         return retrying(FunctionalUtils.<Set<String>>io(
@@ -239,5 +255,28 @@ public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriCli
     public static class HenkiloViiteDto {
         private String henkiloOid;
         private String masterOid;
+    }
+
+    private static class ResponseToOptional<T, E extends RuntimeException> implements BiFunction<T, E, Optional<T>> {
+
+        private final String url;
+
+        public ResponseToOptional(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public Optional<T> apply(T result, E failure) {
+            if (failure != null) {
+                if (failure.getCause() instanceof CachingRestClient.HttpException) {
+                    if (((CachingRestClient.HttpException) failure.getCause()).getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+                        return Optional.empty();
+                    }
+                }
+                throw mapper(url).apply(failure);
+            }
+            return Optional.of(result);
+        }
+
     }
 }

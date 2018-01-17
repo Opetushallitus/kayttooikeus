@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static java.util.Optional.ofNullable;
+import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 
@@ -158,6 +159,10 @@ public class FunctionalUtils {
                 throw translateException.apply(this.failure);
             }
             return result;
+        }
+
+        public <U> U as(BiFunction<T, Ex, U> mapper) {
+            return mapper.apply(result, failure);
         }
     }
 }

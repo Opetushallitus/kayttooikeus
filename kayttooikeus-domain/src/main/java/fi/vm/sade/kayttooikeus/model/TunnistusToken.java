@@ -27,4 +27,7 @@ public class TunnistusToken extends IdentifiableAndVersionedEntity {
     @Column(name = "kaytetty")
     private LocalDateTime kaytetty;
 
+    @Column(name = "hetu")
+    private String hetu; // vahvasta tunnistautumisesta saatu hetu
+
 }

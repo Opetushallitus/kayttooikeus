@@ -131,6 +131,7 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
                 .antMatchers("/salasana/unohtunut/*").permitAll()
                 .antMatchers("/kutsu/token/*").permitAll()
                 .antMatchers("/cas/tunnistus").permitAll()
+                .antMatchers("/cas/tunnistus/lisatiedot").permitAll()
                 .antMatchers("/swagger-ui.html").permitAll()
                 .antMatchers("/swagger-resources/**").permitAll()
                 .antMatchers("/webjars/springfox-swagger-ui/**").permitAll()

@@ -15,6 +15,9 @@ public final class YhteystietoUtil {
     public static Optional<String> getYhteystietoArvo(
             Iterable<YhteystiedotRyhmaDto> yhteystietoRyhmat,
             YhteystietoTyyppi tyyppi, String... ryhmaKuvausJarjestys) {
+        if (yhteystietoRyhmat == null) {
+            return Optional.empty();
+        }
         return StreamSupport.stream(yhteystietoRyhmat.spliterator(), false)
                 .sorted(comparing(YhteystiedotRyhmaDto::getRyhmaKuvaus,
                         new CustomOrderComparator<>(ryhmaKuvausJarjestys)))

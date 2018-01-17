@@ -1,14 +1,14 @@
 package fi.vm.sade.kayttooikeus.controller;
 
+import fi.vm.sade.kayttooikeus.dto.VahvaTunnistusRequestDto;
 import fi.vm.sade.kayttooikeus.dto.IdentifiedHenkiloTypeDto;
-import fi.vm.sade.kayttooikeus.model.Henkilo;
+import fi.vm.sade.kayttooikeus.dto.VahvaTunnistusResponseDto;
+import fi.vm.sade.kayttooikeus.dto.YhteystietojenTyypit;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.exception.LoginTokenNotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
-import fi.vm.sade.kayttooikeus.service.external.ExternalServiceException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloVahvaTunnistusDto;
 import fi.vm.sade.properties.OphProperties;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -27,7 +27,16 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
-import static fi.vm.sade.kayttooikeus.model.Identification.STRONG_AUTHENTICATION_IDP;
+import fi.vm.sade.kayttooikeus.model.TunnistusToken;
+import fi.vm.sade.kayttooikeus.service.VahvaTunnistusService;
+import fi.vm.sade.kayttooikeus.service.exception.HetuKaytossaException;
+import fi.vm.sade.kayttooikeus.service.exception.HetuVaaraException;
+import fi.vm.sade.kayttooikeus.util.HenkiloUtils;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloTyyppi;
+import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoTyyppi;
+import java.util.Optional;
+import javax.validation.Valid;
 
 @Slf4j
 @RestController
@@ -38,6 +47,7 @@ public class CasController {
 
     private final IdentificationService identificationService;
     private final HenkiloService henkiloService;
+    private final VahvaTunnistusService vahvaTunnistusService;
 
     private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
 
@@ -136,33 +146,57 @@ public class CasController {
                 response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vanhakutsu"));
             }
         }
-        // Kirjataan henkilön vahva tunnistautuminen järjestelmään
+        // Kirjataan henkilön vahva tunnistautuminen järjestelmään, vaihe 1
         else if (StringUtils.hasLength(loginToken)) {
             try {
-                Henkilo henkilo = this.identificationService.validateTokenAndSetHenkiloStronglyIdentified(hetu, etunimet, sukunimi, loginToken);
-                // This needs to be in separate transaction from validateTokenAndSetHenkiloStronglyIdentified() because ONR uses same db
-                // which causes OptimisticLockExceptions.
-                this.oppijanumerorekisteriClient.setStrongIdentifiedHetu(henkilo.getOidHenkilo(),
-                        new HenkiloVahvaTunnistusDto(hetu, etunimet, sukunimi));
-                String authToken = this.generateAuthTokenForHenkilo(henkilo.getOidHenkilo(), STRONG_AUTHENTICATION_IDP,
-                        henkilo.getKayttajatiedot().getUsername());
+                // otetaan hetu talteen jotta se on vielä tiedossa seuraavassa vaiheessa
+                TunnistusToken tunnistusToken = identificationService.updateLoginToken(loginToken, hetu);
+                HenkiloDto henkiloByLoginToken = oppijanumerorekisteriClient.getHenkiloByOid(tunnistusToken.getHenkilo().getOidHenkilo());
 
-                queryParams = new HashMap<String, String>() {{
-                    put("authToken", authToken);
-                    put("service", ophProperties.url("virkailijan-tyopoyta"));
-                }};
-                response.sendRedirect(this.ophProperties.url("cas.login", queryParams));
-            } catch (ExternalServiceException e) {
-                log.warn("User failed strong identification", e);
-                response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, loginToken));
+                // tarkistetaan että virkailijalla on tämä hetu käytössä
+                Optional.ofNullable(henkiloByLoginToken.getHetu()).ifPresent(tallennettuHetu -> {
+                    if (!tallennettuHetu.equals(hetu)) {
+                        throw new HetuVaaraException(String.format("Vahvan tunnistuksen henkilötunnus %s on eri kuin virkailijan henkilötunnus %s", hetu, tallennettuHetu));
+                    }
+                });
+                // tarkistetaan että hetu ei ole toisen virkailijan käytössä
+                oppijanumerorekisteriClient.getHenkiloByHetu(hetu).ifPresent(henkiloByHetu -> {
+                    if (!henkiloByHetu.getOidHenkilo().equals(henkiloByLoginToken.getOidHenkilo())
+                            && HenkiloTyyppi.VIRKAILIJA.equals(henkiloByHetu.getHenkiloTyyppi())) {
+                        throw new HetuKaytossaException(String.format("Vahvan tunnistuksen henkilötunnus %s on käytössä virkailijalla %s", hetu, henkiloByHetu.getOidHenkilo()));
+                    }
+                });
+
+                // pyydetään käyttäjää täydentämään tietoja ("uudelleenrekisteröinti")
+                boolean onTyosahkopostiosoite = HenkiloUtils
+                        .getYhteystieto(henkiloByLoginToken, YhteystietojenTyypit.TYOOSOITE, YhteystietoTyyppi.YHTEYSTIETO_SAHKOPOSTI)
+                        .isPresent();
+                response.sendRedirect(ophProperties.url("henkilo-ui.vahvatunnistus.lisatiedot", kielisyys, loginToken, onTyosahkopostiosoite));
             } catch (LoginTokenNotFoundException e) {
                 response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vanha"));
+            } catch (HetuVaaraException e) {
+                response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vaara"));
+            } catch (HetuKaytossaException e) {
+                response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "kaytossa"));
+            } catch (Exception e) {
+                log.warn("User failed strong identification", e);
+                response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, loginToken));
             }
         }
         // Tarkista että vaaditut tokenit ja tiedot löytyvät (riippuen casesta) -> Error sivu
         else {
             throw new UnsupportedOperationException("Provide loginToken or kutsuToken");
         }
+    }
+
+    @PostMapping("/tunnistus/lisatiedot")
+    @ApiOperation(value = "Virkailijan uudelleenrekisteröinti")
+    public VahvaTunnistusResponseDto tunnistauduVahvasti(
+            @RequestParam(value = "kielisyys") String kielisyys,
+            @RequestParam(value = "loginToken") String loginToken,
+            @RequestBody @Valid VahvaTunnistusRequestDto dto) throws IOException {
+        // Kirjataan henkilön vahva tunnistautuminen järjestelmään, vaihe 2
+        return vahvaTunnistusService.tunnistauduIlmanTransaktiota(loginToken, dto);
     }
 
     @ApiOperation(value = "Auttaa CAS session avaamisessa käyttöoikeuspalveluun.",
