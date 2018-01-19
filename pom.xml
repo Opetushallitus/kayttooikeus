@@ -69,6 +69,10 @@
         <checkstyle.configLocation><![CDATA[https://sonar.oph.ware.fi/sonar/profiles/export?format=checkstyle&amp;language=java&amp;name=SonarWayWithFindbugsAndOPHCheckstyle]]></checkstyle.configLocation>
         
         <orika.version>1.5.1</orika.version>
+
+        <!-- DB. These are updated in spring-boot 2 -->
+        <postgresql.version>42.1.4</postgresql.version>
+        <hikaricp.version>2.7.4</hikaricp.version>
     </properties>
 
 

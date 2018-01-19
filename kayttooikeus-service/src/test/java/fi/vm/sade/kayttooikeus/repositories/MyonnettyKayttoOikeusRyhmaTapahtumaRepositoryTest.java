@@ -142,15 +142,9 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryTest extends AbstractR
         assertEquals(0, myonnettyKayttoOikeusRyhmaTapahtumaRepository.findValidAccessRightsByOid("1.2.madeup.4").size());
         List<AccessRightTypeDto> list = myonnettyKayttoOikeusRyhmaTapahtumaRepository.findValidAccessRightsByOid("1.2.3.4.5");
         assertEquals(3, list.size());
-        assertEquals(PALVELU_HENKILONHALLINTA, list.get(0).getPalvelu());
-        assertEquals(ROLE_CRUD, list.get(0).getRooli());
-        assertEquals("3.4.5.6.7", list.get(0).getOrganisaatioOid());
-        assertEquals("KOODISTO", list.get(1).getPalvelu());
-        assertEquals("READ", list.get(1).getRooli());
-        assertEquals("3.4.5.6.7", list.get(1).getOrganisaatioOid());
-        assertEquals("KOODISTO", list.get(2).getPalvelu());
-        assertEquals("WRITE", list.get(2).getRooli());
-        assertEquals("4.5.6.7.8", list.get(2).getOrganisaatioOid());
+        assertThat(list).extracting(AccessRightTypeDto::getPalvelu).containsExactlyInAnyOrder(PALVELU_HENKILONHALLINTA, "KOODISTO", "KOODISTO");
+        assertThat(list).extracting(AccessRightTypeDto::getRooli).containsExactlyInAnyOrder(ROLE_CRUD, "READ", "WRITE");
+        assertThat(list).extracting(AccessRightTypeDto::getOrganisaatioOid).containsExactlyInAnyOrder("3.4.5.6.7", "3.4.5.6.7", "4.5.6.7.8");
     }
 
     @Test
@@ -188,10 +182,8 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryTest extends AbstractR
 
         List<GroupTypeDto> list = this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findValidGroupsByHenkilo("1.2.3.4.5");
         assertEquals(2, list.size());
-        assertEquals("RYHMA", list.get(0).getNimi());
-        assertEquals("3.4.5.6.7", list.get(0).getOrganisaatioOid());
-        assertEquals("RYHMA2", list.get(1).getNimi());
-        assertEquals("4.5.6.7.8", list.get(1).getOrganisaatioOid());
+        assertThat(list).extracting(GroupTypeDto::getNimi).containsExactlyInAnyOrder("RYHMA", "RYHMA2");
+        assertThat(list).extracting(GroupTypeDto::getOrganisaatioOid).containsExactlyInAnyOrder("3.4.5.6.7", "4.5.6.7.8");
     }
 
     @Test

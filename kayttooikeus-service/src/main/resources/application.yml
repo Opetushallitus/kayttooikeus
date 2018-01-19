@@ -31,7 +31,7 @@ kayttooikeus:
     pool_size: 2
     organisaatio-retry-time: 300000
     configuration:
-      organisaatiocache: "0 0 0 * * ?"
+      organisaatiocache: 600000
       vanhentuneetkayttooikeudet: 0 0 3 * * ?
       kayttooikeusmuistutus: "0 30 4 * * ?"
       kayttooikeusanomusilmoitukset: 0 0 2 * * ?

@@ -88,6 +88,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
         SERVICE_URIS.put(ExternalPermissionService.HAKU_APP, ophProperties.url("haku-app.external-permission-check"));
         SERVICE_URIS.put(ExternalPermissionService.SURE, ophProperties.url("suoritusrekisteri.external-permission-check"));
         SERVICE_URIS.put(ExternalPermissionService.ATARU, ophProperties.url("ataru-editori.external-permission-check"));
+        SERVICE_URIS.put(ExternalPermissionService.KOSKI, ophProperties.url("koski.external-permission-check"));
         this.henkiloDataRepository = henkiloDataRepository;
         this.organisaatioClient = organisaatioClient;
         this.oppijanumerorekisteriClient = oppijanumerorekisteriClient;
@@ -191,11 +192,17 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
 
 
 //        SURElla ei kaikissa tapauksissa (esim. jos YO tutkinto ennen 90-lukua) ole tietoa
-//        henkilösta, joten pitää kysyä varmuuden vuoksi myös haku-appilta
+//        henkilösta, joten pitää kysyä varmuuden vuoksi myös haku-appilta ja sen jälkeen atarulta
         if (!response.isAccessAllowed() && ExternalPermissionService.SURE.equals(permissionCheckService)) {
-            return checkPermissionFromExternalService(
-                    SERVICE_URIS.get(ExternalPermissionService.HAKU_APP), personOidsForSamePerson, flattedOrgs, callingUserRoles
-            ).isAccessAllowed();
+            PermissionCheckResponseDto responseHakuApp = checkPermissionFromExternalService(
+                    SERVICE_URIS.get(ExternalPermissionService.HAKU_APP), personOidsForSamePerson, flattedOrgs, callingUserRoles);
+            if (!responseHakuApp.isAccessAllowed()) {
+                return checkPermissionFromExternalService(
+                        SERVICE_URIS.get(ExternalPermissionService.ATARU), personOidsForSamePerson, flattedOrgs, callingUserRoles).isAccessAllowed();
+            } else {
+                return true;
+            }
+            
         }
 
         if (!response.isAccessAllowed()) {
@@ -521,28 +528,20 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
             return viiteSet.stream().map(OrganisaatioViite::getOrganisaatioTyyppi).collect(Collectors.toList())
                     .contains(this.commonProperties.getOrganisaatioRyhmaPrefix());
         }
-        Optional<OrganisaatioPerustieto> organisaatioPerustietoOptional = this.organisaatioClient.getOrganisaatioPerustiedotCached(organisaatioOid);
-        if (!organisaatioPerustietoOptional.isPresent()) {
-            LOG.warn("Organisaatiota {} ei löytynyt", organisaatioOid);
-            return false;
-        }
-        OrganisaatioPerustieto organisaatioPerustieto = organisaatioPerustietoOptional.get();
-        // Organization must have child items in it, so that the institution type can be fetched and verified
-        if (!org.springframework.util.CollectionUtils.isEmpty(organisaatioPerustieto.getChildren())) {
-            return organisaatioPerustieto.getChildren().stream()
-                    .filter(childOrganisation -> OrganisaatioStatus.AKTIIVINEN.equals(childOrganisation.getStatus()))
-                    .anyMatch(childOrganisation ->
-                            viiteSet.stream().anyMatch(organisaatioViite ->
+        List<OrganisaatioPerustieto> organisaatiot = this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(organisaatioOid);
+        return organisaatiot.stream().anyMatch(organisaatio -> organisaatioLimitationCheck(organisaatioOid, viiteSet, organisaatio)
+                || organisaatio.getChildren().stream()
+                        .filter(childOrganisation -> OrganisaatioStatus.AKTIIVINEN.equals(childOrganisation.getStatus()))
+                        .anyMatch(childOrganisation -> organisaatioLimitationCheck(organisaatioOid, viiteSet, childOrganisation)));
+    }
+
+    private static boolean organisaatioLimitationCheck(String organisaatioOid, Set<OrganisaatioViite> viiteSet, OrganisaatioPerustieto childOrganisation) {
+        return viiteSet.stream().anyMatch(organisaatioViite ->
                                     organisaatioViite.getOrganisaatioTyyppi()
                                             .equals(!org.springframework.util.StringUtils.isEmpty(childOrganisation.getOppilaitostyyppi())
                                                     // Format: getOppilaitostyyppi() = "oppilaitostyyppi_11#1"
                                                     ? childOrganisation.getOppilaitostyyppi().substring(17, 19)
                                                     : null)
-                                            || organisaatioViite.getOrganisaatioTyyppi().equals(organisaatioOid)));
-        }
-        // if the organization doesn't have child items, then it must be a top level organization or some other type
-        // organization in which case the target organization OID must match the allowedPalveluRooli-to-organization OID
-        return viiteSet.stream().map(OrganisaatioViite::getOrganisaatioTyyppi).collect(Collectors.toList())
-                .contains(organisaatioOid);
+                                            || organisaatioViite.getOrganisaatioTyyppi().equals(organisaatioOid));
     }
 }

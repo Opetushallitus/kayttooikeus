@@ -1,15 +1,24 @@
 package fi.vm.sade.kayttooikeus.util;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static java.util.Optional.ofNullable;
+import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 
 public class FunctionalUtils {
     private FunctionalUtils() {
+    }
+
+    public static <E, T extends Collection<E>> BinaryOperator<T> appending() {
+        return (t, u) -> {
+            t.addAll(u);
+            return t;
+        };
     }
 
     public static <T> void ifPresentOrElse(Optional<T> optional, Consumer<T> consumer, Runnable runnable) {

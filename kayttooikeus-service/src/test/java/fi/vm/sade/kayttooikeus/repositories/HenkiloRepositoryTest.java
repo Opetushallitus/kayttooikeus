@@ -27,7 +27,10 @@ public class HenkiloRepositoryTest extends AbstractRepositoryTest {
         populate(HenkiloPopulator.henkilo("1.2.3.4.9").withNimet("etunimi5", "sukunimi5"));
 
         List<HenkilohakuResultDto> henkilohakuResultDtoList = this.henkiloHibernateRepository.findByCriteria(
-                HenkiloCriteria.builder().nameQuery("etunimi").build(),
+                HenkiloCriteria.builder()
+                        .nameQuery("etunimi")
+                        .noOrganisation(true)
+                        .build(),
                 1L,
                 OrderByHenkilohaku.HENKILO_NIMI_DESC.getValue());
         assertThat(henkilohakuResultDtoList).extracting(HenkilohakuResultDto::getNimi)

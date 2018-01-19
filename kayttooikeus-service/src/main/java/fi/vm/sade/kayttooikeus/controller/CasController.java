@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -119,6 +120,12 @@ public class CasController {
         Map<String, String> queryParams;
         if (StringUtils.hasLength(kutsuToken)) {
             try {
+                // Dekoodataan etunimet ja sukunimi manuaalisesti, koska shibboleth välittää ASCII-enkoodatut request headerit UTF-8 -merkistössä
+                Charset windows1252 = Charset.forName("Windows-1252");
+                Charset utf8 = Charset.forName("UTF-8");
+                etunimet = new String(etunimet.getBytes(windows1252), utf8);
+                sukunimi = new String(sukunimi.getBytes(windows1252), utf8);
+
                 String temporaryKutsuToken = this.identificationService
                         .updateKutsuAndGenerateTemporaryKutsuToken(kutsuToken, hetu, etunimet, sukunimi);
                 queryParams = new HashMap<String, String>() {{

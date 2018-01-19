@@ -20,7 +20,9 @@ public class MyonnettyKayttoOikeusDto implements LocalizableDto, Serializable{
     private Long myonnettyTapahtumaId;
     private String organisaatioOid;
     private String tehtavanimike;
+    private String ryhmaTunniste;
     private TextGroupDto ryhmaNames;
+    private TextGroupDto ryhmaKuvaus;
     private KayttoOikeudenTila tila;
     private String tyyppi = "KORyhma";
     private LocalDate alkuPvm;
@@ -36,9 +38,13 @@ public class MyonnettyKayttoOikeusDto implements LocalizableDto, Serializable{
         this.ryhmaNames = localizeLaterById(ryhmaNamesId);
     }
 
+    public void setRyhmaKuvausId(Long ryhmaKuvausId) {
+        this.ryhmaKuvaus = localizeLaterById(ryhmaKuvausId);
+    }
+
     @Override
     public Stream<Localizable> localizableTexts() {
-        return LocalizableDto.of(ryhmaNames).localizableTexts();
+        return LocalizableDto.of(ryhmaNames, ryhmaKuvaus).localizableTexts();
     }
 
 }

@@ -698,12 +698,7 @@ public class KayttooikeusAnomusServiceTest {
     @Test
     @WithMockUser(value = "1.2.3.4.5", roles = "HENKILONHALLINTA_OPHREKISTERI")
     public void findCurrentHenkiloCanGrantAsAdmin() {
-        this.commonProperties.setRootOrganizationOid("1.2.0.0.1");
-        given(this.permissionCheckerService.getCurrentUserOid()).willReturn("1.2.3.4.5");
-        given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository
-                .findCrudAnomustenhallinta("1.2.3.4.5"))
-                .willReturn(Lists.newArrayList(
-                        createMyonnettyKayttoOikeusRyhmaTapahtumaWithOrganisation(1001L, 2001L, "1.2.0.0.1")));
+        given(this.permissionCheckerService.isCurrentUserAdmin()).willReturn(true);
 
         given(this.anomusRepository.findByHenkiloOidHenkilo("1.2.3.4.6"))
                 .willReturn(Lists.newArrayList(createAnomusWithHaettuKayttooikeusryhma("1.2.3.4.6",
@@ -742,10 +737,9 @@ public class KayttooikeusAnomusServiceTest {
     @WithMockUser("1.2.3.4.5")
     public void findCurrentHenkiloCanGrantNormalUser() {
         given(this.permissionCheckerService.getCurrentUserOid()).willReturn("1.2.3.4.5");
-        given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository
-                .findCrudAnomustenhallinta("1.2.3.4.5"))
-                .willReturn(Lists.newArrayList(
-                        createMyonnettyKayttoOikeusRyhmaTapahtumaWithOrganisation(1001L, 2001L, "1.2.0.0.1")));
+        given(this.kayttoOikeusRyhmaMyontoViiteRepository
+                .getSlaveIdsByMasterHenkiloOid(eq("1.2.3.4.5"), any()))
+                .willReturn(newHashMap("1.2.0.0.1", singleton(2001L)));
 
         given(this.anomusRepository.findByHenkiloOidHenkilo("1.2.3.4.6"))
                 .willReturn(Lists.newArrayList(createAnomusWithHaettuKayttooikeusryhma("1.2.3.4.6",
@@ -772,12 +766,7 @@ public class KayttooikeusAnomusServiceTest {
     @Test
     @WithMockUser("1.2.3.4.5")
     public void findCurrentHenkiloCanGrantRootOrganisationUser() {
-        this.commonProperties.setRootOrganizationOid("1.2.0.0.1");
-        given(this.permissionCheckerService.getCurrentUserOid()).willReturn("1.2.3.4.5");
-        given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository
-                .findCrudAnomustenhallinta("1.2.3.4.5"))
-                .willReturn(Lists.newArrayList(
-                        createMyonnettyKayttoOikeusRyhmaTapahtumaWithOrganisation(1001L, 2001L, "1.2.0.0.1")));
+        given(this.permissionCheckerService.isCurrentUserAdmin()).willReturn(true);
 
         given(this.anomusRepository.findByHenkiloOidHenkilo("1.2.3.4.6"))
                 .willReturn(Lists.newArrayList(createAnomusWithHaettuKayttooikeusryhma("1.2.3.4.6",

@@ -16,7 +16,6 @@ import fi.vm.sade.kayttooikeus.service.KutsuService;
 import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioService;
 import fi.vm.sade.kayttooikeus.service.exception.ForbiddenException;
-import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.*;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloCreateDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
@@ -57,6 +56,7 @@ import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloP
 import static fi.vm.sade.kayttooikeus.repositories.populate.TextGroupPopulator.text;
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_HENKILONHALLINTA;
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.ROLE_CRUD;
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -352,11 +352,15 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         org1.setNimi(new TextGroupMapDto().put("FI", "Kutsuttu organisaatio").asMap());
         given(this.organisaatioClient.getOrganisaatioPerustiedotCached(eq("1.2.3.4.1")))
                 .willReturn(Optional.of(org1));
+        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(eq("1.2.3.4.1")))
+                .willReturn(asList(org1));
         OrganisaatioPerustieto org2 = new OrganisaatioPerustieto();
         org1.setOid("1.2.3.4.5");
         org1.setNimi(new TextGroupMapDto().put("FI", "Käyttäjän organisaatio").asMap());
         given(this.organisaatioClient.getOrganisaatioPerustiedotCached(eq("1.2.3.4.5")))
                 .willReturn(Optional.of(org2));
+        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(eq("1.2.3.4.5")))
+                .willReturn(asList(org2));
 
         MyonnettyKayttoOikeusRyhmaTapahtuma tapahtuma = populate(myonnettyKayttoOikeus(
                 organisaatioHenkilo("1.2.4", "1.2.3.4.5"),

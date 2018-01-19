@@ -54,7 +54,6 @@ public class HenkiloCriteria {
             builder.and(henkilo.duplicateCached.eq(false));
         }
         if (StringUtils.hasLength(this.nameQuery)) {
-            BooleanBuilder predicate = new BooleanBuilder();
             String trimmedQuery = this.nameQuery.trim();
             List<String> queryParts = Arrays.asList(trimmedQuery.split(" "));
 
@@ -65,40 +64,30 @@ public class HenkiloCriteria {
                 BooleanBuilder SukunimiEtunimiPredicate = new BooleanBuilder();
                 SukunimiEtunimiPredicate.and(henkilo.sukunimiCached.startsWithIgnoreCase(queryParts.get(0)));
                 String etunimiLast = String.join(" ", queryParts.subList(1, queryParts.size()));
-                SukunimiEtunimiPredicate.and(henkilo.etunimetCached.startsWithIgnoreCase(etunimiLast));
+                SukunimiEtunimiPredicate.and(henkilo.etunimetCached.startsWithIgnoreCase(etunimiLast)
+                        .or(henkilo.kutsumanimiCached.startsWithIgnoreCase(etunimiLast)));
 
                 BooleanBuilder etunimiSukunimiPredicate = new BooleanBuilder();
                 etunimiSukunimiPredicate.and(henkilo.sukunimiCached.startsWithIgnoreCase(queryParts.get(queryParts.size() - 1)));
                 String etunimiFirst = String.join(" ", queryParts.subList(0, queryParts.size() - 1));
-                etunimiSukunimiPredicate.and(henkilo.etunimetCached.startsWithIgnoreCase(etunimiFirst));
+                etunimiSukunimiPredicate.and(henkilo.etunimetCached.startsWithIgnoreCase(etunimiFirst)
+                        .or(henkilo.kutsumanimiCached.startsWithIgnoreCase(etunimiFirst)));
 
-                predicate.or(SukunimiEtunimiPredicate).or(etunimiSukunimiPredicate);
-
+                builder.and(SukunimiEtunimiPredicate
+                        .or(etunimiSukunimiPredicate)
+                        .or(henkilo.etunimetCached.startsWithIgnoreCase(trimmedQuery)));
             }
             else {
-                predicate.or(
+                builder.and(
                         Expressions.anyOf(
                                 henkilo.oidHenkilo.eq(trimmedQuery),
                                 henkilo.etunimetCached.startsWithIgnoreCase(trimmedQuery),
                                 henkilo.sukunimiCached.startsWithIgnoreCase(trimmedQuery),
-                                henkilo.hetuCached.eq(trimmedQuery)
+                                henkilo.hetuCached.eq(trimmedQuery),
+                                henkilo.kutsumanimiCached.startsWithIgnoreCase(trimmedQuery)
                         )
                 );
             }
-            builder.and(predicate);
-        }
-        // Organisaatiohenkilo
-        if (this.noOrganisation != null && !this.noOrganisation) {
-            QOrganisaatioHenkilo subOrganisaatioHenkilo = new QOrganisaatioHenkilo("subOrganisaatioHenkilo");
-            JPQLQuery<Henkilo> subquery = JPAExpressions.select(subOrganisaatioHenkilo.henkilo)
-                    .from(subOrganisaatioHenkilo)
-                    .where(subOrganisaatioHenkilo.passivoitu.isFalse()
-                            .and(subOrganisaatioHenkilo.henkilo.eq(henkilo)));
-            builder.and(subquery.exists());
-        }
-        if (!CollectionUtils.isEmpty(this.organisaatioOids)) {
-            builder.and(organisaatioHenkilo.organisaatioOid.in(this.organisaatioOids));
-            builder.and(organisaatioHenkilo.passivoitu.isFalse());
         }
         // Kayttooikeus
         if (this.kayttooikeusryhmaId != null) {

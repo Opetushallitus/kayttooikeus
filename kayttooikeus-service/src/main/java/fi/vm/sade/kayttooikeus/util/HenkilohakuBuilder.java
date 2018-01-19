@@ -79,6 +79,7 @@ public class HenkilohakuBuilder {
         List<String> currentUserOrganisaatioOids = this.organisaatioHenkiloRepository
                 .findDistinctOrganisaatiosForHenkiloOid(this.permissionCheckerService.getCurrentUserOid());
 
+        // Normal user
         if (!this.permissionCheckerService.isCurrentUserMiniAdmin()) {
             Set<String> allCurrentUserOrganisaatioOids = new HashSet<>(currentUserOrganisaatioOids);
 
@@ -96,7 +97,8 @@ public class HenkilohakuBuilder {
             }
 
             henkilohakuCriteriaDto.setOrganisaatioOids(allCurrentUserOrganisaatioOids);
-        } else {
+        }
+        else {
             // root-virkailija hakee ilman aliorganisaatioita
             if (!Boolean.TRUE.equals(henkilohakuCriteriaDto.getSubOrganisation())
                     && henkilohakuCriteriaDto.getOrganisaatioOids() == null) {

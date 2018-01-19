@@ -38,6 +38,8 @@ public class Henkilo extends IdentifiableAndVersionedEntity {
 
     private String etunimetCached;
 
+    private String kutsumanimiCached;
+
     private String sukunimiCached;
 
     private Boolean passivoituCached;

@@ -140,8 +140,12 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
                 .map(kayttoOikeusRyhmaDto -> {
             MyonnettyKayttoOikeusDto dto = new MyonnettyKayttoOikeusDto();
             dto.setRyhmaId(kayttoOikeusRyhmaDto.getId());
+            dto.setRyhmaTunniste(kayttoOikeusRyhmaDto.getTunniste());
             if (kayttoOikeusRyhmaDto.getNimi() != null) {
                 dto.setRyhmaNamesId(kayttoOikeusRyhmaDto.getNimi().getId());
+            }
+            if (kayttoOikeusRyhmaDto.getKuvaus() != null) {
+                dto.setRyhmaKuvausId(kayttoOikeusRyhmaDto.getKuvaus().getId());
             }
             dto.setSelected(false);
             kayttoOikeusForHenkilo.stream()

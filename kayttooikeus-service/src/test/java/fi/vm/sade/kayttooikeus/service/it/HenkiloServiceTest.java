@@ -105,6 +105,38 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
 
     @Test
     @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    public void henkilohakuAsAdminSearchByNameBothOppijaAndVirkailija() {
+        populate(henkilo("1.2.3.4.2").withNimet("arpa1", "kuutio").withPassive(false).withDuplikate(false));
+        // current user
+        populate(myonnettyKayttoOikeus(
+                organisaatioHenkilo(henkilo("1.2.3.4.1").withNimet("arpa2", "kuutio").withPassive(false).withDuplikate(false), "3.4.5.6.7"),
+                kayttoOikeusRyhma("RYHMA")
+        ));
+
+        HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto(null, true,
+                false, true, "arpa", null, null);
+        List<HenkilohakuResultDto> henkilohakuResultDtoList = this.henkiloService.henkilohaku(henkilohakuCriteriaDto, 0L, OrderByHenkilohaku.HENKILO_NIMI_ASC);
+        assertThat(henkilohakuResultDtoList).extracting(HenkilohakuResultDto::getNimi).containsExactly("kuutio, arpa1", "kuutio, arpa2");
+    }
+
+    @Test
+    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD", "ROLE_APP_HENKILONHALLINTA_CRUD_1.2.246.562.10.00000000001"})
+    public void henkilohakuAsNormalUserCantFindOppija() {
+        populate(henkilo("1.2.3.4.2").withNimet("arpa1", "kuutio").withPassive(false).withDuplikate(false));
+        // current user
+        populate(myonnettyKayttoOikeus(
+                organisaatioHenkilo(henkilo("1.2.3.4.1").withNimet("arpa2", "kuutio").withPassive(false).withDuplikate(false), "3.4.5.6.7"),
+                kayttoOikeusRyhma("RYHMA")
+        ));
+
+        HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto(null, true,
+                false, true, "arpa", null, null);
+        List<HenkilohakuResultDto> henkilohakuResultDtoList = this.henkiloService.henkilohaku(henkilohakuCriteriaDto, 0L, OrderByHenkilohaku.HENKILO_NIMI_ASC);
+        assertThat(henkilohakuResultDtoList).extracting(HenkilohakuResultDto::getNimi).containsExactly("kuutio, arpa2");
+    }
+
+    @Test
+    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
     public void henkilohakuAsAdminSearchOrganisationRequired() {
         populate(henkilo("1.2.3.4.2").withNimet("arpa", "kuutio").withPassive(false).withDuplikate(true));
         populate(henkilo("1.2.3.4.3").withNimet("arpa", "kuutio").withPassive(true).withDuplikate(false));
