@@ -83,7 +83,6 @@ public class HenkiloCriteria {
                                 henkilo.oidHenkilo.eq(trimmedQuery),
                                 henkilo.etunimetCached.startsWithIgnoreCase(trimmedQuery),
                                 henkilo.sukunimiCached.startsWithIgnoreCase(trimmedQuery),
-                                henkilo.hetuCached.eq(trimmedQuery),
                                 henkilo.kutsumanimiCached.startsWithIgnoreCase(trimmedQuery)
                         )
                 );

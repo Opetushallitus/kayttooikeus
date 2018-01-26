@@ -12,11 +12,14 @@ import fi.vm.sade.kayttooikeus.repositories.criteria.HenkiloCriteria;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
+import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloHakuCriteriaDto;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,6 +61,8 @@ public class HenkiloServiceImplTest {
     private OrganisaatioClient organisaatioClientMock;
     @Mock
     private KayttoOikeusService kayttoOikeusService;
+    @Mock
+    private OppijanumerorekisteriClient oppijanumerorekisteriClientMock;
 
     @Before
     public void setup() {
@@ -71,6 +76,7 @@ public class HenkiloServiceImplTest {
                 ldapSynchronizationServiceMock,
                 henkiloDataRepositoryMock,
                 commonPropertiesMock,
+                oppijanumerorekisteriClientMock,
                 mapper,
                 organisaatioClientMock);
     }
@@ -239,6 +245,17 @@ public class HenkiloServiceImplTest {
         verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any());
         HenkiloCriteria henkiloCriteria = henkiloCriteriaCaptor.getValue();
         assertThat(henkiloCriteria.getNoOrganisation()).isTrue();
+    }
+
+    @Test
+    public void henkilohakuHakeeOidillaJosHakutermiOnHetu() {
+        HenkilohakuCriteriaDto henkiloHakuCriteriaDto = new HenkilohakuCriteriaDto();
+        henkiloHakuCriteriaDto.setIsHetu(true);
+        henkiloHakuCriteriaDto.setNameQuery("081181-9984");
+        String testOid = "1.2.3.45";
+        when(oppijanumerorekisteriClientMock.getOidByHetu(any())).thenReturn(testOid);
+        henkiloServiceImpl.henkilohaku(henkiloHakuCriteriaDto, null, null);
+        assertThat(henkiloHakuCriteriaDto.getNameQuery().equals(testOid));
     }
 
 }
