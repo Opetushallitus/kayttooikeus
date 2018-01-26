@@ -72,7 +72,7 @@ public class LdapSynchronizer {
         Henkilo entity = henkiloRepository.findByOidHenkilo(dto.getOidHenkilo())
                 .orElseThrow(() -> new DataInconsistencyException("Henkilöä ei löytynyt OID:lla " + dto.getOidHenkilo()));
         if (entity.getKayttajatiedot() == null || entity.getKayttajatiedot().getUsername() == null) {
-            LOGGER.info("Henkilöllä {} ei ole käyttäjätunnusta joten synkronointia LDAPiin ei tehdä", entity.getOidHenkilo());
+            LOGGER.info("Henkilöllä {} ei ole käyttäjätunnusta joten LDAP-synkronointia ei tehdä", entity.getOidHenkilo());
             return;
         }
         if (dto.isPassivoitu()) {
@@ -184,8 +184,10 @@ public class LdapSynchronizer {
         private LdapSynchronizationData createQueueData(LdapUpdateData updateData) {
             int dataSize = 0;
             if (updateData.getKayttoOikeusRyhmaId() != null) {
+                LOGGER.info("Lisätään käyttöoikeusryhmän {} henkilöt LDAP-synkronointijonoon", updateData.getKayttoOikeusRyhmaId());
                 dataSize += createQueueDataFromKayttoOikeusRyhma(updateData.getKayttoOikeusRyhmaId());
             } else if (RUN_ALL_BATCH.equals(updateData.getHenkiloOid())) {
+                LOGGER.info("Lisätään kaikki henkilöt LDAP-synkronointijonoon");
                 dataSize += createQueueDataFromAll();
             } else {
                 LOGGER.error("Tuntematon {} ", updateData);

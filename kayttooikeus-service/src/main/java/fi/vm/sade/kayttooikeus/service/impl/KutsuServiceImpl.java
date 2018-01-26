@@ -19,6 +19,7 @@ import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloRepository;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KutsuCriteria;
 import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
 import fi.vm.sade.kayttooikeus.service.*;
+import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
 import fi.vm.sade.kayttooikeus.service.exception.ForbiddenException;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
@@ -99,6 +100,12 @@ public class KutsuServiceImpl implements KutsuService {
                 this.organisaatioViiteLimitationsAreValidThrows(kutsuCreateDto.getOrganisaatiot());
             }
             this.kayttooikeusryhmaLimitationsAreValid(kutsuCreateDto.getOrganisaatiot());
+        }
+        // This is redundant after every virkailija has been strongly identified
+        final String currentUserOid = this.permissionCheckerService.getCurrentUserOid();
+        HenkiloDto currentUser = this.oppijanumerorekisteriClient.getHenkiloByOid(currentUserOid);
+        if (StringUtils.isEmpty(currentUser.getHetu()) || !currentUser.isYksiloityVTJ()) {
+            throw new ForbiddenException("To create new invitation user needs to have hetu and be identified from VTJ");
         }
 
         final Kutsu newKutsu = mapper.map(kutsuCreateDto, Kutsu.class);
@@ -230,8 +237,13 @@ public class KutsuServiceImpl implements KutsuService {
                 .orElseGet(() -> this.henkiloDataRepository.save(Henkilo.builder().oidHenkilo(henkiloOid).build()));
         henkilo.setVahvastiTunnistettu(true);
 
-        // Create or update credentials and add privileges
-        this.createOrUpdateCredentialsAndPrivileges(henkiloCreateByKutsuDto, kutsuByToken, henkiloOid);
+        // Create or update credentials and add privileges if hetu not same as kutsu creator
+        final String kutsujaOid = kutsuByToken.getKutsuja();
+        HenkiloPerustietoDto kutsuja = this.oppijanumerorekisteriClient.getHenkilonPerustiedot(kutsujaOid)
+                .orElseThrow(() -> new DataInconsistencyException("Current user not found with oid " + kutsujaOid));
+        if (StringUtils.isEmpty(kutsuja.getHetu()) || !kutsuByToken.getHetu().equals(kutsuja.getHetu())) {
+            this.createOrUpdateCredentialsAndPrivileges(henkiloCreateByKutsuDto, kutsuByToken, henkiloOid);
+        }
 
         // Update kutsu
         kutsuByToken.setKaytetty(LocalDateTime.now());

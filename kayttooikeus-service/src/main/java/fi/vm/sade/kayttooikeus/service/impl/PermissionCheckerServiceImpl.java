@@ -172,7 +172,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
             return false;
         }
 
-        List<OrganisaatioPerustieto> orgs = this.listOrganisaatiosByHenkiloOid(callingUserOid);
+        List<OrganisaatioPerustieto> orgs = this.listActiveOrganisaatiosByHenkiloOid(callingUserOid);
         Set<String> flattedOrgs = Sets.newHashSet();
 
         if (!orgs.isEmpty()) {
@@ -352,11 +352,14 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrganisaatioPerustieto> listOrganisaatiosByHenkiloOid(String oid) {
+    public List<OrganisaatioPerustieto> listActiveOrganisaatiosByHenkiloOid(String oid) {
         List<OrganisaatioPerustieto> organisaatios = new ArrayList<>();
         this.henkiloDataRepository.findByOidHenkilo(oid).ifPresent(henkilo -> {
             Set<OrganisaatioHenkilo> orgHenkilos = henkilo.getOrganisaatioHenkilos();
-            List<String> organisaatioOids = orgHenkilos.stream().map(OrganisaatioHenkilo::getOrganisaatioOid).collect(Collectors.toList());
+            List<String> organisaatioOids = orgHenkilos.stream()
+                    .filter(OrganisaatioHenkilo::isAktiivinen)
+                    .map(OrganisaatioHenkilo::getOrganisaatioOid)
+                    .collect(Collectors.toList());
             organisaatios.addAll(organisaatioClient.listActiveOrganisaatioPerustiedotByOidRestrictionList(organisaatioOids));
         });
         return organisaatios;

@@ -379,6 +379,7 @@ public class KayttooikeusAnomusServiceTest {
         assertThat(myonnettyKayttoOikeusRyhmaTapahtuma.getAnomus()).isNotNull();
 
         assertThat(kayttoOikeusRyhmaTapahtumaHistoria.getSyy()).isEqualTo("Oikeuksien lisäys");
+        verify(ldapSynchronizationService).updateHenkiloAsap(eq("1.2.3.4.5"));
 
     }
 
@@ -407,6 +408,7 @@ public class KayttooikeusAnomusServiceTest {
                 LocalDate.now().plusYears(1));
         this.kayttooikeusAnomusService.grantKayttooikeusryhma("1.2.3.4.5", "1.2.0.0.1",
                 Lists.newArrayList(grantKayttooikeusryhmaDto));
+        verify(ldapSynchronizationService).updateHenkiloAsap(eq("1.2.3.4.5"));
     }
 
     // MyonnettyKayttooikeusryhmaTapahtuma already exists
@@ -449,6 +451,7 @@ public class KayttooikeusAnomusServiceTest {
         assertThat(myonnettyKayttoOikeusRyhmaTapahtuma.getAnomus()).isNotNull();
 
         assertThat(kayttoOikeusRyhmaTapahtumaHistoria.getSyy()).isEqualTo("Oikeuksien päivitys");
+        verify(ldapSynchronizationService).updateHenkiloAsap(eq("1.2.3.4.5"));
     }
 
     // Grant kayttooikeus internally as unauthorized user.
@@ -686,6 +689,7 @@ public class KayttooikeusAnomusServiceTest {
         assertThat(kayttoOikeusRyhmaTapahtumaHistoria.getTila()).isEqualTo(SULJETTU);
         assertThat(kayttoOikeusRyhmaTapahtumaHistoria.getSyy()).isEqualTo("Käyttöoikeuden sulkeminen");
         assertThat(kayttoOikeusRyhmaTapahtumaHistoria.getAikaleima()).isNotNull();
+        verify(ldapSynchronizationService).updateHenkiloAsap(eq("1.2.3.4.5"));
     }
 
     @Test

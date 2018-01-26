@@ -2,9 +2,6 @@ package fi.vm.sade.kayttooikeus.model;
 
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloTyyppi;
 import lombok.*;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -54,5 +51,9 @@ public class OrganisaatioHenkilo extends IdentifiableAndVersionedEntity {
             this.myonnettyKayttoOikeusRyhmas = new HashSet<>();
         }
         this.myonnettyKayttoOikeusRyhmas.add(myonnettyKayttoOikeusRyhmaTapahtuma);
+    }
+
+    public boolean isAktiivinen() {
+        return !isPassivoitu();
     }
 }

@@ -302,7 +302,7 @@ public class PermissionCheckerTest {
             "ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG2,"ROLE_APP_ANOMUSTENHALLINTA_CRUD","ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG1,
             "ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG2})
     public void testThatPermissionIsDeniedWhenExternalServiceDeniesAccess() throws IOException {
-        doReturn(getDummyOrganisaatioHakutulos()).when(this.permissionChecker).listOrganisaatiosByHenkiloOid(anyString());
+        doReturn(getDummyOrganisaatioHakutulos()).when(this.permissionChecker).listActiveOrganisaatiosByHenkiloOid(anyString());
         this.fakeRestClient.setAllowAccess(false);
         when(this.henkiloDataRepositoryMock.findByOidHenkilo(anyString())).thenReturn(Optional.empty());
         assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Lists.newArrayList("CRUD"),
@@ -314,7 +314,7 @@ public class PermissionCheckerTest {
             "ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG2,"ROLE_APP_ANOMUSTENHALLINTA_CRUD","ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG1,
             "ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG2})
     public void testThatPermissionIsAllowedWhenExternalServiceAllowsAccess() throws IOException {
-        doReturn(getDummyOrganisaatioHakutulos()).when(this.permissionChecker).listOrganisaatiosByHenkiloOid(anyString());
+        doReturn(getDummyOrganisaatioHakutulos()).when(this.permissionChecker).listActiveOrganisaatiosByHenkiloOid(anyString());
         this.fakeRestClient.setAllowAccess(false);
         when(this.henkiloDataRepositoryMock.findByOidHenkilo(anyString())).thenReturn(Optional.empty());
         this.fakeRestClient.setAllowAccess(true);
