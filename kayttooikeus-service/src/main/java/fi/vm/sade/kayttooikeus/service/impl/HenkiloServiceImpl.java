@@ -16,6 +16,7 @@ import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
+import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.util.HenkilohakuBuilder;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,8 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
+
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +50,7 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
     private final LdapSynchronizationService ldapSynchronizationService;
     private final HenkiloDataRepository henkiloDataRepository;
     private final CommonProperties commonProperties;
+    private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
 
     private final OrikaBeanMapper mapper;
 
@@ -114,6 +118,18 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
     public List<HenkilohakuResultDto> henkilohaku(HenkilohakuCriteriaDto henkilohakuCriteriaDto,
                                                   Long offset,
                                                   OrderByHenkilohaku orderBy) {
+
+        if(henkilohakuCriteriaDto.getIsHetu() != null && henkilohakuCriteriaDto.getIsHetu()) { // search with oidHenkilo instead of hetu
+            String hetu = henkilohakuCriteriaDto.getNameQuery();
+            try {
+                String oid = oppijanumerorekisteriClient.getOidByHetu(hetu);
+                henkilohakuCriteriaDto.setNameQuery(oid);
+            } catch (NotFoundException e) {
+                return new ArrayList<>();
+            }
+        }
+
+
         return new HenkilohakuBuilder(this.henkiloHibernateRepository, this.mapper, this.permissionCheckerService,
                 this.henkiloDataRepository, this.organisaatioClient, this.organisaatioHenkiloRepository, this.commonProperties)
                 .builder(henkilohakuCriteriaDto)
