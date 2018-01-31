@@ -186,7 +186,7 @@ public class HenkiloController {
     @PreAuthorize("isAuthenticated()")
     @ApiOperation(value = "UI:ta varten tehty mahdollisesti HIDAS hakurajapinta. EI tarkoitettu palveluiden käyttöön. Muutosaltis.",
             notes = "Palauttaa suppean setin henkilöiden tietoja annetuilla hakukriteereillä. Toimii eri tavalla eri käyttäjäryhmille! " +
-                    "(rekisterinpitäjä, OPH:n virkaiilja, muu virkailija) Hakua rajoitetaan näille ryhmille joten ei tarvitse " +
+                    "(rekisterinpitäjä, OPH:n virkailija, muu virkailija) Hakua rajoitetaan näille ryhmille joten ei tarvitse " +
                     "erillisiä käyttöoikeuksia. Hakutuloksen maksimikoko saattaa olla 100 tai 101 käyttäjätunnuksella " +
                     "haun takia.")
     public List<HenkilohakuResultDto> henkilohaku(@Validated @RequestBody HenkilohakuCriteriaDto henkilohakuCriteriaDto,
