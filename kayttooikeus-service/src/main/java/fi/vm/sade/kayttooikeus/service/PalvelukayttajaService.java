@@ -1,6 +1,7 @@
 package fi.vm.sade.kayttooikeus.service;
 
 import fi.vm.sade.kayttooikeus.dto.PalvelukayttajaCreateDto;
+import fi.vm.sade.kayttooikeus.dto.PalvelukayttajaCriteriaDto;
 import fi.vm.sade.kayttooikeus.dto.PalvelukayttajaReadDto;
 
 /**
@@ -9,6 +10,14 @@ import fi.vm.sade.kayttooikeus.dto.PalvelukayttajaReadDto;
  * @see HenkiloService yleiskäyttöisempi palvelu henkilöiden käsittelyyn
  */
 public interface PalvelukayttajaService {
+
+    /**
+     * Palauttaa palvelukäyttäjät.
+     *
+     * @param criteria hakukriteerit
+     * @return palvelukäyttäjät
+     */
+    Iterable<PalvelukayttajaReadDto> list(PalvelukayttajaCriteriaDto criteria);
 
     /**
      * Luo palvelukäyttäjän.

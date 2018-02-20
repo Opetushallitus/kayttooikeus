@@ -32,6 +32,7 @@ public class HenkiloRepositoryTest extends AbstractRepositoryTest {
                         .noOrganisation(true)
                         .build(),
                 1L,
+                100L,
                 OrderByHenkilohaku.HENKILO_NIMI_DESC.getValue());
         assertThat(henkilohakuResultDtoList).extracting(HenkilohakuResultDto::getNimi)
                 .containsExactly("sukunimi4, etunimi4",

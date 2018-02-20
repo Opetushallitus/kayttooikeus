@@ -2,20 +2,14 @@ package fi.vm.sade.kayttooikeus.repositories.criteria;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.JPQLQuery;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import fi.vm.sade.kayttooikeus.model.Henkilo;
+import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import fi.vm.sade.kayttooikeus.model.QHenkilo;
 import fi.vm.sade.kayttooikeus.model.QMyonnettyKayttoOikeusRyhmaTapahtuma;
 import fi.vm.sade.kayttooikeus.model.QOrganisaatioHenkilo;
 import lombok.*;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -37,14 +31,12 @@ public class HenkiloCriteria {
     private Boolean passivoitu;
     private Boolean duplikaatti;
     private String nameQuery;
+    private KayttajaTyyppi kayttajaTyyppi;
 
     // Organisaatiohenkilo
     private Boolean noOrganisation;
     private Set<String> organisaatioOids;
     private Long kayttooikeusryhmaId;
-
-    // Haetaan vain henkilöiden lukumäärä
-    private Boolean isCountSearch;
 
     public Predicate condition(QHenkilo henkilo,
                                 QOrganisaatioHenkilo organisaatioHenkilo,
@@ -92,6 +84,9 @@ public class HenkiloCriteria {
                         )
                 );
             }
+        }
+        if (kayttajaTyyppi != null) {
+            builder.and(henkilo.kayttajaTyyppi.eq(kayttajaTyyppi));
         }
         // Kayttooikeus
         if (this.kayttooikeusryhmaId != null) {

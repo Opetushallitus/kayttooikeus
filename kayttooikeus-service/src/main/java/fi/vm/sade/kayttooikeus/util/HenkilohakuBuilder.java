@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 public class HenkilohakuBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HenkilohakuBuilder.class);
+    private static final Long DEFAULT_LIMIT = 100L;
 
     private HenkilohakuCriteriaDto henkilohakuCriteriaDto;
     private List<HenkilohakuResultDto> henkilohakuResultDtoList = new ArrayList<>();
@@ -57,6 +58,10 @@ public class HenkilohakuBuilder {
 
     // Find nimi, kayttajatunnus and oidHenkilo
     public HenkilohakuBuilder search(Long offset, OrderByHenkilohaku orderBy) {
+        return search(offset, DEFAULT_LIMIT, orderBy);
+    }
+
+    public HenkilohakuBuilder search(Long offset, Long limit, OrderByHenkilohaku orderBy) {
         // Because jpaquery limitations this can't be done with subqueries and union all.
         // This needs to be done in 2 queries because postgres query planner can't optimise it correctly because of
         // kayttajatiedot outer join and where or combination.
@@ -65,6 +70,7 @@ public class HenkilohakuBuilder {
         this.henkilohakuResultDtoList.addAll(this.henkiloHibernateRepository
                 .findByCriteria(henkiloCriteria,
                         offset,
+                        limit,
                         orderBy != null ? orderBy.getValue() : null));
         return this;
     }

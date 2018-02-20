@@ -9,5 +9,6 @@ public class PalvelukayttajaReadDto {
 
     private String oid;
     private String nimi;
+    private String kayttajatunnus;
 
 }

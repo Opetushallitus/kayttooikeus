@@ -8,6 +8,9 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import static java.util.stream.Collectors.joining;
+import java.util.stream.Stream;
 
 @Getter
 @Setter
@@ -15,18 +18,27 @@ import java.util.List;
 @AllArgsConstructor
 public class HenkilohakuResultDto {
 
-    String oidHenkilo;
+    private String oidHenkilo;
 
-    String nimi;
+    private String etunimet;
 
-    String kayttajatunnus;
+    private String sukunimi;
+
+    private String kayttajatunnus;
 
     private List<OrganisaatioMinimalDto> organisaatioNimiList = new ArrayList<>();
 
-    public HenkilohakuResultDto(String nimi, String oidHenkilo, String kayttajatunnus) {
-        this.nimi = nimi;
+    public HenkilohakuResultDto(String oidHenkilo, String etunimet, String sukunimi, String kayttajatunnus) {
         this.oidHenkilo = oidHenkilo;
+        this.etunimet = etunimet;
+        this.sukunimi = sukunimi;
         this.kayttajatunnus = kayttajatunnus;
+    }
+
+    public String getNimi() {
+        return Stream.of(sukunimi, etunimet)
+                .filter(Objects::nonNull)
+                .collect(joining(", "));
     }
 
 }

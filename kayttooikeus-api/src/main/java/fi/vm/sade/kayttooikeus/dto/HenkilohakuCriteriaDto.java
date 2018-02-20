@@ -14,12 +14,11 @@ public class HenkilohakuCriteriaDto {
     private Boolean noOrganisation;
     private Boolean passivoitu;
     private Boolean duplikaatti;
+    private KayttajaTyyppi kayttajaTyyppi;
 
     private String nameQuery;
 
     private Set<String> organisaatioOids;
     private Long kayttooikeusryhmaId;
-
-    private Boolean isCountSearch;
 
 }

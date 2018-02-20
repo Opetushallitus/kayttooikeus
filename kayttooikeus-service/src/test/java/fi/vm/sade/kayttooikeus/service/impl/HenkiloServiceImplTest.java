@@ -86,7 +86,7 @@ public class HenkiloServiceImplTest {
         henkiloServiceImpl.henkilohaku(henkilohakuCriteriaDto, null, null);
 
         ArgumentCaptor<HenkiloCriteria> henkiloCriteriaCaptor = ArgumentCaptor.forClass(HenkiloCriteria.class);
-        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any());
+        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any(), any());
         HenkiloCriteria henkiloCriteria = henkiloCriteriaCaptor.getValue();
         assertThat(henkiloCriteria.getOrganisaatioOids()).containsExactlyInAnyOrder("oid1", "oid2");
     }
@@ -104,7 +104,7 @@ public class HenkiloServiceImplTest {
         henkiloServiceImpl.henkilohaku(henkilohakuCriteriaDto, null, null);
 
         ArgumentCaptor<HenkiloCriteria> henkiloCriteriaCaptor = ArgumentCaptor.forClass(HenkiloCriteria.class);
-        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any());
+        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any(), any());
         HenkiloCriteria henkiloCriteria = henkiloCriteriaCaptor.getValue();
         assertThat(henkiloCriteria.getOrganisaatioOids()).containsExactlyInAnyOrder("oid1", "oid2", "childOid1", "childOid2");
     }
@@ -120,7 +120,7 @@ public class HenkiloServiceImplTest {
         henkiloServiceImpl.henkilohaku(henkilohakuCriteriaDto, null, null);
 
         ArgumentCaptor<HenkiloCriteria> henkiloCriteriaCaptor = ArgumentCaptor.forClass(HenkiloCriteria.class);
-        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any());
+        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any(), any());
         HenkiloCriteria henkiloCriteria = henkiloCriteriaCaptor.getValue();
         assertThat(henkiloCriteria.getOrganisaatioOids()).containsExactlyInAnyOrder("oid1", "oid3");
     }
@@ -139,7 +139,7 @@ public class HenkiloServiceImplTest {
         henkiloServiceImpl.henkilohaku(henkilohakuCriteriaDto, null, null);
 
         ArgumentCaptor<HenkiloCriteria> henkiloCriteriaCaptor = ArgumentCaptor.forClass(HenkiloCriteria.class);
-        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any());
+        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any(), any());
         HenkiloCriteria henkiloCriteria = henkiloCriteriaCaptor.getValue();
         assertThat(henkiloCriteria.getOrganisaatioOids()).containsExactlyInAnyOrder("oid1", "oid3", "childOid1");
     }
@@ -155,7 +155,7 @@ public class HenkiloServiceImplTest {
         henkiloServiceImpl.henkilohaku(henkilohakuCriteriaDto, null, null);
 
         ArgumentCaptor<HenkiloCriteria> henkiloCriteriaCaptor = ArgumentCaptor.forClass(HenkiloCriteria.class);
-        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any());
+        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any(), any());
         HenkiloCriteria henkiloCriteria = henkiloCriteriaCaptor.getValue();
         assertThat(henkiloCriteria.getOrganisaatioOids()).containsExactlyInAnyOrder("rootOid", "oid1");
     }
@@ -172,7 +172,7 @@ public class HenkiloServiceImplTest {
         henkiloServiceImpl.henkilohaku(henkilohakuCriteriaDto, null, null);
 
         ArgumentCaptor<HenkiloCriteria> henkiloCriteriaCaptor = ArgumentCaptor.forClass(HenkiloCriteria.class);
-        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any());
+        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any(), any());
         HenkiloCriteria henkiloCriteria = henkiloCriteriaCaptor.getValue();
         assertThat(henkiloCriteria.getOrganisaatioOids()).isNull();
     }
@@ -189,7 +189,7 @@ public class HenkiloServiceImplTest {
         henkiloServiceImpl.henkilohaku(henkilohakuCriteriaDto, null, null);
 
         ArgumentCaptor<HenkiloCriteria> henkiloCriteriaCaptor = ArgumentCaptor.forClass(HenkiloCriteria.class);
-        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any());
+        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any(), any());
         HenkiloCriteria henkiloCriteria = henkiloCriteriaCaptor.getValue();
         assertThat(henkiloCriteria.getOrganisaatioOids()).containsExactly("oid1");
     }
@@ -207,7 +207,7 @@ public class HenkiloServiceImplTest {
         henkiloServiceImpl.henkilohaku(henkilohakuCriteriaDto, null, null);
 
         ArgumentCaptor<HenkiloCriteria> henkiloCriteriaCaptor = ArgumentCaptor.forClass(HenkiloCriteria.class);
-        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any());
+        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any(), any());
         HenkiloCriteria henkiloCriteria = henkiloCriteriaCaptor.getValue();
         assertThat(henkiloCriteria.getOrganisaatioOids()).containsExactly("oid1");
     }
@@ -222,7 +222,7 @@ public class HenkiloServiceImplTest {
         henkiloServiceImpl.henkilohaku(henkilohakuCriteriaDto, null, null);
 
         ArgumentCaptor<HenkiloCriteria> henkiloCriteriaCaptor = ArgumentCaptor.forClass(HenkiloCriteria.class);
-        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any());
+        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any(), any());
         HenkiloCriteria henkiloCriteria = henkiloCriteriaCaptor.getValue();
         assertThat(henkiloCriteria.getNoOrganisation()).isNull();
     }
@@ -236,7 +236,7 @@ public class HenkiloServiceImplTest {
         henkiloServiceImpl.henkilohaku(henkilohakuCriteriaDto, null, null);
 
         ArgumentCaptor<HenkiloCriteria> henkiloCriteriaCaptor = ArgumentCaptor.forClass(HenkiloCriteria.class);
-        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any());
+        verify(henkiloHibernateRepositoryMock).findByCriteria(henkiloCriteriaCaptor.capture(), any(), any(), any());
         HenkiloCriteria henkiloCriteria = henkiloCriteriaCaptor.getValue();
         assertThat(henkiloCriteria.getNoOrganisation()).isTrue();
     }
