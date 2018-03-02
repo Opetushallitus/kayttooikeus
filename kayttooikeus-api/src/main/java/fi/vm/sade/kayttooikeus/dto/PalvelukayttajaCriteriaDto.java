@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class PalvelukayttajaCriteriaDto {
 
+    private Boolean subOrganisation;
     private Boolean passivoitu;
     private String nameQuery;
 
