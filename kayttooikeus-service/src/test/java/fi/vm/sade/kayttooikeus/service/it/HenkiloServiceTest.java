@@ -96,7 +96,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     public void henkilohakuCountSearch() {
         populate(henkilo("1.2.3.4.2").withNimet("arpa", "kuutio"));
         populate(henkilo("1.2.3.4.3").withNimet("arpa", "kuutio"));
-        HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto(true, true, true, true, null, "arpa", null, null);
+        HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto(true, true, true, true, null, null, null, "arpa", null, null);
         Long henkilohakuCount = this.henkiloService.henkilohakuCount(henkilohakuCriteriaDto);
         assertThat(henkilohakuCount).isEqualTo(2);
     }
@@ -108,7 +108,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
         populate(henkilo("1.2.3.4.3").withNimet("arpa", "kuutio").withPassive(true).withDuplikate(false));
 
         HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto(null, true,
-                false, true, null, "arpa", null, null);
+                false, true, null, null, null, "arpa", null, null);
         List<HenkilohakuResultDto> henkilohakuResultDtoList = this.henkiloService.henkilohaku(henkilohakuCriteriaDto, 0L, OrderByHenkilohaku.HENKILO_NIMI_ASC);
         assertThat(henkilohakuResultDtoList).extracting(HenkilohakuResultDto::getNimi).containsExactly("kuutio, arpa");
     }
@@ -124,7 +124,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
         ));
 
         HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto(null, true,
-                false, true, null, "arpa", null, null);
+                false, true, null, null, null, "arpa", null, null);
         List<HenkilohakuResultDto> henkilohakuResultDtoList = this.henkiloService.henkilohaku(henkilohakuCriteriaDto, 0L, OrderByHenkilohaku.HENKILO_NIMI_ASC);
         assertThat(henkilohakuResultDtoList).extracting(HenkilohakuResultDto::getNimi).containsExactly("kuutio, arpa1", "kuutio, arpa2");
     }
@@ -140,7 +140,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
         ));
 
         HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto(null, true,
-                false, true, null, "arpa", null, null);
+                false, true, null, null, null, "arpa", null, null);
         List<HenkilohakuResultDto> henkilohakuResultDtoList = this.henkiloService.henkilohaku(henkilohakuCriteriaDto, 0L, OrderByHenkilohaku.HENKILO_NIMI_ASC);
         assertThat(henkilohakuResultDtoList).extracting(HenkilohakuResultDto::getNimi).containsExactly("kuutio, arpa2");
     }
@@ -152,7 +152,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
         populate(henkilo("1.2.3.4.3").withNimet("arpa", "kuutio").withPassive(true).withDuplikate(false));
 
         HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto(null, false,
-                false, true, null, "arpa", null, null);
+                false, true, null, null, null, "arpa", null, null);
         List<HenkilohakuResultDto> henkilohakuResultDtoList = this.henkiloService.henkilohaku(henkilohakuCriteriaDto, 0L, OrderByHenkilohaku.HENKILO_NIMI_ASC);
         assertThat(henkilohakuResultDtoList).isEmpty();
     }
@@ -186,7 +186,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
                 .willReturn(Lists.newArrayList("3.4.5.6.7"));
 
         HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto(true, null,
-                null, null, null, null, singleton("3.4.5.6.7"), null);
+                null, null, null, null, null, null, singleton("3.4.5.6.7"), null);
         List<HenkilohakuResultDto> henkilohakuResultDtoList = this.henkiloService.henkilohaku(henkilohakuCriteriaDto, 0L, OrderByHenkilohaku.HENKILO_NIMI_ASC);
         assertThat(henkilohakuResultDtoList).extracting(HenkilohakuResultDto::getOidHenkilo).containsExactly("1.2.3.4.5");
         assertThat(henkilohakuResultDtoList).flatExtracting(HenkilohakuResultDto::getOrganisaatioNimiList)
@@ -212,7 +212,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
                 .willReturn(Optional.of(creaetOrganisaatioPerustietoWithNimi("3.4.5.6.7", "nimiFi")));
 
         HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto(null, null,
-                null, null, null, null, null,
+                null, null, null, null, null, null, null,
                 myonnettyKayttoOikeusRyhmaTapahtuma.getKayttoOikeusRyhma().getId());
         List<HenkilohakuResultDto> henkilohakuResultDtoList = this.henkiloService.henkilohaku(henkilohakuCriteriaDto, 0L, OrderByHenkilohaku.HENKILO_NIMI_ASC);
         assertThat(henkilohakuResultDtoList).extracting(HenkilohakuResultDto::getOidHenkilo).containsExactly("1.2.3.4.5");

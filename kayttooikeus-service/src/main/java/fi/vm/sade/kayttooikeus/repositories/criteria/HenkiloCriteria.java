@@ -31,6 +31,8 @@ public class HenkiloCriteria {
     private Boolean passivoitu;
     private Boolean duplikaatti;
     private String nameQuery;
+    private String sukunimi;
+    private String kayttajatunnus;
     private KayttajaTyyppi kayttajaTyyppi;
 
     // Organisaatiohenkilo
@@ -84,6 +86,9 @@ public class HenkiloCriteria {
                         )
                 );
             }
+        }
+        if (sukunimi != null) {
+            builder.and(henkilo.sukunimiCached.startsWithIgnoreCase(sukunimi));
         }
         if (kayttajaTyyppi != null) {
             builder.and(henkilo.kayttajaTyyppi.eq(kayttajaTyyppi));

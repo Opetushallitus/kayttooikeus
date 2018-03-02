@@ -96,7 +96,7 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
         QKayttajatiedot qKayttajatiedot = QKayttajatiedot.kayttajatiedot;
 
         List<Tuple> fetchByUsernameResult = new ArrayList<>();
-        if (StringUtils.hasLength(criteria.getNameQuery()) && (offset == null || offset == 0L)) {
+        if ((StringUtils.hasLength(criteria.getNameQuery()) || StringUtils.hasLength(criteria.getKayttajatunnus())) && (offset == null || offset == 0L)) {
             // Should return 0 or 1 results since username is unique.
             fetchByUsernameResult = getFindByUsernameQuery(qHenkilo, qKayttajatiedot, criteria).fetch();
         }
@@ -114,7 +114,7 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
         QHenkilo qHenkilo = QHenkilo.henkilo;
         QKayttajatiedot qKayttajatiedot = QKayttajatiedot.kayttajatiedot;
         Long usernameCount = 0L;
-        if (StringUtils.hasLength(criteria.getNameQuery())) {
+        if (StringUtils.hasLength(criteria.getNameQuery()) || StringUtils.hasLength(criteria.getKayttajatunnus())) {
             // Should return 0 or 1 results since username is unique.
             usernameCount = getFindByUsernameQuery(qHenkilo, qKayttajatiedot, criteria).fetchCount();
         }
@@ -122,14 +122,20 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
     }
 
     private JPAQuery<Tuple> getFindByUsernameQuery(QHenkilo qHenkilo, QKayttajatiedot qKayttajatiedot, HenkiloCriteria criteria) {
-        return jpa().from(qHenkilo)
+        JPAQuery<Tuple> query = jpa().from(qHenkilo)
                 .innerJoin(qHenkilo.kayttajatiedot, qKayttajatiedot)
                 // Organisaatiohenkilos need to be added later (enrichment)
                 .select(qHenkilo.sukunimiCached,
                         qHenkilo.etunimetCached,
                         qHenkilo.oidHenkilo,
-                        qHenkilo.kayttajatiedot.username)
-                .where(qKayttajatiedot.username.eq(criteria.getNameQuery()));
+                        qHenkilo.kayttajatiedot.username);
+        if (StringUtils.hasLength(criteria.getNameQuery())) {
+            query.where(qKayttajatiedot.username.eq(criteria.getNameQuery()));
+        }
+        if (StringUtils.hasLength(criteria.getKayttajatunnus())) {
+            query.where(qKayttajatiedot.username.eq(criteria.getKayttajatunnus()));
+        }
+        return query;
     }
 
     @Override

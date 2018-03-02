@@ -14,6 +14,8 @@ public class HenkilohakuCriteriaDto {
     private Boolean noOrganisation;
     private Boolean passivoitu;
     private Boolean duplikaatti;
+    private String sukunimi;
+    private String kayttajatunnus;
     private KayttajaTyyppi kayttajaTyyppi;
 
     private String nameQuery;

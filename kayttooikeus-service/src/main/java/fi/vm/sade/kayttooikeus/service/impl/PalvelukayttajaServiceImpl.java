@@ -33,6 +33,9 @@ public class PalvelukayttajaServiceImpl implements PalvelukayttajaService {
     @Transactional(readOnly = true)
     public Iterable<PalvelukayttajaReadDto> list(PalvelukayttajaCriteriaDto palvelukayttajaCriteriaDto) {
         HenkilohakuCriteriaDto henkilohakuCriteriaDto = mapper.map(palvelukayttajaCriteriaDto, HenkilohakuCriteriaDto.class);
+        henkilohakuCriteriaDto.setNameQuery(null);
+        henkilohakuCriteriaDto.setSukunimi(palvelukayttajaCriteriaDto.getNameQuery());
+        henkilohakuCriteriaDto.setKayttajatunnus(palvelukayttajaCriteriaDto.getNameQuery());
         henkilohakuCriteriaDto.setKayttajaTyyppi(KayttajaTyyppi.PALVELU);
 
         OrderByHenkilohaku orderBy = OrderByHenkilohaku.HENKILO_NIMI_ASC;
