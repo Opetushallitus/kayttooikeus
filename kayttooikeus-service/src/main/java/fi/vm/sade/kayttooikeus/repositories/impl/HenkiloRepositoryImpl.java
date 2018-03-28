@@ -94,11 +94,12 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
                                                      Long offset) {
         QHenkilo qHenkilo = QHenkilo.henkilo;
         QKayttajatiedot qKayttajatiedot = QKayttajatiedot.kayttajatiedot;
-
+        QOrganisaatioHenkilo qOrganisaatioHenkilo = QOrganisaatioHenkilo.organisaatioHenkilo;
+        QMyonnettyKayttoOikeusRyhmaTapahtuma qMyonnettyKayttoOikeusRyhmaTapahtuma = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
         List<Tuple> fetchByUsernameResult = new ArrayList<>();
         if ((StringUtils.hasLength(criteria.getNameQuery()) || StringUtils.hasLength(criteria.getKayttajatunnus())) && (offset == null || offset == 0L)) {
             // Should return 0 or 1 results since username is unique.
-            fetchByUsernameResult = getFindByUsernameQuery(qHenkilo, qKayttajatiedot, criteria).fetch();
+            fetchByUsernameResult = getFindByUsernameQuery(qHenkilo, qKayttajatiedot, qOrganisaatioHenkilo, qMyonnettyKayttoOikeusRyhmaTapahtuma, criteria).fetch();
         }
 
         return fetchByUsernameResult.stream().map(tuple -> new HenkilohakuResultDto(
@@ -109,33 +110,43 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
         )).collect(Collectors.toList());
     }
 
-    @Override
-    public Long findByUsernameCount(HenkiloCriteria criteria) {
-        QHenkilo qHenkilo = QHenkilo.henkilo;
-        QKayttajatiedot qKayttajatiedot = QKayttajatiedot.kayttajatiedot;
-        Long usernameCount = 0L;
-        if (StringUtils.hasLength(criteria.getNameQuery()) || StringUtils.hasLength(criteria.getKayttajatunnus())) {
-            // Should return 0 or 1 results since username is unique.
-            usernameCount = getFindByUsernameQuery(qHenkilo, qKayttajatiedot, criteria).fetchCount();
-        }
-        return usernameCount;
-    }
-
-    private JPAQuery<Tuple> getFindByUsernameQuery(QHenkilo qHenkilo, QKayttajatiedot qKayttajatiedot, HenkiloCriteria criteria) {
+    private JPAQuery<Tuple> getFindByUsernameQuery(QHenkilo qHenkilo, QKayttajatiedot qKayttajatiedot, QOrganisaatioHenkilo qOrganisaatioHenkilo, QMyonnettyKayttoOikeusRyhmaTapahtuma qMyonnettyKayttoOikeusRyhmaTapahtuma, HenkiloCriteria criteria) {
         JPAQuery<Tuple> query = jpa().from(qHenkilo)
                 .innerJoin(qHenkilo.kayttajatiedot, qKayttajatiedot)
                 // Organisaatiohenkilos need to be added later (enrichment)
                 .select(qHenkilo.sukunimiCached,
                         qHenkilo.etunimetCached,
                         qHenkilo.oidHenkilo,
-                        qHenkilo.kayttajatiedot.username);
+                        qHenkilo.kayttajatiedot.username)
+                .distinct();
+
+
+        if(!CollectionUtils.isEmpty(criteria.getOrganisaatioOids()) && criteria.getKayttooikeusryhmaId() != null) {
+            query.innerJoin(qHenkilo.organisaatioHenkilos, qOrganisaatioHenkilo)
+                .on(qOrganisaatioHenkilo.organisaatioOid.in(criteria.getOrganisaatioOids()))
+                .innerJoin(qOrganisaatioHenkilo.myonnettyKayttoOikeusRyhmas, qMyonnettyKayttoOikeusRyhmaTapahtuma)
+                .on(qOrganisaatioHenkilo.myonnettyKayttoOikeusRyhmas.any().kayttoOikeusRyhma.id.eq(criteria.getKayttooikeusryhmaId()));
+
+        } else {
+            if(!CollectionUtils.isEmpty(criteria.getOrganisaatioOids())) {
+                query.innerJoin(qHenkilo.organisaatioHenkilos, qOrganisaatioHenkilo)
+                        .on(qOrganisaatioHenkilo.organisaatioOid.in(criteria.getOrganisaatioOids()));
+            }
+            if(criteria.getKayttooikeusryhmaId() != null) {
+                query.innerJoin(qHenkilo.organisaatioHenkilos, qOrganisaatioHenkilo)
+                        .innerJoin(qOrganisaatioHenkilo.myonnettyKayttoOikeusRyhmas, qMyonnettyKayttoOikeusRyhmaTapahtuma)
+                        .on(qOrganisaatioHenkilo.myonnettyKayttoOikeusRyhmas.any().kayttoOikeusRyhma.id.eq(criteria.getKayttooikeusryhmaId()));
+            }
+        }
+
         if (StringUtils.hasLength(criteria.getNameQuery())) {
             query.where(qKayttajatiedot.username.eq(criteria.getNameQuery()));
         }
         if (StringUtils.hasLength(criteria.getKayttajatunnus())) {
             query.where(qKayttajatiedot.username.eq(criteria.getKayttajatunnus()));
         }
-        return query;
+
+        return query.where(qKayttajatiedot.username.eq(criteria.getNameQuery()));
     }
 
     @Override
@@ -149,7 +160,7 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
                 = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
         QKayttajatiedot qKayttajatiedot = QKayttajatiedot.kayttajatiedot;
 
-        JPAQuery<Tuple> query = getFindByCriteriaQuery(criteria, offset, limit, orderBy, qHenkilo, qOrganisaatioHenkilo, qMyonnettyKayttoOikeusRyhmaTapahtuma, qKayttajatiedot);
+        JPAQuery<Tuple> query = getFindByCriteriaQuery(criteria, offset, limit, orderBy, qHenkilo, qOrganisaatioHenkilo, qMyonnettyKayttoOikeusRyhmaTapahtuma, qKayttajatiedot, new ArrayList<>());
 
         return query.fetch().stream().map(tuple -> new HenkilohakuResultDto(
                 tuple.get(qHenkilo.oidHenkilo),
@@ -160,17 +171,17 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
     }
 
     @Override
-    public Long findByCriteriaCount(HenkiloCriteria criteria) {
+    public Long findByCriteriaCount(HenkiloCriteria criteria, List<String> henkiloOids) {
         QHenkilo qHenkilo = QHenkilo.henkilo;
         QOrganisaatioHenkilo qOrganisaatioHenkilo = QOrganisaatioHenkilo.organisaatioHenkilo;
         QMyonnettyKayttoOikeusRyhmaTapahtuma qMyonnettyKayttoOikeusRyhmaTapahtuma
                 = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
         QKayttajatiedot qKayttajatiedot = QKayttajatiedot.kayttajatiedot;
-        return getFindByCriteriaQuery(criteria, null, null, null, qHenkilo, qOrganisaatioHenkilo, qMyonnettyKayttoOikeusRyhmaTapahtuma, qKayttajatiedot).fetchCount();
+        return getFindByCriteriaQuery(criteria, null, null, null, qHenkilo, qOrganisaatioHenkilo, qMyonnettyKayttoOikeusRyhmaTapahtuma, qKayttajatiedot, henkiloOids).fetchCount();
     }
 
     private JPAQuery<Tuple> getFindByCriteriaQuery(HenkiloCriteria criteria, Long offset, Long limit, List<OrderSpecifier> orderBy, QHenkilo qHenkilo, QOrganisaatioHenkilo qOrganisaatioHenkilo, QMyonnettyKayttoOikeusRyhmaTapahtuma qMyonnettyKayttoOikeusRyhmaTapahtuma,
-                                                   QKayttajatiedot qKayttajatiedot) {
+                                                   QKayttajatiedot qKayttajatiedot, List<String> henkiloOids) {
         JPAQuery<Tuple> query = jpa().from(qHenkilo)
                 .leftJoin(qHenkilo.kayttajatiedot, qKayttajatiedot)
                 // Organisaatiohenkilos need to be added later (enrichment)
@@ -208,7 +219,13 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
         }
 
         query.where(criteria.condition(qHenkilo, qOrganisaatioHenkilo, qMyonnettyKayttoOikeusRyhmaTapahtuma));
+
+        // Exclude henkilos with given oids.
+        if(henkiloOids != null && henkiloOids.size() > 0) {
+            query.where(qHenkilo.oidHenkilo.notIn(henkiloOids));
+        }
         return query;
+
     }
 
     @Override

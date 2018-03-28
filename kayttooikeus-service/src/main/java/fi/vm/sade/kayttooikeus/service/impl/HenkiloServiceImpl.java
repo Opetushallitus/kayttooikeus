@@ -27,6 +27,8 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
+
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -119,9 +121,9 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
 
     @Override
     @Transactional(readOnly = true)
-    public List<HenkilohakuResultDto> henkilohaku(HenkilohakuCriteriaDto henkilohakuCriteriaDto,
-                                                  Long offset,
-                                                  OrderByHenkilohaku orderBy) {
+    public Collection<HenkilohakuResultDto> henkilohaku(HenkilohakuCriteriaDto henkilohakuCriteriaDto,
+                                                        Long offset,
+                                                        OrderByHenkilohaku orderBy) {
         return new HenkilohakuBuilder(this.henkiloHibernateRepository, this.mapper, this.permissionCheckerService,
                 this.henkiloDataRepository, this.organisaatioClient, this.organisaatioHenkiloRepository, this.commonProperties)
                 .builder(henkilohakuCriteriaDto)

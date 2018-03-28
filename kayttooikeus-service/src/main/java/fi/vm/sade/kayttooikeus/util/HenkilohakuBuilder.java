@@ -16,11 +16,7 @@ import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toSet;
@@ -36,7 +32,7 @@ public class HenkilohakuBuilder {
     private static final Long DEFAULT_LIMIT = 100L;
 
     private HenkilohakuCriteriaDto henkilohakuCriteriaDto;
-    private List<HenkilohakuResultDto> henkilohakuResultDtoList = new ArrayList<>();
+    private LinkedHashSet<HenkilohakuResultDto> henkilohakuResultDtoList = new LinkedHashSet<>();
     private Long henkilohakuResultCount;
 
     private final HenkiloHibernateRepository henkiloHibernateRepository;
@@ -49,11 +45,11 @@ public class HenkilohakuBuilder {
 
     public HenkilohakuBuilder builder(HenkilohakuCriteriaDto henkilohakuCriteriaDto) {
         this.henkilohakuCriteriaDto = henkilohakuCriteriaDto;
-        this.henkilohakuResultDtoList = new ArrayList<>();
+        this.henkilohakuResultDtoList = new LinkedHashSet<>();
         return this;
     }
 
-    public List<HenkilohakuResultDto> build() {
+    public Collection<HenkilohakuResultDto> build() {
         return this.henkilohakuResultDtoList;
     }
     public Long buildHakuResultCount() { return this.henkilohakuResultCount; }
@@ -68,21 +64,24 @@ public class HenkilohakuBuilder {
         // This needs to be done in 2 queries because postgres query planner can't optimise it correctly because of
         // kayttajatiedot outer join and where or combination.
         HenkiloCriteria henkiloCriteria = this.mapper.map(this.henkilohakuCriteriaDto, HenkiloCriteria.class);
-        this.henkilohakuResultDtoList = this.henkiloHibernateRepository.findByUsername(henkiloCriteria, offset);
+        this.henkilohakuResultDtoList = new LinkedHashSet<>();
+        this.henkilohakuResultDtoList.addAll(henkiloHibernateRepository.findByUsername(henkiloCriteria, offset));
         this.henkilohakuResultDtoList.addAll(this.henkiloHibernateRepository
                 .findByCriteria(henkiloCriteria,
                         offset,
                         limit,
                         orderBy != null ? orderBy.getValue() : null));
+
         return this;
     }
 
     // Find count of result with criteria
     public HenkilohakuBuilder searchCount() {
         HenkiloCriteria henkiloCriteria = this.mapper.map(this.henkilohakuCriteriaDto, HenkiloCriteria.class);
-        Long henkiloCountByUsername = this.henkiloHibernateRepository.findByUsernameCount(henkiloCriteria);
-        Long henkiloCountByCriteria = this.henkiloHibernateRepository.findByCriteriaCount(henkiloCriteria);
-        this.henkilohakuResultCount = henkiloCountByCriteria + henkiloCountByUsername;
+        List<HenkilohakuResultDto> henkiloCountByUsername = this.henkiloHibernateRepository.findByUsername(henkiloCriteria, 0L);
+        List<String> henkiloOids = henkiloCountByUsername.stream().map( h -> h.getOidHenkilo()).collect(Collectors.toList());
+        Long henkiloCountByCriteria = this.henkiloHibernateRepository.findByCriteriaCount(henkiloCriteria, henkiloOids);
+        this.henkilohakuResultCount = henkiloCountByCriteria + henkiloCountByUsername.size();
         return this;
     }
 
@@ -146,7 +145,7 @@ public class HenkilohakuBuilder {
                     })
                     .collect(Collectors.toList()));
             return henkilohakuResultDto;
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toCollection(LinkedHashSet::new));
 
         return this;
     }

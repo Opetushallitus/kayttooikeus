@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -197,9 +198,9 @@ public class HenkiloController {
                     "(rekisterinpitäjä, OPH:n virkaiilja, muu virkailija) Hakua rajoitetaan näille ryhmille joten ei tarvitse " +
                     "erillisiä käyttöoikeuksia. Hakutuloksen maksimikoko saattaa olla 100 tai 101 käyttäjätunnuksella " +
                     "haun takia.")
-    public List<HenkilohakuResultDto> henkilohaku(@Validated @RequestBody HenkilohakuCriteriaDto henkilohakuCriteriaDto,
-                                                  @RequestParam(defaultValue = "0") Long offset,
-                                                  @RequestParam(required = false) OrderByHenkilohaku orderBy) {
+    public Collection<HenkilohakuResultDto> henkilohaku(@Validated @RequestBody HenkilohakuCriteriaDto henkilohakuCriteriaDto,
+                                                        @RequestParam(defaultValue = "0") Long offset,
+                                                        @RequestParam(required = false) OrderByHenkilohaku orderBy) {
         return this.henkiloService.henkilohaku(henkilohakuCriteriaDto, offset, orderBy);
     }
 

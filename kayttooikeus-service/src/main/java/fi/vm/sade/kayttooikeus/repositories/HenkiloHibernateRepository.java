@@ -34,17 +34,13 @@ public interface HenkiloHibernateRepository extends BaseRepository<Henkilo> {
     List<HenkilohakuResultDto> findByUsername(HenkiloCriteria criteria,
                                               Long offset);
 
-    /**
-     *  Palauttaa käyttäjänimen perusteella löytyvien henkilöiden lukumäärän
-     */
-    Long findByUsernameCount(HenkiloCriteria henkiloCriteria);
 
     List<HenkilohakuResultDto> findByCriteria(HenkiloCriteria criteria, Long offset, Long limit, List<OrderSpecifier> orderBy);
 
     /**
-     * Palauttaa criterian perusteella löytyvien henkilöiden lukumäärän
+     * Palauttaa criterian perusteella löytyvien henkilöiden lukumäärän. Ei haeta annetuilla henkilo oideilla
      */
-    Long findByCriteriaCount(HenkiloCriteria criteria);
+    Long findByCriteriaCount(HenkiloCriteria criteria, List<String> henkiloOids);
 
     /**
      * Palauttaa henkilöt jotka kuuluvat johonkin annettuun käyttöoikeusryhmään

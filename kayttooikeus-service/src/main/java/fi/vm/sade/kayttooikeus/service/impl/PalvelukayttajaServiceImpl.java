@@ -13,6 +13,8 @@ import fi.vm.sade.kayttooikeus.repositories.dto.HenkilohakuResultDto;
 import fi.vm.sade.kayttooikeus.service.PalvelukayttajaService;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloCreateDto;
+
+import java.util.Collection;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -40,7 +42,7 @@ public class PalvelukayttajaServiceImpl implements PalvelukayttajaService {
         henkilohakuCriteriaDto.setKayttajaTyyppi(KayttajaTyyppi.PALVELU);
 
         OrderByHenkilohaku orderBy = OrderByHenkilohaku.HENKILO_NIMI_ASC;
-        List<HenkilohakuResultDto> palvelukayttajat = henkilohakuBuilderService.getBuilder(henkilohakuCriteriaDto)
+        Collection<HenkilohakuResultDto> palvelukayttajat = henkilohakuBuilderService.getBuilder(henkilohakuCriteriaDto)
                 .exclusion()
                 .search(0L, null, orderBy)
                 .build();

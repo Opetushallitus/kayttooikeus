@@ -8,6 +8,7 @@ import fi.vm.sade.kayttooikeus.repositories.dto.HenkilohakuResultDto;
 import fi.vm.sade.kayttooikeus.dto.KayttooikeudetDto;
 import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface HenkiloService {
@@ -40,7 +41,7 @@ public interface HenkiloService {
 
     void disableHenkiloOrganisationsAndKayttooikeus(String henkiloOid, String kasittelijaOid);
 
-    List<HenkilohakuResultDto> henkilohaku(HenkilohakuCriteriaDto henkilohakuCriteriaDto, Long offset, OrderByHenkilohaku orderBy);
+    Collection<HenkilohakuResultDto> henkilohaku(HenkilohakuCriteriaDto henkilohakuCriteriaDto, Long offset, OrderByHenkilohaku orderBy);
 
     Long henkilohakuCount(HenkilohakuCriteriaDto henkilohakuCriteriaDto);
 
