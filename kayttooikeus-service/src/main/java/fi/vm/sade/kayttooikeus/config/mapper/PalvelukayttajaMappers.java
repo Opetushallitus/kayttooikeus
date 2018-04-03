@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class PalvelukayttajaMappers {
 
     @Bean
-    public CustomMapper<HenkilohakuResultDto, PalvelukayttajaReadDto> henkiloNimiDtoMapper() {
+    public CustomMapper<HenkilohakuResultDto, PalvelukayttajaReadDto> palvelukayttajaReadMapper() {
         return new CustomMapper<HenkilohakuResultDto, PalvelukayttajaReadDto>() {
             @Override
             public void mapAtoB(HenkilohakuResultDto a, PalvelukayttajaReadDto b, MappingContext context) {
