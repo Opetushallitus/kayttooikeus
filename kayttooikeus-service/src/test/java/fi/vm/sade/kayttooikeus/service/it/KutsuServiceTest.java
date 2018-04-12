@@ -555,7 +555,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         doReturn(Optional.ofNullable(null)).when(this.oppijanumerorekisteriClient).getHenkiloByHetu(any());
         doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).getOidByHetu("hetu");
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
-                new KielisyysDto("fi", null), "arpauser", "stronkPassword!");
+                new KielisyysDto("fi", null), "arpauser", "stronkPassword1!");
 
         given(this.oppijanumerorekisteriClient.getHenkiloByOid(any())).willReturn(new HenkiloDto());
         this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);
@@ -597,7 +597,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         doReturn(Optional.of("1.2.3.4.5")).when(this.oppijanumerorekisteriClient).createHenkiloForKutsu(any(HenkiloCreateDto.class));
         doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).getOidByHetu("valid hetu");
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
-                new KielisyysDto("fi", null), "arpauser", "stronkPassword!");
+                new KielisyysDto("fi", null), "arpauser", "stronkPassword1!");
         HenkiloDto henkiloDto = new HenkiloDto();
         henkiloDto.setOidHenkilo("123");
 
@@ -634,7 +634,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         doReturn(Optional.of(new HenkiloDto().builder().oidHenkilo("1.2.0.0.2").build())).when(this.oppijanumerorekisteriClient).getHenkiloByHetu("hetu");
 
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
-                new KielisyysDto("fi", null), "arpauser", "stronkPassword!");
+                new KielisyysDto("fi", null), "arpauser", "stronkPassword1!");
 
         given(this.oppijanumerorekisteriClient.getHenkiloByOid(any())).willReturn(new HenkiloDto());
         this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);

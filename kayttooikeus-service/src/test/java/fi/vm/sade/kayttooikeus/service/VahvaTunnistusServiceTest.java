@@ -79,7 +79,7 @@ public class VahvaTunnistusServiceTest extends AbstractServiceIntegrationTest {
         identificationService.updateLoginToken(loginToken, hetu);
 
         VahvaTunnistusRequestDto requestDto = new VahvaTunnistusRequestDto();
-        requestDto.setSalasana("salasana123!");
+        requestDto.setSalasana("Salasana123!");
         requestDto.setTyosahkopostiosoite(tyosahkopostiosoite);
         VahvaTunnistusResponseDto responseDto = vahvaTunnistusService.tunnistaudu(loginToken, requestDto);
 
@@ -111,7 +111,7 @@ public class VahvaTunnistusServiceTest extends AbstractServiceIntegrationTest {
         identificationService.updateLoginToken(loginToken, hetu);
 
         VahvaTunnistusRequestDto requestDto = new VahvaTunnistusRequestDto();
-        requestDto.setSalasana("salasana123!");
+        requestDto.setSalasana("Salasana123!");
         requestDto.setTyosahkopostiosoite(tyosahkopostiosoite);
         VahvaTunnistusResponseDto responseDto = vahvaTunnistusService.tunnistaudu(loginToken, requestDto);
 
