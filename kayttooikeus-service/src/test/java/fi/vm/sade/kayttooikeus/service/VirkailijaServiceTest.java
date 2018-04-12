@@ -38,7 +38,7 @@ public class VirkailijaServiceTest extends AbstractServiceIntegrationTest {
         createDto.setKutsumanimi("teppo");
         createDto.setSukunimi("testaaja");
         createDto.setKayttajatunnus("testaaja");
-        createDto.setSalasana("salasana123!");
+        createDto.setSalasana("Salasana123!");
         createDto.setVahvastiTunnistettu(true);
         when(oppijanumerorekisteriClient.createHenkilo(any())).thenReturn("oid123");
 
