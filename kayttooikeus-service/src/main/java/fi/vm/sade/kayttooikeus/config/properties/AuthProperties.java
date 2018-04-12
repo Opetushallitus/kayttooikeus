@@ -19,10 +19,10 @@ public class AuthProperties {
     }
     @Getter @Setter
     public static class Password {
-        private Integer minLen = 8;
+        private Integer minLen = 10;
         private Integer minAmountSpecialChars = 1;
-        private Integer minAmountNumbers = 0;
-        private Boolean lowerAndUpperCase = false;
+        private Integer minAmountNumbers = 1;
+        private Boolean lowerAndUpperCase = true;
 
     }
 
