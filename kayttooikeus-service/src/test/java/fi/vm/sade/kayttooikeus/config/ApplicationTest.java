@@ -14,9 +14,7 @@ import static fi.vm.sade.kayttooikeus.util.FreePortUtil.portNumberBySystemProper
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
-@SpringBootTest(classes = Application.class,
-    properties = {"mock.ldap=true",
-    })
+@SpringBootTest(classes = Application.class)
 @TestExecutionListeners(mergeMode = MergeMode.MERGE_WITH_DEFAULTS,
         listeners = {ApplicationTest.SetEnvTestExecutionListener.class})
 public @interface ApplicationTest {

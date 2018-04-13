@@ -9,7 +9,6 @@ import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.cas.ServiceProperties;
 import org.springframework.security.cas.authentication.CasAssertionAuthenticationToken;
@@ -26,7 +25,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Profile("!dev")
 @Configuration
-@Import({LdapUserDetailsConfig.class})
 @EnableGlobalMethodSecurity(jsr250Enabled = false, prePostEnabled = true, securedEnabled = true)
 @EnableWebSecurity
 public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
