@@ -23,24 +23,18 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
-
-import java.util.Optional;
 
 @Profile("!dev")
 @Configuration
-@Import({LdapUserDetailsConfig.class, HttpMockedUserDetailsConfig.class})
+@Import({LdapUserDetailsConfig.class})
 @EnableGlobalMethodSecurity(jsr250Enabled = false, prePostEnabled = true, securedEnabled = true)
 @EnableWebSecurity
 public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
     private CasProperties casProperties;
     private OphProperties ophProperties;
 
-    @Autowired(required = false)
-    private LdapUserDetailsService ldapUserDetailsService;
-
-    @Autowired(required = false)
-    private HttpMockedUserDetailsProvider fallbackUserDetailsService;
+    @Autowired
+    private UserDetailsService userDetailsService;
 
     @Autowired
     public SecurityConfigDefault(CasProperties casProperties, OphProperties ophProperties) {
@@ -74,8 +68,7 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
     @Bean
     public AuthenticationUserDetailsService<CasAssertionAuthenticationToken> authenticationUserDetailsService() {
         return (CasAssertionAuthenticationToken casAssertionAuthenticationToken)
-                -> Optional.<UserDetailsService>ofNullable(ldapUserDetailsService)
-                .orElse(fallbackUserDetailsService).loadUserByUsername(casAssertionAuthenticationToken.getName());
+                -> userDetailsService.loadUserByUsername(casAssertionAuthenticationToken.getName());
     }
 
     @Bean

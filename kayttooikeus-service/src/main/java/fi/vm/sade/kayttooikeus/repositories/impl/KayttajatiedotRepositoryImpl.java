@@ -7,9 +7,11 @@ import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.model.QHenkilo;
 import fi.vm.sade.kayttooikeus.model.QKayttajatiedot;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepositoryCustom;
-import java.util.Optional;
-import javax.persistence.EntityManager;
+import fi.vm.sade.kayttooikeus.service.dto.KayttajatiedotDto;
 import org.springframework.data.jpa.repository.JpaContext;
+
+import javax.persistence.EntityManager;
+import java.util.Optional;
 
 public class KayttajatiedotRepositoryImpl implements KayttajatiedotRepositoryCustom {
 
@@ -42,6 +44,20 @@ public class KayttajatiedotRepositoryImpl implements KayttajatiedotRepositoryCus
                 .select(qKayttajatiedot)
                 .fetchOne();
         return Optional.ofNullable(entity);
+    }
+
+    @Override
+    public Optional<KayttajatiedotDto> findDtoByUsername(String username) {
+        QKayttajatiedot qKayttajatiedot = QKayttajatiedot.kayttajatiedot;
+        QHenkilo qHenkilo = QHenkilo.henkilo;
+
+        KayttajatiedotDto dto = new JPAQuery<>(em)
+                .from(qKayttajatiedot)
+                .join(qKayttajatiedot.henkilo, qHenkilo)
+                .where(qKayttajatiedot.username.equalsIgnoreCase(username))
+                .select(Projections.constructor(KayttajatiedotDto.class, qHenkilo.oidHenkilo, qKayttajatiedot.username, qKayttajatiedot.password))
+                .fetchOne();
+        return Optional.ofNullable(dto);
     }
 
 }
