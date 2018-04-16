@@ -1,11 +1,9 @@
 package fi.vm.sade.kayttooikeus.config.security;
 
-import fi.vm.sade.kayttooikeus.dto.KayttooikeusPerustiedotDto;
+import fi.vm.sade.kayttooikeus.dto.OrganisaatioPalveluRooliDto;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
-import fi.vm.sade.kayttooikeus.repositories.criteria.KayttooikeusCriteria;
 import fi.vm.sade.kayttooikeus.service.dto.KayttajatiedotDto;
-import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -15,7 +13,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -39,16 +36,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         KayttajatiedotDto kayttajatiedot = kayttajatiedotRepository.findDtoByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("Käyttäjää ei löytynyt käyttäjätunnuksella %s", username)));
 
-        KayttooikeusCriteria criteria = new KayttooikeusCriteria();
-        criteria.setUsername(username);
-        List<KayttooikeusPerustiedotDto> kayttooikeudet = myonnettyKayttoOikeusRyhmaTapahtumaRepository.listCurrentKayttooikeusForHenkilo(criteria, null, null);
-        if (kayttooikeudet.size() > 1) {
-            throw new DataInconsistencyException(String.format("Kysely palautti useamman käyttäjän käyttöoikeuksia (käyttäjätunnus=%s)", username));
-        }
-        Set<SimpleGrantedAuthority> roolit = kayttooikeudet.stream()
-                .flatMap(myonnettyKayttooikeus -> myonnettyKayttooikeus.getOrganisaatiot().stream())
-                .flatMap(organisaatio -> organisaatio.getKayttooikeudet().stream()
-                        .flatMap(kayttooikeus -> getRoolit(organisaatio.getOrganisaatioOid(), kayttooikeus)))
+        Set<SimpleGrantedAuthority> roolit = myonnettyKayttoOikeusRyhmaTapahtumaRepository.findOrganisaatioPalveluRooliByUsername(username)
+                .stream()
+                .flatMap(UserDetailsServiceImpl::getRoolit)
                 .map(String::toUpperCase)
                 .map(SimpleGrantedAuthority::new)
                 .collect(toSet());
@@ -56,22 +46,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return new User(kayttajatiedot.getOid(), kayttajatiedot.getSalasana(), roolit);
     }
 
-    private static Stream<String> getRoolit(String organisaatioOid, KayttooikeusPerustiedotDto.KayttooikeusOrganisaatiotDto.KayttooikeusOikeudetDto kayttooikeus) {
+    private static Stream<String> getRoolit(OrganisaatioPalveluRooliDto dto) {
         Set<String> roolit = new HashSet<>();
 
         StringBuilder builder = new StringBuilder("ROLE_APP_");
         // ROLE_APP_<palvelu>
-        builder.append(kayttooikeus.getPalvelu());
+        builder.append(dto.getPalvelu());
         roolit.add(builder.toString());
 
         // ROLE_APP_<palvelu>_<kayttooikeus_rooli>
         builder.append("_");
-        builder.append(kayttooikeus.getOikeus());
+        builder.append(dto.getRooli());
         roolit.add(builder.toString());
 
         // ROLE_APP_<palvelu>_<kayttooikeus_rooli>_<organisaatiooid>
         builder.append("_");
-        builder.append(organisaatioOid);
+        builder.append(dto.getOrganisaatioOid());
         roolit.add(builder.toString());
 
         return roolit.stream();

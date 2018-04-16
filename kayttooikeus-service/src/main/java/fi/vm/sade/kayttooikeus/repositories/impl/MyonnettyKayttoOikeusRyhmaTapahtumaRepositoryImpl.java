@@ -8,25 +8,30 @@ import fi.vm.sade.kayttooikeus.dto.AccessRightTypeDto;
 import fi.vm.sade.kayttooikeus.dto.GroupTypeDto;
 import fi.vm.sade.kayttooikeus.dto.KayttooikeusPerustiedotDto;
 import fi.vm.sade.kayttooikeus.dto.MyonnettyKayttoOikeusDto;
-import fi.vm.sade.kayttooikeus.model.*;
+import fi.vm.sade.kayttooikeus.dto.OrganisaatioPalveluRooliDto;
+import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
+import fi.vm.sade.kayttooikeus.model.QHenkilo;
+import fi.vm.sade.kayttooikeus.model.QKayttajatiedot;
+import fi.vm.sade.kayttooikeus.model.QKayttoOikeus;
+import fi.vm.sade.kayttooikeus.model.QKayttoOikeusRyhma;
+import fi.vm.sade.kayttooikeus.model.QMyonnettyKayttoOikeusRyhmaTapahtuma;
+import fi.vm.sade.kayttooikeus.model.QOrganisaatioHenkilo;
+import fi.vm.sade.kayttooikeus.model.QPalvelu;
 import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryCustom;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KayttooikeusCriteria;
 import org.springframework.data.jpa.repository.JpaContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static fi.vm.sade.kayttooikeus.model.QKayttoOikeus.kayttoOikeus;
 import static fi.vm.sade.kayttooikeus.model.QKayttoOikeusRyhma.kayttoOikeusRyhma;
 import static fi.vm.sade.kayttooikeus.model.QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
-
-import javax.persistence.EntityManager;
-
 import static fi.vm.sade.kayttooikeus.model.QOrganisaatioHenkilo.organisaatioHenkilo;
 import static fi.vm.sade.kayttooikeus.model.QPalvelu.palvelu;
 
@@ -191,6 +196,33 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryImpl implements Myonne
                         .map(Stream::of)
                         .orElseGet(Stream::empty))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<OrganisaatioPalveluRooliDto> findOrganisaatioPalveluRooliByUsername(String username) {
+        QMyonnettyKayttoOikeusRyhmaTapahtuma qMyonnettyKayttoOikeusRyhmaTapahtuma = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
+        QOrganisaatioHenkilo qOrganisaatioHenkilo = QOrganisaatioHenkilo.organisaatioHenkilo;
+        QHenkilo qHenkilo = QHenkilo.henkilo;
+        QKayttajatiedot qKayttajatiedot = QKayttajatiedot.kayttajatiedot;
+        QKayttoOikeusRyhma qKayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
+        QKayttoOikeus qKayttoOikeus = QKayttoOikeus.kayttoOikeus;
+        QPalvelu qPalvelu = QPalvelu.palvelu;
+
+        JPAQuery<OrganisaatioPalveluRooliDto> query = jpa()
+                .from(qMyonnettyKayttoOikeusRyhmaTapahtuma)
+                .join(qMyonnettyKayttoOikeusRyhmaTapahtuma.organisaatioHenkilo, qOrganisaatioHenkilo)
+                .join(qOrganisaatioHenkilo.henkilo, qHenkilo)
+                .join(qHenkilo.kayttajatiedot, qKayttajatiedot)
+                .join(qMyonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma, qKayttoOikeusRyhma)
+                .join(qKayttoOikeusRyhma.kayttoOikeus, qKayttoOikeus)
+                .join(qKayttoOikeus.palvelu, qPalvelu)
+                .where(qKayttajatiedot.username.equalsIgnoreCase(username))
+                .where(qOrganisaatioHenkilo.passivoitu.isFalse())
+                .where(qKayttoOikeusRyhma.passivoitu.isFalse())
+                .select(Projections.constructor(OrganisaatioPalveluRooliDto.class,
+                        qOrganisaatioHenkilo.organisaatioOid, qPalvelu.name, qKayttoOikeus.rooli))
+                .distinct();
+        return query.fetch();
     }
 
 }
