@@ -199,7 +199,7 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryImpl implements Myonne
     }
 
     @Override
-    public List<OrganisaatioPalveluRooliDto> findOrganisaatioPalveluRooliByUsername(String username) {
+    public List<OrganisaatioPalveluRooliDto> findOrganisaatioPalveluRooliByOid(String oid) {
         QMyonnettyKayttoOikeusRyhmaTapahtuma qMyonnettyKayttoOikeusRyhmaTapahtuma = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
         QOrganisaatioHenkilo qOrganisaatioHenkilo = QOrganisaatioHenkilo.organisaatioHenkilo;
         QHenkilo qHenkilo = QHenkilo.henkilo;
@@ -216,7 +216,7 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryImpl implements Myonne
                 .join(qMyonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma, qKayttoOikeusRyhma)
                 .join(qKayttoOikeusRyhma.kayttoOikeus, qKayttoOikeus)
                 .join(qKayttoOikeus.palvelu, qPalvelu)
-                .where(qKayttajatiedot.username.equalsIgnoreCase(username))
+                .where(qHenkilo.oidHenkilo.eq(oid))
                 .where(qOrganisaatioHenkilo.passivoitu.isFalse())
                 .where(qKayttoOikeusRyhma.passivoitu.isFalse())
                 .select(Projections.constructor(OrganisaatioPalveluRooliDto.class,

@@ -3,7 +3,6 @@ package fi.vm.sade.kayttooikeus.config.security;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioPalveluRooliDto;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
-import fi.vm.sade.kayttooikeus.service.dto.KayttajatiedotDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -33,10 +32,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        KayttajatiedotDto kayttajatiedot = kayttajatiedotRepository.findDtoByUsername(username)
+        String oid = kayttajatiedotRepository.findOidByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("Käyttäjää ei löytynyt käyttäjätunnuksella %s", username)));
 
-        Set<SimpleGrantedAuthority> roolit = myonnettyKayttoOikeusRyhmaTapahtumaRepository.findOrganisaatioPalveluRooliByUsername(username)
+        Set<SimpleGrantedAuthority> roolit = myonnettyKayttoOikeusRyhmaTapahtumaRepository.findOrganisaatioPalveluRooliByOid(oid)
                 .stream()
                 .flatMap(UserDetailsServiceImpl::getRoolit)
                 .map(String::toUpperCase)
@@ -47,7 +46,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         // CasAuthenticationProvider:n kautta niin se ei tee salasanalla mitään tässä vaiheessa.
         // Tässä ei myöskään kannata käyttää käyttäjätiedoista saatavaa salasanaa koska kaikilla käyttäjillä ei
         // välttämättä ole salasanaa ollenkaan (esim. HAKA-käyttäjät).
-        return new User(kayttajatiedot.getOid(), "secret", roolit);
+        return new User(oid, "secret", roolit);
     }
 
     private static Stream<String> getRoolit(OrganisaatioPalveluRooliDto dto) {

@@ -24,6 +24,6 @@ public interface MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryCustom {
 
     List<KayttooikeusPerustiedotDto> listCurrentKayttooikeusForHenkilo(KayttooikeusCriteria criteria, Long limit, Long offset);
 
-    List<OrganisaatioPalveluRooliDto> findOrganisaatioPalveluRooliByUsername(String username);
+    List<OrganisaatioPalveluRooliDto> findOrganisaatioPalveluRooliByOid(String oid);
 
 }
