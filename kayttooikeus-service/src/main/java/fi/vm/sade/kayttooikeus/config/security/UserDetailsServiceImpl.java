@@ -43,7 +43,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .map(SimpleGrantedAuthority::new)
                 .collect(toSet());
 
-        return new User(kayttajatiedot.getOid(), kayttajatiedot.getSalasana(), roolit);
+        // User-olio vaatii että salasana on annettu mutta kun tätä UserDetailsService-instanssia käytetään vain
+        // CasAuthenticationProvider:n kautta niin se ei tee salasanalla mitään tässä vaiheessa.
+        // Tässä ei myöskään kannata käyttää käyttäjätiedoista saatavaa salasanaa koska kaikilla käyttäjillä ei
+        // välttämättä ole salasanaa ollenkaan (esim. HAKA-käyttäjät).
+        return new User(kayttajatiedot.getOid(), "secret", roolit);
     }
 
     private static Stream<String> getRoolit(OrganisaatioPalveluRooliDto dto) {
