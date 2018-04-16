@@ -3,14 +3,17 @@ package fi.vm.sade.kayttooikeus.config.security;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioPalveluRooliDto;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -34,19 +37,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         String oid = kayttajatiedotRepository.findOidByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("Käyttäjää ei löytynyt käyttäjätunnuksella %s", username)));
-
         Set<SimpleGrantedAuthority> roolit = myonnettyKayttoOikeusRyhmaTapahtumaRepository.findOrganisaatioPalveluRooliByOid(oid)
                 .stream()
                 .flatMap(UserDetailsServiceImpl::getRoolit)
                 .map(String::toUpperCase)
                 .map(SimpleGrantedAuthority::new)
                 .collect(toSet());
-
-        // User-olio vaatii että salasana on annettu mutta kun tätä UserDetailsService-instanssia käytetään vain
-        // CasAuthenticationProvider:n kautta niin se ei tee salasanalla mitään tässä vaiheessa.
-        // Tässä ei myöskään kannata käyttää käyttäjätiedoista saatavaa salasanaa koska kaikilla käyttäjillä ei
-        // välttämättä ole salasanaa ollenkaan (esim. HAKA-käyttäjät).
-        return new User(oid, "secret", roolit);
+        return new UserDetailsImpl(oid, roolit);
     }
 
     private static Stream<String> getRoolit(OrganisaatioPalveluRooliDto dto) {
@@ -68,6 +65,29 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         roolit.add(builder.toString());
 
         return roolit.stream();
+    }
+
+    @Getter
+    @AllArgsConstructor
+    private static class UserDetailsImpl implements UserDetails {
+
+        private final String username;
+        private final Collection<? extends GrantedAuthority> authorities;
+        private final boolean accountNonExpired;
+        private final boolean accountNonLocked;
+        private final boolean credentialsNonExpired;
+        private final boolean enabled;
+
+        public UserDetailsImpl(String username, Collection<? extends GrantedAuthority> authorities) {
+            this(username, authorities, true, true, true, true);
+        }
+
+        @Override
+        public String getPassword() {
+            // Instanssia käytetään vain roolien lataamiseen (CasAuthenticationProvider) joten salasanaa ei tarvita
+            return null;
+        }
+
     }
 
 }
