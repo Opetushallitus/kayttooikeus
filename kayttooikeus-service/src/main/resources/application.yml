@@ -13,6 +13,11 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: true
+  ldap:
+    urls: ldap://localhost:389
+    base: dc=opintopolku,dc=fi
+    username: cn=admin,ou=People,dc=opintopolku,dc=fi
+    password: password123
 
 server:
   servlet:

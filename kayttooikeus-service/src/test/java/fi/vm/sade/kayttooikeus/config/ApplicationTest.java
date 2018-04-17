@@ -14,9 +14,7 @@ import static fi.vm.sade.kayttooikeus.util.FreePortUtil.portNumberBySystemProper
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
-@SpringBootTest(classes = Application.class,
-    properties = {"mock.ldap=true",
-    })
+@SpringBootTest(classes = Application.class)
 @TestExecutionListeners(mergeMode = MergeMode.MERGE_WITH_DEFAULTS,
         listeners = {ApplicationTest.SetEnvTestExecutionListener.class})
 public @interface ApplicationTest {
@@ -28,7 +26,6 @@ public @interface ApplicationTest {
             System.setProperty("host-cas", "localhost:"+port);
             System.setProperty("host-shibboleth", "localhost:"+port);
             System.setProperty("url-virkailija", "http://localhost:"+port);
-            System.setProperty("cas.fallback-user-details-provider-url", "http://localhost:"+port+"/userDetails/");
             System.setProperty("organisaatio-service.baseUrl", "http://localhost:"+port);
             System.setProperty("cas.url", "http://localhost:"+port+"/cas");
         }

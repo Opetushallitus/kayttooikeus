@@ -28,16 +28,12 @@ spring:
       maximum-pool-size: 20
       connection-timeout: 10000
       max-lifetime: 900000
-cas:
   ldap:
-    url: ldap://{{host_ldap}}/dc=opintopolku,dc=fi
-    managed-dn: {{ldap_manager_userdn}}
+    urls: ldap://{{host_ldap}}
+    base: dc=opintopolku,dc=fi
+    username: {{ldap_manager_userdn}}
     password: {{ldap_manager_password}}
-    user-search-base: ou=People
-    user-search-filter: (|(mail={0})(uid={0}))
-    group-search-base: ou=groups
-    group-search-filter: (uniqueMember={0})
-    group-role-attribute: cn
+cas:
   service: https://{{host_virkailija}}/kayttooikeus-service
   send-renew: false
   key: kayttooikeus-service

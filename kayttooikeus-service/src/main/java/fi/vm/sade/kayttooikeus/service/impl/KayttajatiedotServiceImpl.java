@@ -39,7 +39,7 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
     public KayttajatiedotReadDto create(String henkiloOid, KayttajatiedotCreateDto createDto, LdapSynchronizationType ldapSynchronization) {
         KayttajatiedotReadDto readDto = henkiloDataRepository.findByOidHenkilo(henkiloOid)
                 .map(henkilo -> create(henkilo, createDto))
-                .orElseThrow(() -> new NotFoundException("Henkilöä ei löytynyt OID:lla " + henkiloOid));
+                .orElseGet(() -> create(new Henkilo(henkiloOid), createDto));
         ldapSynchronization.getAction().accept(ldapSynchronizationService, henkiloOid);
         return readDto;
     }
