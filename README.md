@@ -59,3 +59,13 @@ ja ylikirjoita tämä tarvittaessa.
 ## API-dokumentaatio
 
 Rest API on dokumentoitu swaggerin avulla ja löytyy osoitteesta https://virkailija.opintopolku.fi/kayttooikeus-service/swagger-ui.html
+
+## Virkailijan luonti -käyttöoikeus
+
+```
+INSERT INTO text_group (id, version) VALUES (nextval('hibernate_sequence'), 0);
+INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('hibernate_sequence'), 0, 'FI', 'Virkailijan luonti', (SELECT max(id) FROM text_group));
+INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('hibernate_sequence'), 0, 'SV', 'Virkailijan luonti', (SELECT max(id) FROM text_group));
+INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('hibernate_sequence'), 0, 'EN', 'Virkailijan luonti', (SELECT max(id) FROM text_group));
+INSERT INTO kayttooikeus (id, version, palvelu_id, rooli, textgroup_id) VALUES (nextval('hibernate_sequence'), 0, (SELECT id FROM palvelu WHERE name = 'KAYTTOOIKEUS'), 'VIRKAILIJANLUONTI', (SELECT max(id) FROM text_group));
+```

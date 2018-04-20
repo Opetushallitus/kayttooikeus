@@ -17,6 +17,8 @@ spring:
       base-dn:
         - dc=opintopolku,dc=fi
       enabled: true
+  flyway:
+    enabled: false
 
 hikari:
   datasource:
