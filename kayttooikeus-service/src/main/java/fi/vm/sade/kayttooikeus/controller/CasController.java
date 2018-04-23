@@ -1,13 +1,9 @@
 package fi.vm.sade.kayttooikeus.controller;
 
-import fi.vm.sade.kayttooikeus.dto.VahvaTunnistusRequestDto;
-import fi.vm.sade.kayttooikeus.dto.IdentifiedHenkiloTypeDto;
-import fi.vm.sade.kayttooikeus.dto.VahvaTunnistusResponseDto;
-import fi.vm.sade.kayttooikeus.dto.YhteystietojenTyypit;
+import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
-import fi.vm.sade.kayttooikeus.service.exception.LoginTokenNotFoundException;
-import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
+import fi.vm.sade.kayttooikeus.service.exception.*;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.properties.OphProperties;
 import io.swagger.annotations.Api;
@@ -29,7 +25,6 @@ import java.util.Map;
 
 import fi.vm.sade.kayttooikeus.model.TunnistusToken;
 import fi.vm.sade.kayttooikeus.service.VahvaTunnistusService;
-import fi.vm.sade.kayttooikeus.service.exception.HetuVaaraException;
 import fi.vm.sade.kayttooikeus.util.HenkiloUtils;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoTyyppi;
@@ -152,6 +147,9 @@ public class CasController {
                 // otetaan hetu talteen jotta se on vielä tiedossa seuraavassa vaiheessa
                 TunnistusToken tunnistusToken = identificationService.updateLoginToken(loginToken, hetu);
                 HenkiloDto henkiloByLoginToken = oppijanumerorekisteriClient.getHenkiloByOid(tunnistusToken.getHenkilo().getOidHenkilo());
+                if(tunnistusToken.getHenkilo().getKayttajaTyyppi().equals(KayttajaTyyppi.PALVELU)) {
+                    throw new PalvelukayttajaLoginException("Palvelukäyttäjänä kirjautuminen on estetty");
+                }
 
                 // tarkistetaan että virkailijalla on tämä hetu käytössä
                 Optional.ofNullable(henkiloByLoginToken.getHetu()).ifPresent(tallennettuHetu -> {
@@ -177,6 +175,8 @@ public class CasController {
                 response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vanha"));
             } catch (HetuVaaraException e) {
                 response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vaara"));
+            } catch(PalvelukayttajaLoginException e) {
+                response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "palvelukayttaja"));
             } catch (Exception e) {
                 log.warn("User failed strong identification", e);
                 response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, loginToken));
