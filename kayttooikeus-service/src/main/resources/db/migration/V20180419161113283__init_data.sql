@@ -15,11 +15,11 @@ BEGIN
   SELECT count(*) INTO _role_exists FROM palvelu WHERE name = role_name;
 
   IF _role_exists = 0 THEN
-    INSERT INTO text_group (id, version) VALUES (nextval('public.hibernate_sequence'), 0);
-    INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 0, 'FI', role_text_fi, (SELECT max(id) FROM text_group));
-    INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 0, 'SV', role_text_fi, (SELECT max(id) FROM text_group));
-    INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 0, 'EN', role_text_fi, (SELECT max(id) FROM text_group));
-    INSERT INTO palvelu (id, version, name, palvelutyyppi, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 0, role_name, 'YKSITTAINEN', (SELECT max(id) FROM text_group));
+    INSERT INTO text_group (id, version) VALUES (nextval('public.hibernate_sequence'), 1);
+    INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 1, 'FI', role_text_fi, (SELECT max(id) FROM text_group));
+    INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 1, 'SV', role_text_fi, (SELECT max(id) FROM text_group));
+    INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 1, 'EN', role_text_fi, (SELECT max(id) FROM text_group));
+    INSERT INTO palvelu (id, version, name, palvelutyyppi, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 1, role_name, 'YKSITTAINEN', (SELECT max(id) FROM text_group));
   END IF;
 
   RETURN 1;
@@ -32,7 +32,7 @@ ALTER FUNCTION public.insertpalvelu(character varying, character varying) OWNER 
 
 
 -- Schedule timestamp for henkilo cache
-INSERT INTO schedule_timestamps (id, version, modified, identifier) SELECT nextval('public.hibernate_sequence'), 0, LOCALTIMESTAMP, 'henkilocache';
+INSERT INTO schedule_timestamps (id, version, modified, identifier) SELECT nextval('public.hibernate_sequence'), 1, LOCALTIMESTAMP, 'henkilocache';
 
 -- Palvelu
 SELECT insertpalvelu('KOODISTO', 'Koodistopalvelu');
@@ -106,11 +106,11 @@ BEGIN
   SELECT count(*) INTO _kayttooikeus_exists FROM kayttooikeus k INNER JOIN palvelu p ON p.id = k.palvelu_id WHERE k.rooli = kayttooikeus_rooli AND p.name = palvelu_name;
 
   IF _kayttooikeus_exists = 0 THEN
-    INSERT INTO text_group (id, version) VALUES (nextval('public.hibernate_sequence'), 0);
-    INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 0, 'FI', kayttooikeus_text_fi, (SELECT max(id) FROM text_group));
-    INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 0, 'SV', kayttooikeus_text_fi, (SELECT max(id) FROM text_group));
-    INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 0, 'EN', kayttooikeus_text_fi, (SELECT max(id) FROM text_group));
-    INSERT INTO kayttooikeus (id, version, palvelu_id, rooli, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 0, (SELECT id FROM palvelu WHERE name = palvelu_name), kayttooikeus_rooli, (SELECT max(id) FROM text_group));
+    INSERT INTO text_group (id, version) VALUES (nextval('public.hibernate_sequence'), 1);
+    INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 1, 'FI', kayttooikeus_text_fi, (SELECT max(id) FROM text_group));
+    INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 1, 'SV', kayttooikeus_text_fi, (SELECT max(id) FROM text_group));
+    INSERT INTO text (id, version, lang, text, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 1, 'EN', kayttooikeus_text_fi, (SELECT max(id) FROM text_group));
+    INSERT INTO kayttooikeus (id, version, palvelu_id, rooli, textgroup_id) VALUES (nextval('public.hibernate_sequence'), 1, (SELECT id FROM palvelu WHERE name = palvelu_name), kayttooikeus_rooli, (SELECT max(id) FROM text_group));
   END IF;
 
   RETURN 1;
@@ -342,3 +342,40 @@ SELECT insertkayttooikeus('AIPAL', 'YLKATSELIJA', 'Yleinen katselija');
 SELECT insertkayttooikeus('KOSKI', 'YLLAPITAJA', 'Oiva-ylläpitäjä');
 SELECT insertkayttooikeus('AMKPAL', 'YLLAPITAJA', 'Arvo-ylläpitäjä');
 SELECT insertkayttooikeus('KOUTE', 'YLLAPITAJA', 'Oiva-ylläpitäjä');
+
+
+-- Initial admin user
+INSERT INTO henkilo (id, version, oidhenkilo, henkilotyyppi, etunimet_cached, sukunimi_cached, kutsumanimi_cached, hetu_cached, passivoitu_cached, duplicate_cached, vahvasti_tunnistettu)
+VALUES (nextval('public.hibernate_sequence'), 1, '1.2.246.562.24.00000000001', 'VIRKAILIJA', 'ROOT', 'USER', 'ROOT', '111111-985K', false, false, true);
+
+INSERT INTO kayttajatiedot (id, version, username, password, salt, henkiloid)
+VALUES (nextval('public.hibernate_sequence'), 1, 'ophadmin', 'ucIoGYqQ0yMF4K1K/5KdQw==', '6mh0kd3n0e8ihac2lu6o7q2dc5', (SELECt max(id) from henkilo));
+
+INSERT INTO organisaatiohenkilo (id, version, organisaatio_oid, sahkopostiosoite, henkilo_id, passivoitu)
+VALUES (nextval('public.hibernate_sequence'), 1, '1.2.246.562.10.00000000001', 'admin@oph.fi', (SELECT max(id) from henkilo), false);
+
+INSERT INTO kayttooikeusryhma (id, version, name)
+VALUES (nextval('public.hibernate_sequence'), 1, 'initial admin group');
+
+CREATE FUNCTION addAllKayttooikeusToAdminGroup() RETURNS integer AS
+$$
+DECLARE
+    ko kayttooikeus%ROWTYPE;
+
+BEGIN
+    FOR ko IN
+       SELECT * FROM kayttooikeus
+    LOOP
+       INSERT INTO kayttooikeusryhma_kayttooikeus (kayttooikeusryhma_id, kayttooikeus_id) VALUES ((SELECT max(id) from kayttooikeusryhma), ko.id);
+    END LOOP;
+    RETURN 1;
+END;
+
+$$ LANGUAGE plpgsql;
+
+SELECT addAllKayttooikeusToAdminGroup();
+
+DROP FUNCTION addAllKayttooikeusToAdminGroup();
+
+INSERT INTO myonnetty_kayttooikeusryhma_tapahtuma (id, version, aikaleima, tila, kayttooikeusryhma_id, organisaatiohenkilo_id, voimassaalkupvm, voimassaloppupvm)
+VALUES (nextval('public.hibernate_sequence'), 1, current_timestamp, 'MYONNETTY', (SELECT max(id) from kayttooikeusryhma), (SELECT max(id) from organisaatiohenkilo), (current_timestamp - interval '1 year'), (current_timestamp + interval '100 years'));

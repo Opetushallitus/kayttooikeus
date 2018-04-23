@@ -21,7 +21,12 @@ import java.util.Set;
         }
     )
 })
-public class Henkilo extends IdentifiableAndVersionedEntity {
+public class Henkilo implements Identifiable {
+
+    @Id
+    @Column(name = "id", unique = true, nullable = false)
+    @GeneratedValue
+    private Long id;
 
     @Column(nullable = false, name = "oidhenkilo")
     private String oidHenkilo;
