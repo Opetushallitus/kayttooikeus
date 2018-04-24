@@ -147,7 +147,7 @@ public class CasController {
                 // otetaan hetu talteen jotta se on vielä tiedossa seuraavassa vaiheessa
                 TunnistusToken tunnistusToken = identificationService.updateLoginToken(loginToken, hetu);
                 HenkiloDto henkiloByLoginToken = oppijanumerorekisteriClient.getHenkiloByOid(tunnistusToken.getHenkilo().getOidHenkilo());
-                if(tunnistusToken.getHenkilo().getKayttajaTyyppi().equals(KayttajaTyyppi.PALVELU)) {
+                if(KayttajaTyyppi.PALVELU.equals(tunnistusToken.getHenkilo().getKayttajaTyyppi())) {
                     throw new PalvelukayttajaLoginException("Palvelukäyttäjänä kirjautuminen on estetty");
                 }
 
