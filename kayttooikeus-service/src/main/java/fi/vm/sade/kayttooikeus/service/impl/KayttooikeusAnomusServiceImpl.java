@@ -4,27 +4,45 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
-import fi.vm.sade.kayttooikeus.dto.*;
+import fi.vm.sade.kayttooikeus.dto.GrantKayttooikeusryhmaDto;
+import fi.vm.sade.kayttooikeus.dto.HaettuKayttooikeusryhmaDto;
+import fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila;
+import fi.vm.sade.kayttooikeus.dto.KayttooikeusAnomusDto;
+import fi.vm.sade.kayttooikeus.dto.UpdateHaettuKayttooikeusryhmaDto;
 import fi.vm.sade.kayttooikeus.dto.types.AnomusTyyppi;
 import fi.vm.sade.kayttooikeus.enumeration.OrderByAnomus;
-import fi.vm.sade.kayttooikeus.model.*;
-import fi.vm.sade.kayttooikeus.repositories.*;
+import fi.vm.sade.kayttooikeus.model.AnomuksenTila;
+import fi.vm.sade.kayttooikeus.model.Anomus;
+import fi.vm.sade.kayttooikeus.model.HaettuKayttoOikeusRyhma;
+import fi.vm.sade.kayttooikeus.model.Henkilo;
+import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhma;
+import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
+import fi.vm.sade.kayttooikeus.model.OrganisaatioHenkilo;
+import fi.vm.sade.kayttooikeus.repositories.AnomusRepository;
+import fi.vm.sade.kayttooikeus.repositories.HaettuKayttooikeusRyhmaRepository;
+import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
+import fi.vm.sade.kayttooikeus.repositories.HenkiloHibernateRepository;
+import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaMyontoViiteRepository;
+import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaTapahtumaHistoriaDataRepository;
+import fi.vm.sade.kayttooikeus.repositories.KayttooikeusryhmaDataRepository;
+import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
+import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloRepository;
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria;
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria.Myontooikeus;
 import fi.vm.sade.kayttooikeus.repositories.criteria.MyontooikeusCriteria;
-import fi.vm.sade.kayttooikeus.service.*;
+import fi.vm.sade.kayttooikeus.service.EmailService;
+import fi.vm.sade.kayttooikeus.service.KayttooikeusAnomusService;
+import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
+import fi.vm.sade.kayttooikeus.service.LocalizationService;
+import fi.vm.sade.kayttooikeus.service.OrganisaatioService;
+import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.exception.ForbiddenException;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.UnprocessableEntityException;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_ANOMUSTENHALLINTA;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
 import fi.vm.sade.kayttooikeus.service.impl.anomus.MyontooikeusMapper;
 import fi.vm.sade.kayttooikeus.service.validators.HaettuKayttooikeusryhmaValidator;
 import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
-
-import java.util.EnumSet;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,20 +51,30 @@ import org.springframework.validation.BindException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
-import static java.util.Collections.emptyList;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_ANOMUSTENHALLINTA;
+import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
+import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.appending;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
-import java.util.Map.Entry;
-import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.appending;
-import static java.util.Arrays.asList;
 
 @Service
 @RequiredArgsConstructor
@@ -456,6 +484,10 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         HaettuKayttoOikeusRyhma haettuKayttoOikeusRyhma = this.haettuKayttooikeusRyhmaRepository.findById(kayttooikeusRyhmaId)
                 .orElseThrow(() -> new NotFoundException("HaettuKayttooikeusRyhma not found with id " + kayttooikeusRyhmaId));
         Anomus anomus = haettuKayttoOikeusRyhma.getAnomus();
+        String kayttajaOid = getCurrentUserOid();
+        if (!kayttajaOid.equals(anomus.getHenkilo().getOidHenkilo())) {
+            throw new ForbiddenException(String.format("Käyttäjällä '%s' ei ole oikeuksia perua haettua käyttöoikeusryhmää '%s'", kayttajaOid, haettuKayttoOikeusRyhma.getId()));
+        }
         anomus.getHaettuKayttoOikeusRyhmas().removeIf( h -> h.getId().equals(haettuKayttoOikeusRyhma.getId()) );
         if (anomus.getHaettuKayttoOikeusRyhmas().isEmpty()) {
             anomus.setAnomuksenTila(AnomuksenTila.PERUTTU);
