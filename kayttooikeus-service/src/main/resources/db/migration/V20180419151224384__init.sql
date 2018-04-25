@@ -132,7 +132,6 @@ ALTER TABLE public.haettu_kayttooikeusryhma OWNER TO oph;
 
 CREATE TABLE public.henkilo (
     id bigint NOT NULL,
-    version bigint NOT NULL,
     oidhenkilo character varying(255) NOT NULL,
     henkilotyyppi character varying(255),
     etunimet_cached character varying(255),
