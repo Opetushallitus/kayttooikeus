@@ -345,8 +345,8 @@ SELECT insertkayttooikeus('KOUTE', 'YLLAPITAJA', 'Oiva-ylläpitäjä');
 
 
 -- Initial admin user
-INSERT INTO henkilo (id, version, oidhenkilo, henkilotyyppi, etunimet_cached, sukunimi_cached, kutsumanimi_cached, hetu_cached, passivoitu_cached, duplicate_cached, vahvasti_tunnistettu)
-VALUES (nextval('public.hibernate_sequence'), 1, '1.2.246.562.24.00000000001', 'VIRKAILIJA', 'ROOT', 'USER', 'ROOT', '111111-985K', false, false, true);
+INSERT INTO henkilo (id, oidhenkilo, henkilotyyppi, etunimet_cached, sukunimi_cached, kutsumanimi_cached, hetu_cached, passivoitu_cached, duplicate_cached, vahvasti_tunnistettu)
+VALUES (nextval('public.hibernate_sequence'), '1.2.246.562.24.00000000001', 'VIRKAILIJA', 'ROOT', 'USER', 'ROOT', '111111-985K', false, false, true);
 
 INSERT INTO kayttajatiedot (id, version, username, password, salt, henkiloid)
 VALUES (nextval('public.hibernate_sequence'), 1, 'ophadmin', 'ucIoGYqQ0yMF4K1K/5KdQw==', '6mh0kd3n0e8ihac2lu6o7q2dc5', (SELECt max(id) from henkilo));
