@@ -26,6 +26,11 @@ spring:
     baseline-on-migrate: true
     # If DB is not empty will not run migrations until this version
     baseline-version: 20180419161113283
+  ldap:
+    urls: ldap://localhost:389
+    base: dc=opintopolku,dc=fi
+    username: cn=admin,ou=People,dc=opintopolku,dc=fi
+    password: password123
 
 server:
   servlet:

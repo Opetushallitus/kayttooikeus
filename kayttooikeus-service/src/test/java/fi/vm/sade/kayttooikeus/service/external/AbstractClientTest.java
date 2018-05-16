@@ -1,6 +1,5 @@
 package fi.vm.sade.kayttooikeus.service.external;
 
-import fi.vm.sade.kayttooikeus.config.security.MockedUserDetails;
 import fi.vm.sade.kayttooikeus.service.AbstractServiceTest;
 import net.jadler.junit.rule.JadlerRule;
 import net.jadler.stubbing.server.jdk.JdkStubHttpServer;
@@ -11,6 +10,7 @@ import org.junit.After;
 import org.junit.Rule;
 import org.springframework.security.cas.authentication.CasAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,7 +36,7 @@ public abstract class AbstractClientTest extends AbstractServiceTest {
 
     protected void casAuthenticated(String henkiloOid) {
         SecurityContextHolder.getContext().setAuthentication(new CasAuthenticationToken("KEY", henkiloOid, "CRED",
-                Collections.emptyList(), new MockedUserDetails(), new AssertionImpl(new AttributePrincipal() {
+                Collections.emptyList(), new User(henkiloOid, "", Collections.emptyList()), new AssertionImpl(new AttributePrincipal() {
             @Override
             public String getProxyTicketFor(String service) {
                 return "TICKET";
