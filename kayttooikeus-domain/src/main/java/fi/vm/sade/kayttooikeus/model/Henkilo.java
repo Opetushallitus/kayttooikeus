@@ -60,6 +60,8 @@ public class Henkilo implements Identifiable {
 
     private String hetuCached;
 
+    private Boolean anomusilmoitus;
+
     public Henkilo(String oidHenkilo) {
         this.oidHenkilo = oidHenkilo;
     }
