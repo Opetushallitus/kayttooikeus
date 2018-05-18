@@ -11,22 +11,8 @@ import fi.vm.sade.kayttooikeus.dto.KayttooikeusAnomusDto;
 import fi.vm.sade.kayttooikeus.dto.UpdateHaettuKayttooikeusryhmaDto;
 import fi.vm.sade.kayttooikeus.dto.types.AnomusTyyppi;
 import fi.vm.sade.kayttooikeus.enumeration.OrderByAnomus;
-import fi.vm.sade.kayttooikeus.model.AnomuksenTila;
-import fi.vm.sade.kayttooikeus.model.Anomus;
-import fi.vm.sade.kayttooikeus.model.HaettuKayttoOikeusRyhma;
-import fi.vm.sade.kayttooikeus.model.Henkilo;
-import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhma;
-import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
-import fi.vm.sade.kayttooikeus.model.OrganisaatioHenkilo;
-import fi.vm.sade.kayttooikeus.repositories.AnomusRepository;
-import fi.vm.sade.kayttooikeus.repositories.HaettuKayttooikeusRyhmaRepository;
-import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
-import fi.vm.sade.kayttooikeus.repositories.HenkiloHibernateRepository;
-import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaMyontoViiteRepository;
-import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaTapahtumaHistoriaDataRepository;
-import fi.vm.sade.kayttooikeus.repositories.KayttooikeusryhmaDataRepository;
-import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
-import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloRepository;
+import fi.vm.sade.kayttooikeus.model.*;
+import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria;
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria.Myontooikeus;
 import fi.vm.sade.kayttooikeus.repositories.criteria.MyontooikeusCriteria;
@@ -364,9 +350,11 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
     @Override
     @Transactional
     public void lahetaUusienAnomuksienIlmoitukset(LocalDate anottuPvm) {
+        LocalDateTime alkuPvm = anottuPvm.atStartOfDay();
+        LocalDateTime loppuPvm = anottuPvm.atTime(LocalTime.MIDNIGHT.minusSeconds(1));
         AnomusCriteria criteria = AnomusCriteria.builder()
-                .anottuAlku(anottuPvm.atStartOfDay())
-                .anottuLoppu(anottuPvm.atTime(LocalTime.MIDNIGHT.minusSeconds(1)))
+                .anottuAlku(alkuPvm)
+                .anottuLoppu(loppuPvm)
                 .anomuksenTilat(EnumSet.of(AnomuksenTila.ANOTTU))
                 .build();
         List<Anomus> anomukset = anomusRepository.findBy(criteria.createEmailSendCondition(this.organisaatioClient));
@@ -375,6 +363,16 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                 .map(this::getAnomuksenHyvaksyjat)
                 .flatMap(Collection::stream)
                 .collect(toSet());
+
+        List<Anomus> ophAdminAnomukset = this.anomusRepository.getOphAdminAnomukset().stream().filter(a -> a.getAnottuPvm() != null
+                && a.getAnottuPvm().toLocalDate().isAfter(alkuPvm.toLocalDate())
+                && a.getAnottuPvm().toLocalDate().isBefore(loppuPvm.toLocalDate())).collect(Collectors.toList());
+
+        if(ophAdminAnomukset.size() > 0) {
+            Set<String> ophAdminAnomusVastaanottajat = this.henkiloDataRepository.findByAnomusilmoitusIsTrue().stream().map(h -> h.getOidHenkilo()).collect(toSet());
+            hyvaksyjat.addAll(ophAdminAnomusVastaanottajat);
+        }
+
         emailService.sendNewRequisitionNotificationEmails(hyvaksyjat);
     }
 

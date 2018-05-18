@@ -22,4 +22,6 @@ public interface HenkiloDataRepository extends JpaRepository<Henkilo, Long>, Hen
     @EntityGraph("henkilohaku")
     List<Henkilo> readByOidHenkiloIn(List<String> oidHenkilo);
 
+    List<Henkilo> findByAnomusilmoitusIsTrue();
+
 }

@@ -13,4 +13,6 @@ public interface AnomusRepositoryCustom {
 
     List<Anomus> findBy(Function<QAnomus, Predicate> criteria, Long limit, Long offset);
 
+    List<Anomus> getOphAdminAnomukset();
+
 }
