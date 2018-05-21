@@ -364,12 +364,12 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                 .flatMap(Collection::stream)
                 .collect(toSet());
 
-        List<Anomus> ophAdminAnomukset = this.anomusRepository.getOphAdminAnomukset().stream().filter(a -> a.getAnottuPvm() != null
-                && a.getAnottuPvm().toLocalDate().isAfter(alkuPvm.toLocalDate())
-                && a.getAnottuPvm().toLocalDate().isBefore(loppuPvm.toLocalDate())).collect(Collectors.toList());
-
+        List<Anomus> ophAdminAnomukset = this.anomusRepository.getOphAdminAnomukset().stream().
+                filter(a -> a.getAnottuPvm() != null && a.getAnottuPvm().isAfter(alkuPvm) && a.getAnottuPvm().isBefore(loppuPvm))
+            .collect(Collectors.toList());
         if(ophAdminAnomukset.size() > 0) {
-            Set<String> ophAdminAnomusVastaanottajat = this.henkiloDataRepository.findByAnomusilmoitusIsTrue().stream().map(h -> h.getOidHenkilo()).collect(toSet());
+            Set<String> ophAdminAnomusVastaanottajat = this.henkiloDataRepository.findByAnomusilmoitusIsTrue()
+                    .stream().map(h -> h.getOidHenkilo()).collect(toSet());
             hyvaksyjat.addAll(ophAdminAnomusVastaanottajat);
         }
 
