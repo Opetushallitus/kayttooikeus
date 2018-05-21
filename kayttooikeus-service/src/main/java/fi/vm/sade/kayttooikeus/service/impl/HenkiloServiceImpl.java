@@ -29,10 +29,7 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -172,20 +169,28 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
     @Override
     @Transactional(readOnly = true)
     public OmatTiedotDto getOmatTiedot() {
+        String currentUserOid = this.permissionCheckerService.getCurrentUserOid();
         OmatTiedotDto omatTiedotDto = this.mapper.map(this.kayttoOikeusService
                         .listMyonnettyKayttoOikeusForUser(KayttooikeusCriteria.builder()
-                                        .oidHenkilo(this.permissionCheckerService.getCurrentUserOid())
+                                        .oidHenkilo(currentUserOid)
                                         .build(),
                                 null,
                                 null).stream()
                         .findFirst()
                         .orElseGet(() -> KayttooikeusPerustiedotDto.builder()
-                                .oidHenkilo(this.permissionCheckerService.getCurrentUserOid())
+                                .oidHenkilo(currentUserOid)
                                 .organisaatiot(Sets.newHashSet())
                                 .build()),
                 OmatTiedotDto.class);
         omatTiedotDto.setIsAdmin(this.permissionCheckerService.isCurrentUserAdmin());
         omatTiedotDto.setIsMiniAdmin(this.permissionCheckerService.isCurrentUserMiniAdmin());
+        omatTiedotDto.setAnomusilmoitus(false);
+
+        Optional<Henkilo> currentUser = henkiloDataRepository.findByOidHenkilo(currentUserOid);
+        currentUser.ifPresent(h -> {
+            omatTiedotDto.setAnomusilmoitus(h.getAnomusilmoitus());
+        });
+
         return omatTiedotDto;
     }
 

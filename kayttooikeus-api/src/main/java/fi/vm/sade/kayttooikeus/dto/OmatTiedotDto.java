@@ -12,4 +12,5 @@ import lombok.Setter;
 public class OmatTiedotDto extends KayttooikeusPerustiedotDto {
     Boolean isAdmin;
     Boolean isMiniAdmin;
+    Boolean anomusilmoitus;
 }
