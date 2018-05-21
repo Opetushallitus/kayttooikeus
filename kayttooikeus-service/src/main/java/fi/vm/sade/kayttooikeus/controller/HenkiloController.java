@@ -219,4 +219,12 @@ public class HenkiloController {
         return this.henkiloService.getOmatTiedot();
     }
 
+    @PutMapping("/{oid}/anomusilmoitus")
+    @ApiOperation("Anomusilmoitus asetuksen muuttaminen")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
+            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    public void updateAnomusilmoitus(@PathVariable String oid, @RequestParam boolean anomusilmoitus) {
+        this.henkiloService.updateAnomusilmoitus(oid, anomusilmoitus);
+    }
+
 }

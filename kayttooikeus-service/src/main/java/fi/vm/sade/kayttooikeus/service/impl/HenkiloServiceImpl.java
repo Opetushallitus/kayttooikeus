@@ -15,6 +15,7 @@ import fi.vm.sade.kayttooikeus.repositories.dto.HenkilohakuResultDto;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
+import fi.vm.sade.kayttooikeus.service.exception.ForbiddenException;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.util.HenkilohakuBuilder;
@@ -186,6 +187,17 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
         omatTiedotDto.setIsAdmin(this.permissionCheckerService.isCurrentUserAdmin());
         omatTiedotDto.setIsMiniAdmin(this.permissionCheckerService.isCurrentUserMiniAdmin());
         return omatTiedotDto;
+    }
+
+    @Override
+    @Transactional
+    public void updateAnomusilmoitus(String oid, boolean anomusilmoitus) {
+        if(!this.permissionCheckerService.getCurrentUserOid().equals(oid)) {
+            throw new ForbiddenException("Henkilo can only update his own anomusilmoitus -setting");
+        }
+        Henkilo henkilo = henkiloDataRepository.findByOidHenkilo(oid).orElseThrow(
+                () -> new NotFoundException(String.format("Henkilöä ei löytynyt OID:lla %s", oid)));
+        henkilo.setAnomusilmoitus(anomusilmoitus);
     }
 
 }

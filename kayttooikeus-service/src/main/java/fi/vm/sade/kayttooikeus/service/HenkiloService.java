@@ -56,4 +56,6 @@ public interface HenkiloService {
      * @return henkilön tiedot
      */
     OmatTiedotDto getOmatTiedot();
+
+    void updateAnomusilmoitus(String oid, boolean anomusilmoitus);
 }
