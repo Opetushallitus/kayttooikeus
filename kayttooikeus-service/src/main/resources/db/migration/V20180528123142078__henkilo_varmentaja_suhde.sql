@@ -4,6 +4,7 @@ create table henkilo_varmentaja_suhde
   version bigint not null,
   varmennettava_henkilo_id bigint not null references henkilo (id),
   varmentava_henkilo_id bigint not null references henkilo (id),
-  tila boolean, aikaleima timestamp without time zone,
+  tila boolean not null,
+  aikaleima timestamp without time zone,
   primary key (id)
 );
