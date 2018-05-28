@@ -159,9 +159,8 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
     }
 
     private boolean isVahvastiTunnistettu(Henkilo henkilo) {
-        boolean varmennettu = henkilo.getHenkiloVarmentajas().stream()
-                .anyMatch(HenkiloVarmentaja::isTila);
-        return Boolean.TRUE.equals(henkilo.getVahvastiTunnistettu()) || varmennettu;
+        return Boolean.TRUE.equals(henkilo.getVahvastiTunnistettu())
+                || henkilo.getHenkiloVarmentajas().stream().anyMatch(HenkiloVarmentaja::isTila);
     }
 
     @Override
