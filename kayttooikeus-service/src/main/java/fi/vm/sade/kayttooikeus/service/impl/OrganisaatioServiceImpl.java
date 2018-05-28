@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioStatus;
+import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

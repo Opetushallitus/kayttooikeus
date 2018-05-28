@@ -8,7 +8,7 @@ import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.oppijanumerorekisteri.dto.YhteystiedotRyhmaDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoTyyppi;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioStatus;
+import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

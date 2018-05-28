@@ -11,7 +11,7 @@ import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.kayttooikeus.service.it.AbstractServiceIntegrationTest;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioStatus;
+import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import org.assertj.core.util.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;

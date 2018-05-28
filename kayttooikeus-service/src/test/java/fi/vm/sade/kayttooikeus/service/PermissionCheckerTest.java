@@ -605,17 +605,24 @@ public class PermissionCheckerTest {
     public void hasInsternalAccess() {
         given(this.henkiloDataRepositoryMock.findByOidHenkilo("1.2.3.4.5"))
                 .willReturn(Optional.of(Henkilo.builder().oidHenkilo("1.2.3.4.5")
-                        .organisaatioHenkilos(Sets.newHashSet(OrganisaatioHenkilo.builder()
-                                .organisaatioOid("1.2.3.4.100")
-                                .build()))
+                        .organisaatioHenkilos(Sets.newHashSet(
+                                OrganisaatioHenkilo.builder().organisaatioOid("1.2.3.4.100").passivoitu(false).build(),
+                                OrganisaatioHenkilo.builder().organisaatioOid("1.2.3.4.200").passivoitu(true).build()))
                         .build()));
         given(this.organisaatioClient.getActiveParentOids("1.2.3.4.100"))
                 .willReturn(Lists.newArrayList("1.2.3.4.100"));
+        given(this.organisaatioClient.getActiveParentOids("1.2.3.4.200"))
+                .willReturn(Lists.newArrayList("1.2.3.4.200"));
         boolean hasInternalAccess = this.permissionChecker.hasInternalAccess("1.2.3.4.5",
                 Lists.newArrayList("READ"),
                 Sets.newHashSet("ROLE_APP_HENKILONHALLINTA_READ", "ROLE_APP_HENKILONHALLINTA_READ_1.2.3.4.100"));
         assertThat(hasInternalAccess).isTrue();
-        verify(this.organisaatioClient, Mockito.times(1)).getActiveParentOids(anyString());
+        verify(this.organisaatioClient, Mockito.times(1)).getActiveParentOids(eq("1.2.3.4.100"));
+                hasInternalAccess = this.permissionChecker.hasInternalAccess("1.2.3.4.5",
+                Lists.newArrayList("READ"),
+                Sets.newHashSet("ROLE_APP_HENKILONHALLINTA_READ", "ROLE_APP_HENKILONHALLINTA_READ_1.2.3.4.200"));
+        assertThat(hasInternalAccess).isFalse();
+        verify(this.organisaatioClient, Mockito.times(2)).getActiveParentOids(eq("1.2.3.4.100"));
     }
 
     private static List<OrganisaatioPerustieto> getDummyOrganisaatioHakutulos() {

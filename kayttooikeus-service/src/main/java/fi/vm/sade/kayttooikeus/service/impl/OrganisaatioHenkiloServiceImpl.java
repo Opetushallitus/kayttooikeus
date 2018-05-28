@@ -14,7 +14,7 @@ import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
-import fi.vm.sade.organisaatio.api.model.types.OrganisaatioStatus;
+import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -96,8 +96,9 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
         dto.setNimi(new TextGroupMapDto(null, perustiedot.getNimi()));
         dto.setParentOidPath(perustiedot.getParentOidPath());
         dto.setTyypit(perustiedot.getTyypit());
+        dto.setStatus(perustiedot.getStatus());
         dto.setChildren(perustiedot.getChildren().stream()
-                .filter(organisaatioPerustieto -> OrganisaatioStatus.AKTIIVINEN.equals(organisaatioPerustieto.getStatus()))
+               .filter(organisaatioPerustieto -> OrganisaatioStatus.AKTIIVINEN.equals(organisaatioPerustieto.getStatus()) || OrganisaatioStatus.SUUNNITELTU.equals(organisaatioPerustieto.getStatus()))
                 .map(child -> mapOrganisaatioDtoRecursive(child, compareByLang))
                 .sorted(Comparator.comparing(OrganisaatioDto::getNimi, comparingPrimarlyBy(ofNullable(compareByLang).orElse(FALLBACK_LANGUAGE))))
                 .collect(toList()));

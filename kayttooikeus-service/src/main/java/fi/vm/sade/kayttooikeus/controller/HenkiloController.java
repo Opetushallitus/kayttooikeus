@@ -52,8 +52,8 @@ public class HenkiloController {
     @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#oid, {'HENKILONHALLINTA': {'READ', 'READ_UPDATE', 'CRUD'}, 'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, #permissionService)")
     @ApiOperation(value = "Listaa henkilön aktiiviset organisaatiot (organisaatiohenkilöt) organisaatioiden tai " +
             "ryhmien tiedoilla rekursiivisesti.",
-            notes = "Hakee annetun henkilön aktiiviset organisaatiohenkilöt organisaation tai ryhmän tiedoilla siten, " +
-                    "että roganisaatio sisältää myös lapsiroganisaationsa rekursiivisesti.")
+            notes = "Hakee annetun henkilön aktiiviset ja suunnitellut organisaatiohenkilöt organisaation tai ryhmän tiedoilla siten, " +
+                    "että organisaatio sisältää myös lapsiorganisaationsa rekursiivisesti.")
     @RequestMapping(value = "/{oid}/organisaatio", method = RequestMethod.GET)
     public List<OrganisaatioHenkiloWithOrganisaatioDto> listOrganisatioHenkilos(
             @PathVariable @ApiParam(value = "Henkilö-OID", required = true) String oid,
