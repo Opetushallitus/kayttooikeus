@@ -145,17 +145,22 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
     @Override
     @Transactional(readOnly = true)
     public boolean isVahvastiTunnistettu(String oidHenkilo) {
-        return BooleanUtils.isTrue(this.henkiloDataRepository.findByOidHenkilo(oidHenkilo)
-                .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oidHenkilo))
-                .getVahvastiTunnistettu());
+        Henkilo henkilo = this.henkiloDataRepository.findByOidHenkilo(oidHenkilo)
+                .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oidHenkilo));
+        return this.isVahvastiTunnistettu(henkilo);
     }
 
     @Override
     @Transactional(readOnly = true)
     public boolean isVahvastiTunnistettuByUsername(String username) {
-        return BooleanUtils.isTrue(this.henkiloDataRepository.findByKayttajatiedotUsername(username)
-                .orElseThrow(() -> new NotFoundException("Henkilo not found with username " + username))
-                .getVahvastiTunnistettu());
+        Henkilo henkilo = this.henkiloDataRepository.findByKayttajatiedotUsername(username)
+                .orElseThrow(() -> new NotFoundException("Henkilo not found with username " + username));
+        return this.isVahvastiTunnistettu(henkilo);
+    }
+
+    private boolean isVahvastiTunnistettu(Henkilo henkilo) {
+        return Boolean.TRUE.equals(henkilo.getVahvastiTunnistettu())
+                || henkilo.getHenkiloVarmentajas().stream().anyMatch(HenkiloVarmentaja::isTila);
     }
 
     @Override

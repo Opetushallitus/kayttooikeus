@@ -61,6 +61,12 @@ public class Henkilo implements Identifiable {
     private String hetuCached;
 
     private Boolean anomusilmoitus;
+    
+    @OneToMany(mappedBy = "varmentavaHenkilo", fetch = FetchType.LAZY)
+    private Set<HenkiloVarmentaja> henkiloVarmennettavas = new HashSet<>();
+
+    @OneToMany(mappedBy = "varmennettavaHenkilo", fetch = FetchType.LAZY)
+    private Set<HenkiloVarmentaja> henkiloVarmentajas = new HashSet<>();
 
     public Henkilo(String oidHenkilo) {
         this.oidHenkilo = oidHenkilo;
