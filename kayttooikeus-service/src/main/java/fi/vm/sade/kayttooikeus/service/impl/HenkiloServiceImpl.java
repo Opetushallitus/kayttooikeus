@@ -202,12 +202,18 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
     @Override
     @Transactional
     public void updateAnomusilmoitus(String oid, boolean anomusilmoitus) {
-        if(!this.permissionCheckerService.getCurrentUserOid().equals(oid)) {
+        if (!this.permissionCheckerService.getCurrentUserOid().equals(oid)) {
             throw new ForbiddenException("Henkilo can only update his own anomusilmoitus -setting");
         }
         Henkilo henkilo = henkiloDataRepository.findByOidHenkilo(oid).orElseThrow(
                 () -> new NotFoundException(String.format("Henkilöä ei löytynyt OID:lla %s", oid)));
         henkilo.setAnomusilmoitus(anomusilmoitus);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public HenkiloLinkitysDto getLinkitykset(String oid) {
+        return this.henkiloDataRepository.findLinkityksetByOid(oid);
     }
 
 }
