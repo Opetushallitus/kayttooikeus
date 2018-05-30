@@ -1,6 +1,8 @@
 package fi.vm.sade.kayttooikeus.repositories;
 
+import fi.vm.sade.kayttooikeus.dto.HenkiloLinkitysDto;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
+import fi.vm.sade.kayttooikeus.model.HenkiloVarmentaja;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import org.junit.Test;
@@ -12,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,16 +24,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional(readOnly = true)
 public class HenkiloDataRepositoryTest {
     @Autowired
-    HenkiloDataRepository henkiloDataRepository;
+    private HenkiloDataRepository henkiloDataRepository;
 
     @Autowired
-    TestEntityManager testEntityManager;
+    private TestEntityManager testEntityManager;
 
     @MockBean
-    PermissionCheckerService permissionCheckerService;
+    private PermissionCheckerService permissionCheckerService;
 
     @MockBean
-    OrganisaatioClient organisaatioClient;
+    private OrganisaatioClient organisaatioClient;
 
     @Test
     public void findByOidHenkilo() {
@@ -46,5 +49,32 @@ public class HenkiloDataRepositoryTest {
     public void findByOidHenkiloNotFound() {
         Optional<Henkilo> returnHenkilo = this.henkiloDataRepository.findByOidHenkilo("1.2.3.4.5");
         assertThat(returnHenkilo).isEmpty();
+    }
+
+    @Test
+    public void linkitys() {
+        Henkilo varmennettava = new Henkilo();
+        varmennettava.setOidHenkilo("1.2.3.4.5");
+        this.testEntityManager.persistAndFlush(varmennettava);
+
+        Henkilo varmentaja = new Henkilo();
+        varmentaja.setOidHenkilo("5.4.3.2.1");
+        this.testEntityManager.persistAndFlush(varmentaja);
+
+        HenkiloVarmentaja henkiloVarmentaja = new HenkiloVarmentaja();
+        henkiloVarmentaja.setVarmennettavaHenkilo(varmennettava);
+        henkiloVarmentaja.setVarmentavaHenkilo(varmentaja);
+        henkiloVarmentaja.setTila(true);
+        henkiloVarmentaja.setAikaleima(LocalDateTime.now());
+        this.testEntityManager.persistAndFlush(henkiloVarmentaja);
+
+        HenkiloLinkitysDto varmennettavaHenkiloLinkitys = this.henkiloDataRepository.findLinkityksetByOid("1.2.3.4.5");
+        assertThat(varmennettavaHenkiloLinkitys.getHenkiloVarmennettavas()).isEmpty();
+        assertThat(varmennettavaHenkiloLinkitys.getHenkiloVarmentajas()).containsExactly("5.4.3.2.1");
+
+        HenkiloLinkitysDto varmantajaHenkiloLinkitys = this.henkiloDataRepository.findLinkityksetByOid("5.4.3.2.1");
+        assertThat(varmantajaHenkiloLinkitys.getHenkiloVarmennettavas()).containsExactly("1.2.3.4.5");
+        assertThat(varmantajaHenkiloLinkitys.getHenkiloVarmentajas()).isEmpty();
+
     }
 }
