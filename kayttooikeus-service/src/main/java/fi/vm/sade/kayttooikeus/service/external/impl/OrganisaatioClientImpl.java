@@ -59,7 +59,11 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
                 retrying(io(() -> this.restClient.get(haeHierarchyUrl, OrganisaatioHakutulos.class)), 2)
                         .get().orFail(mapper(haeHierarchyUrl)).getOrganisaatiot();
         // Add ryhmas to cache
-        String haeRyhmasUrl = this.urlConfiguration.url("organisaatio-service.organisaatio.ryhmat");
+        Map<String, String> queryParamsRyhmat = new HashMap<String, String>() {{
+            put("aktiiviset", "true");
+            put("lakkautetut", "true");
+        }};
+        String haeRyhmasUrl = this.urlConfiguration.url("organisaatio-service.organisaatio.ryhmat", queryParamsRyhmat);
         organisaatiosWithoutRootOrg.addAll(Arrays.stream(retrying(io(() ->
                 this.restClient.get(haeRyhmasUrl, OrganisaatioPerustieto[].class)), 2)
                 .get().<ExternalServiceException>orFail(mapper(haeRyhmasUrl)))
@@ -141,6 +145,15 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
                 .filter(organisaatioPerustieto -> OrganisaatioStatus.AKTIIVINEN.equals(organisaatioPerustieto.getStatus()))
                 .map(OrganisaatioPerustieto::getOid)
                 .collect(toList());
+    }
+
+    @Override
+    public List<String> getLakkautetutOids() {
+        return this.cache.getAllOrganisaatios()
+                .filter(organisaatioPerustieto -> OrganisaatioStatus.PASSIIVINEN.equals(organisaatioPerustieto.getStatus()))
+                .map(OrganisaatioPerustieto::getOid)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
 }

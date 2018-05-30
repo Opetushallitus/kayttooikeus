@@ -228,4 +228,12 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
                 + organisaatioHenkilo.getOrganisaatioOid()));
     }
 
+    @Transactional
+    @Override
+    public void passivoiOrganisaationHenkilot() {
+        List<String> passiivisetOids = organisaatioClient.getLakkautetutOids();
+        List<OrganisaatioHenkilo> organisaatioHenkilosInLakkautetutOrganisaatios = this.organisaatioHenkiloRepository.findByOrganisaatioOidIn(passiivisetOids);
+        organisaatioHenkilosInLakkautetutOrganisaatios.forEach(oh -> this.passivoiHenkiloOrganisation(oh.getHenkilo().getOidHenkilo(), oh.getOrganisaatioOid()));
+    }
+
 }

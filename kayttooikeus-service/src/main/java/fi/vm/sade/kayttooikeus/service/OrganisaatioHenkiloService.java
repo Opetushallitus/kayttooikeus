@@ -32,4 +32,8 @@ public interface OrganisaatioHenkiloService {
 
     // Change organisaatiohenkilo passive and close all related myonnettykayttooikeusryhmatapahtumas
     void passivoiHenkiloOrganisation(String oidHenkilo, String henkiloOrganisationOid);
+
+
+    // Passivoi organisaatiohenkilot joiden organisaatio on passivoitu
+    void passivoiOrganisaationHenkilot();
 }

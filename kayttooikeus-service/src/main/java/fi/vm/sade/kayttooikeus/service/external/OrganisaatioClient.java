@@ -36,4 +36,9 @@ public interface OrganisaatioClient {
      * @return Haetun organisaation ja tämän aliorganisaatioiden aktiiviset oidit
      */
     List<String> getActiveChildOids(String organisaatioOid);
+
+    /**
+     * @return kaikkien passiviisten organisaatioiden oidit
+     */
+    List<String> getLakkautetutOids();
 }

@@ -1,0 +1,46 @@
+[
+  {
+    "oid": "1.2.246.562.28.32497911273",
+    "nimi": {
+      "fi": "Tuotannon koeryhmä 2"
+    },
+    "status": "PASSIIVINEN",
+    "version": 3,
+    "parentOid": "1.2.246.562.10.00000000001",
+    "parentOidPath": "|1.2.246.562.10.00000000001|",
+    "kuvaus": {
+      "kieli_fi#1": "Tuotannon koeryhmä"
+    },
+    "ryhmatyypit": [
+      "organisaatio"
+    ],
+    "kayttoryhmat": [
+      "yleinen"
+    ],
+    "tyypit": [
+      "Ryhma"
+    ]
+  },
+  {
+    "oid": "1.2.246.562.28.36046890756",
+    "nimi": {
+      "fi": "UEF Maisterihaku 2014S"
+    },
+    "status": "AKTIIVINEN",
+    "version": 5,
+    "parentOid": "1.2.246.562.10.00000000001",
+    "parentOidPath": "|1.2.246.562.10.00000000001|",
+    "kuvaus": {
+      "kieli_fi#1": "Maisterihaku 2014S"
+    },
+    "ryhmatyypit": [
+      "hakukohde"
+    ],
+    "kayttoryhmat": [
+      "yleinen"
+    ],
+    "tyypit": [
+      "Ryhma"
+    ]
+  }
+]

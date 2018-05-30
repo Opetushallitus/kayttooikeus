@@ -1,5 +1,5 @@
 {
-  "numHits": 2,
+  "numHits": 4,
   "organisaatiot": [
     {
       "oid": "1.2.246.562.10.14175756379",
@@ -45,6 +45,50 @@
       "aliOrganisaatioMaara": 1,
       "organisaatiotyypit": [
         "KOULUTUSTOIMIJA"
+      ]
+    },
+    {
+      "oid": "1.2.246.562.10.123456789",
+      "alkuPvm": 624664800000,
+      "parentOid": "1.2.246.562.10.00000000001",
+      "parentOidPath": "1.2.246.562.10.234525123524/1.2.246.562.10.00000000001",
+      "ytunnus": "0763423-0",
+      "toimipistekoodi": "",
+      "match": true,
+      "nimi": {
+        "fi": "Lakkautettu organisaatio x"
+      },
+      "kieletUris": [
+        "oppilaitoksenopetuskieli_1#1"
+      ],
+      "kotipaikkaUri": "kunta_091",
+      "children": [],
+      "status": "PASSIIVINEN",
+      "aliOrganisaatioMaara": 0,
+      "organisaatiotyypit": [
+        "OPPILAITOS"
+      ]
+    },
+    {
+      "oid": "1.2.246.562.10.234567890",
+      "alkuPvm": 624664800000,
+      "parentOid": "1.2.246.562.10.00000000001",
+      "parentOidPath": "1.2.246.562.10.234525123524/1.2.246.562.10.00000000001",
+      "ytunnus": "0763423-0",
+      "toimipistekoodi": "",
+      "match": true,
+      "nimi": {
+        "fi": "Aktiivinen organisaatio y"
+      },
+      "kieletUris": [
+        "oppilaitoksenopetuskieli_1#1"
+      ],
+      "kotipaikkaUri": "kunta_091",
+      "children": [],
+      "status": "AKTIIVINEN",
+      "aliOrganisaatioMaara": 0,
+      "organisaatiotyypit": [
+        "OPPILAITOS"
       ]
     }
   ]
