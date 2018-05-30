@@ -55,18 +55,21 @@ public class HenkiloDataRepositoryImpl implements HenkiloDataRepositoryCustom {
                 .leftJoin(varmentaja.varmentavaHenkilo, varmentajaHenkilo)
                 .where(henkilo.oidHenkilo.eq(oidHenkilo));
 
-        return query.fetch().stream().reduce(new HenkiloLinkitysDto(),
-                (heniloLinkitysDto, tuple) -> {
-                    String varmennettavaOid = tuple.get(varmennettavaHenkilo.oidHenkilo);
-                    if (varmennettavaOid != null) {
-                        heniloLinkitysDto.getHenkiloVarmennettavas().add(varmennettavaOid);
-                    }
-                    String varmentajaOid = tuple.get(varmentajaHenkilo.oidHenkilo);
-                    if (varmentajaOid != null) {
-                        heniloLinkitysDto.getHenkiloVarmentajas().add(varmentajaOid);
-                    }
-                    return heniloLinkitysDto;
-                },
-                (a,b) -> a);
+        return query.fetch().stream().map(tuple -> {
+            HenkiloLinkitysDto henkiloLinkitysDto = new HenkiloLinkitysDto();
+            String varmennettavaOid = tuple.get(varmennettavaHenkilo.oidHenkilo);
+            if (varmennettavaOid != null) {
+                henkiloLinkitysDto.getHenkiloVarmennettavas().add(varmennettavaOid);
+            }
+            String varmentajaOid = tuple.get(varmentajaHenkilo.oidHenkilo);
+            if (varmentajaOid != null) {
+                henkiloLinkitysDto.getHenkiloVarmentajas().add(varmentajaOid);
+            }
+            return henkiloLinkitysDto;
+        }).reduce(new HenkiloLinkitysDto(), (linkitysDto1, linkitysDto2) -> {
+            linkitysDto1.getHenkiloVarmentajas().addAll(linkitysDto2.getHenkiloVarmentajas());
+            linkitysDto1.getHenkiloVarmennettavas().addAll(linkitysDto2.getHenkiloVarmennettavas());
+            return linkitysDto1;
+        });
     }
 }

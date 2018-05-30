@@ -52,7 +52,7 @@ public class HenkiloDataRepositoryTest {
     }
 
     @Test
-    public void linkitys() {
+    public void linkedHenkilosAreFound() {
         Henkilo varmennettava = new Henkilo();
         varmennettava.setOidHenkilo("1.2.3.4.5");
         this.testEntityManager.persistAndFlush(varmennettava);
@@ -75,6 +75,12 @@ public class HenkiloDataRepositoryTest {
         HenkiloLinkitysDto varmantajaHenkiloLinkitys = this.henkiloDataRepository.findLinkityksetByOid("5.4.3.2.1");
         assertThat(varmantajaHenkiloLinkitys.getHenkiloVarmennettavas()).containsExactly("1.2.3.4.5");
         assertThat(varmantajaHenkiloLinkitys.getHenkiloVarmentajas()).isEmpty();
+    }
 
+    @Test
+    public void notLinkedHenkilosWork() {
+        HenkiloLinkitysDto tyhjaHenkiloLinkitys = this.henkiloDataRepository.findLinkityksetByOid("ei löydy kannasta");
+        assertThat(tyhjaHenkiloLinkitys.getHenkiloVarmennettavas()).isEmpty();
+        assertThat(tyhjaHenkiloLinkitys.getHenkiloVarmentajas()).isEmpty();
     }
 }
