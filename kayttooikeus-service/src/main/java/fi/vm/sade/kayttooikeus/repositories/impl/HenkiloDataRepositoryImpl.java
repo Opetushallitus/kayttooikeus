@@ -1,6 +1,6 @@
 package fi.vm.sade.kayttooikeus.repositories.impl;
 
-import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import fi.vm.sade.kayttooikeus.dto.HenkiloLinkitysDto;
@@ -13,6 +13,9 @@ import org.springframework.data.jpa.repository.JpaContext;
 
 import javax.persistence.EntityManager;
 import java.util.Optional;
+
+import static com.querydsl.core.group.GroupBy.groupBy;
+import static com.querydsl.core.group.GroupBy.set;
 
 public class HenkiloDataRepositoryImpl implements HenkiloDataRepositoryCustom {
 
@@ -37,14 +40,14 @@ public class HenkiloDataRepositoryImpl implements HenkiloDataRepositoryCustom {
     }
 
     @Override
-    public HenkiloLinkitysDto findLinkityksetByOid(String oidHenkilo) {
+    public Optional<HenkiloLinkitysDto> findLinkityksetByOid(String oidHenkilo) {
         QHenkilo henkilo = QHenkilo.henkilo;
         QHenkilo varmentajaHenkilo = new QHenkilo("varmentajaHenkilo");
         QHenkilo varmennettavaHenkilo = new QHenkilo("varmennettavaHenkilo");
         QHenkiloVarmentaja varmennettava = new QHenkiloVarmentaja("varmennettavas");
         QHenkiloVarmentaja varmentaja = new QHenkiloVarmentaja("varmentajas");
 
-        JPAQuery<Tuple> query = new JPAQueryFactory(this.entityManager)
+        return new JPAQueryFactory(this.entityManager)
                 .select(henkilo.oidHenkilo,
                         varmennettavaHenkilo.oidHenkilo,
                         varmentajaHenkilo.oidHenkilo)
@@ -53,23 +56,12 @@ public class HenkiloDataRepositoryImpl implements HenkiloDataRepositoryCustom {
                 .leftJoin(varmennettava.varmennettavaHenkilo, varmennettavaHenkilo)
                 .leftJoin(henkilo.henkiloVarmentajas, varmentaja)
                 .leftJoin(varmentaja.varmentavaHenkilo, varmentajaHenkilo)
-                .where(henkilo.oidHenkilo.eq(oidHenkilo));
-
-        return query.fetch().stream().map(tuple -> {
-            HenkiloLinkitysDto henkiloLinkitysDto = new HenkiloLinkitysDto();
-            String varmennettavaOid = tuple.get(varmennettavaHenkilo.oidHenkilo);
-            if (varmennettavaOid != null) {
-                henkiloLinkitysDto.getHenkiloVarmennettavas().add(varmennettavaOid);
-            }
-            String varmentajaOid = tuple.get(varmentajaHenkilo.oidHenkilo);
-            if (varmentajaOid != null) {
-                henkiloLinkitysDto.getHenkiloVarmentajas().add(varmentajaOid);
-            }
-            return henkiloLinkitysDto;
-        }).reduce(new HenkiloLinkitysDto(), (linkitysDto1, linkitysDto2) -> {
-            linkitysDto1.getHenkiloVarmentajas().addAll(linkitysDto2.getHenkiloVarmentajas());
-            linkitysDto1.getHenkiloVarmennettavas().addAll(linkitysDto2.getHenkiloVarmennettavas());
-            return linkitysDto1;
-        });
+                .where(henkilo.oidHenkilo.eq(oidHenkilo))
+                .transform(groupBy(henkilo.oidHenkilo)
+                        .as(Projections.bean(HenkiloLinkitysDto.class,
+                                set(varmentajaHenkilo.oidHenkilo).as("henkiloVarmentajas"),
+                                set(varmennettavaHenkilo.oidHenkilo).as("henkiloVarmennettavas"))))
+                .values().stream()
+                .findFirst();
     }
 }

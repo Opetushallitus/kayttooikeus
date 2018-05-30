@@ -8,5 +8,5 @@ public interface HenkiloDataRepositoryCustom {
 
     Optional<Henkilo> findByKayttajatiedotUsername(String kayttajatunnus);
 
-    HenkiloLinkitysDto findLinkityksetByOid(String oidHenkilo);
+    Optional<HenkiloLinkitysDto> findLinkityksetByOid(String oidHenkilo);
 }

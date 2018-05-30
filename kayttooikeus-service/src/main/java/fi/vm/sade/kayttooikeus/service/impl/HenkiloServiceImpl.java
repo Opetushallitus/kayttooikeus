@@ -213,7 +213,8 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
     @Override
     @Transactional(readOnly = true)
     public HenkiloLinkitysDto getLinkitykset(String oid) {
-        return this.henkiloDataRepository.findLinkityksetByOid(oid);
+        return this.henkiloDataRepository.findLinkityksetByOid(oid)
+                .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oid));
     }
 
 }
