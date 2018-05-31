@@ -34,14 +34,12 @@ public interface MyonnettyKayttoOikeusRyhmaTapahtumaRepository extends CrudRepos
                 kayttooikeusryhmaId, organisaatioOid, oidHenkilo);
     }
 
+    /**
+     * Hakee henkilön kaikki voimassa olevat käyttöoikeudet
+     * @param oidHenkilo henkilön oid
+     * @return käyttöoikeudet
+     */
     List<MyonnettyKayttoOikeusRyhmaTapahtuma> findByOrganisaatioHenkiloHenkiloOidHenkilo(String oidHenkilo);
-
-    List<MyonnettyKayttoOikeusRyhmaTapahtuma> findByOrganisaatioHenkiloHenkiloOidHenkiloAndKayttoOikeusRyhmaKayttoOikeusRooliAndKayttoOikeusRyhmaKayttoOikeusPalveluName(
-            String oidHenkilo, String role, String name);
-    default List<MyonnettyKayttoOikeusRyhmaTapahtuma> findCrudAnomustenhallinta(String henkiloOid) {
-        return this.findByOrganisaatioHenkiloHenkiloOidHenkiloAndKayttoOikeusRyhmaKayttoOikeusRooliAndKayttoOikeusRyhmaKayttoOikeusPalveluName(
-                henkiloOid, ROLE_CRUD, PALVELU_ANOMUSTENHALLINTA);
-    }
 
     List<MyonnettyKayttoOikeusRyhmaTapahtuma> findByKayttoOikeusRyhmaId(long id);
 }

@@ -1,9 +1,7 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
 import fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila;
-import fi.vm.sade.kayttooikeus.model.Henkilo;
-import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhmaTapahtumaHistoria;
-import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
+import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaTapahtumaHistoriaDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
@@ -11,6 +9,8 @@ import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaR
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,10 +44,18 @@ public class MyonnettyKayttoOikeusServiceImpl implements MyonnettyKayttoOikeusSe
         LOGGER.info("Vanhentuneiden käyttöoikeuksien poisto aloitetaan");
         Henkilo kasittelija = henkiloDataRepository.findByOidHenkilo(kasittelijaOid)
                 .orElseThrow(() -> new DataInconsistencyException("Henkilöä ei löydy käyttäjän OID:lla " + kasittelijaOid));
-        List<MyonnettyKayttoOikeusRyhmaTapahtuma> kayttoOikeudet = myonnettyKayttoOikeusRyhmaTapahtumaRepository.findByVoimassaLoppuPvmBefore(LocalDate.now());
+        List<MyonnettyKayttoOikeusRyhmaTapahtuma> kayttoOikeudet = myonnettyKayttoOikeusRyhmaTapahtumaRepository
+                .findByVoimassaLoppuPvmBefore(LocalDate.now());
 
         for (MyonnettyKayttoOikeusRyhmaTapahtuma kayttoOikeus : kayttoOikeudet) {
-            String henkiloOid = kayttoOikeus.getOrganisaatioHenkilo().getHenkilo().getOidHenkilo();
+            Henkilo henkilo = kayttoOikeus.getOrganisaatioHenkilo().getHenkilo();
+            henkilo.getHenkiloVarmennettavas().stream()
+                    .filter(HenkiloVarmentaja::isTila)
+                    .forEach(henkiloVarmentajaSuhde -> {
+                        henkiloVarmentajaSuhde.setTila(false);
+                        this.getFirstStillActiveKayttooikeusForSameOrganisation(kayttoOikeus, kayttoOikeudet)
+                                .ifPresent(myonnettyKayttooikeus -> henkiloVarmentajaSuhde.setTila(true));
+                    });
 
             KayttoOikeusRyhmaTapahtumaHistoria historia = kayttoOikeus.toHistoria(
                     kasittelija, KayttoOikeudenTila.SULJETTU,
@@ -55,9 +63,25 @@ public class MyonnettyKayttoOikeusServiceImpl implements MyonnettyKayttoOikeusSe
             kayttoOikeusRyhmaTapahtumaHistoriaDataRepository.save(historia);
 
             myonnettyKayttoOikeusRyhmaTapahtumaRepository.delete(kayttoOikeus);
-            ldapSynchronizationService.updateHenkilo(henkiloOid);
+            ldapSynchronizationService.updateHenkilo(henkilo.getOidHenkilo());
         }
         LOGGER.info("Vanhentuneiden käyttöoikeuksien poisto päättyy: poistettiin {} käyttöoikeutta", kayttoOikeudet.size());
+    }
+
+    // Tutkii löytyykö varmentavan henkilön käyttöoikeuksista yhä oikeuksia poistuvan oikeuden organisaatioon
+    private Optional<MyonnettyKayttoOikeusRyhmaTapahtuma> getFirstStillActiveKayttooikeusForSameOrganisation(
+            MyonnettyKayttoOikeusRyhmaTapahtuma poistuvaKayttooikeus,
+            List<MyonnettyKayttoOikeusRyhmaTapahtuma> poistuvatKayttoOikeudet) {
+        String varmentavaHenkiloOid = poistuvaKayttooikeus.getOrganisaatioHenkilo().getHenkilo().getOidHenkilo();
+        String poistettavaKayttooikeusOrganisaatioOid = poistuvaKayttooikeus.getOrganisaatioHenkilo().getOrganisaatioOid();
+        return this.myonnettyKayttoOikeusRyhmaTapahtumaRepository
+                .findByOrganisaatioHenkiloHenkiloOidHenkilo(varmentavaHenkiloOid).stream()
+                .filter(myonnettyKayttooikeus -> myonnettyKayttooikeus.getOrganisaatioHenkilo().isAktiivinen())
+                .filter(myonnettyKayttooikeus -> poistettavaKayttooikeusOrganisaatioOid
+                        .equals(myonnettyKayttooikeus.getOrganisaatioHenkilo().getOrganisaatioOid()))
+                .filter(myonnettyKayttooikeus -> poistuvatKayttoOikeudet.stream()
+                        .noneMatch(kayttoOikeus -> kayttoOikeus.getId().equals(myonnettyKayttooikeus.getId())))
+                .findFirst();
     }
 
 }

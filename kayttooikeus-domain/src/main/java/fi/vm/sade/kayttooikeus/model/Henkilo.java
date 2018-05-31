@@ -62,9 +62,11 @@ public class Henkilo implements Identifiable {
 
     private Boolean anomusilmoitus;
 
+    // Suhteet, joissa henkilö on varmentajana
     @OneToMany(mappedBy = "varmentavaHenkilo", fetch = FetchType.LAZY)
     private Set<HenkiloVarmentaja> henkiloVarmennettavas = new HashSet<>();
 
+    // Suhteet, joissa henkilö on varmennettavana
     @OneToMany(mappedBy = "varmennettavaHenkilo", fetch = FetchType.LAZY)
     private Set<HenkiloVarmentaja> henkiloVarmentajas = new HashSet<>();
 
