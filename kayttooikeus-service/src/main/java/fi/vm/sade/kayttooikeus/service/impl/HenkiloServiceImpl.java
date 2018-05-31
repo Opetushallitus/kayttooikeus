@@ -114,6 +114,11 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
                 }
             }
         }
+
+        this.henkiloDataRepository.findByOidHenkilo(henkiloOid)
+                .ifPresent(henkilo -> henkilo.getHenkiloVarmennettavas()
+                        .forEach(henkiloVarmentaja -> henkiloVarmentaja.setTila(false)));
+
         ldapSynchronizationService.updateHenkiloAsap(henkiloOid);
     }
 
@@ -192,9 +197,7 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
         omatTiedotDto.setAnomusilmoitus(false);
 
         Optional<Henkilo> currentUser = henkiloDataRepository.findByOidHenkilo(currentUserOid);
-        currentUser.ifPresent(h -> {
-            omatTiedotDto.setAnomusilmoitus(h.getAnomusilmoitus());
-        });
+        currentUser.ifPresent(h -> omatTiedotDto.setAnomusilmoitus(h.getAnomusilmoitus()));
 
         return omatTiedotDto;
     }
