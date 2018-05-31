@@ -34,6 +34,6 @@ public interface OrganisaatioHenkiloService {
     void passivoiHenkiloOrganisation(String oidHenkilo, String henkiloOrganisationOid);
 
 
-    // Passivoi organisaatiohenkilot joiden organisaatio on passivoitu
+    // Passivoi organisaatiohenkilot joiden organisaatio on passivoitu ja poistaa näiltä organisaatiohenkilöiltä kaikki käyttöoikeudet
     void passivoiOrganisaationHenkilot();
 }
