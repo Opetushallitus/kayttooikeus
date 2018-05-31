@@ -15,12 +15,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 public class MyonnettyKayttoOikeusServiceImplTest {
@@ -49,10 +54,6 @@ public class MyonnettyKayttoOikeusServiceImplTest {
 
         Henkilo varmennettavaHenkilo = Henkilo.builder()
                 .oidHenkilo("varmennettava")
-                .organisaatioHenkilos(Collections.singleton(OrganisaatioHenkilo.builder()
-                        .passivoitu(false)
-                        .organisaatioOid("1.2.0.0.1")
-                        .build()))
                 .build();
         HenkiloVarmentaja henkiloVarmentaja = new HenkiloVarmentaja();
         henkiloVarmentaja.setTila(true);
@@ -91,5 +92,50 @@ public class MyonnettyKayttoOikeusServiceImplTest {
         this.myonnettyKayttoOikeusService.poistaVanhentuneet("kasittelija");
 
         assertThat(henkiloVarmentaja.isTila()).isTrue();
+        verify(kayttoOikeusRyhmaTapahtumaHistoriaDataRepository, times(1)).save(any());
+        verify(myonnettyKayttoOikeusRyhmaTapahtumaRepository, times(1)).delete(any());
+        verify(ldapSynchronizationService, times(1)).updateHenkilo(any());
+    }
+
+    @Test
+    public void varmentajallaEiOleEnaaOikeuksiaSamaanOrganisaatioon() {
+        Henkilo henkilo = Henkilo.builder().oidHenkilo("kasittelija").build();
+        given(this.henkiloDataRepository.findByOidHenkilo(eq("kasittelija"))).willReturn(Optional.of(henkilo));
+
+        Henkilo varmennettavaHenkilo = Henkilo.builder()
+                .oidHenkilo("varmennettava")
+                .build();
+        HenkiloVarmentaja henkiloVarmentaja = new HenkiloVarmentaja();
+        henkiloVarmentaja.setTila(true);
+        henkiloVarmentaja.setVarmennettavaHenkilo(varmennettavaHenkilo);
+
+        Henkilo varmentavaHenkilo = Henkilo.builder().oidHenkilo("varmentaja")
+                .henkiloVarmennettavas(Collections.singleton(henkiloVarmentaja))
+                .build();
+        henkiloVarmentaja.setVarmentavaHenkilo(varmentavaHenkilo);
+        OrganisaatioHenkilo poistuvanOikeudenOrganisaatioHenkilo = OrganisaatioHenkilo.builder()
+                .organisaatioOid("1.2.0.0.1")
+                .henkilo(varmentavaHenkilo)
+                .build();
+        MyonnettyKayttoOikeusRyhmaTapahtuma poistuvaKayttooikeus = MyonnettyKayttoOikeusRyhmaTapahtuma.builder()
+                .organisaatioHenkilo(poistuvanOikeudenOrganisaatioHenkilo)
+                .build();
+        poistuvaKayttooikeus.setId(1L);
+
+        List<MyonnettyKayttoOikeusRyhmaTapahtuma> kayttoOikeudet = new ArrayList<>();
+        kayttoOikeudet.add(poistuvaKayttooikeus);
+        given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findByVoimassaLoppuPvmBefore(any())).willReturn(kayttoOikeudet);
+
+        List<MyonnettyKayttoOikeusRyhmaTapahtuma> varmentajanOikeudet = new ArrayList<>();
+        varmentajanOikeudet.add(poistuvaKayttooikeus);
+        given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findByOrganisaatioHenkiloHenkiloOidHenkilo(eq("varmentaja")))
+                .willReturn(varmentajanOikeudet);
+
+        this.myonnettyKayttoOikeusService.poistaVanhentuneet("kasittelija");
+
+        assertThat(henkiloVarmentaja.isTila()).isFalse();
+        verify(kayttoOikeusRyhmaTapahtumaHistoriaDataRepository, times(1)).save(any());
+        verify(myonnettyKayttoOikeusRyhmaTapahtumaRepository, times(1)).delete(any());
+        verify(ldapSynchronizationService, times(1)).updateHenkilo(any());
     }
 }
