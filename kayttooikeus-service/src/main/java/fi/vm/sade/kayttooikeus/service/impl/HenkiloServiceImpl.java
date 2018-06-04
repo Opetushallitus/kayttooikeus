@@ -20,7 +20,6 @@ import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.util.HenkilohakuBuilder;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang.BooleanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -215,8 +214,8 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
 
     @Override
     @Transactional(readOnly = true)
-    public HenkiloLinkitysDto getLinkitykset(String oid) {
-        return this.henkiloDataRepository.findLinkityksetByOid(oid)
+    public HenkiloLinkitysDto getLinkitykset(String oid, boolean showPassive) {
+        return this.henkiloDataRepository.findLinkityksetByOid(oid, showPassive)
                 .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oid));
     }
 
