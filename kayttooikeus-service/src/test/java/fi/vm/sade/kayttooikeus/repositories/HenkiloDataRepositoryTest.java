@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -69,13 +68,13 @@ public class HenkiloDataRepositoryTest {
         henkiloVarmentaja.setAikaleima(LocalDateTime.now());
         this.testEntityManager.persistAndFlush(henkiloVarmentaja);
 
-        Optional<HenkiloLinkitysDto> varmennettavaHenkiloLinkitysOptional = this.henkiloDataRepository.findLinkityksetByOid("1.2.3.4.5");
+        Optional<HenkiloLinkitysDto> varmennettavaHenkiloLinkitysOptional = this.henkiloDataRepository.findLinkityksetByOid("1.2.3.4.5", true);
         assertThat(varmennettavaHenkiloLinkitysOptional).isNotEmpty();
         HenkiloLinkitysDto varmennettavaHenkiloLinkitys = varmennettavaHenkiloLinkitysOptional.orElseThrow(IllegalStateException::new);
         assertThat(varmennettavaHenkiloLinkitys.getHenkiloVarmennettavas()).isEmpty();
         assertThat(varmennettavaHenkiloLinkitys.getHenkiloVarmentajas()).containsExactly("5.4.3.2.1");
 
-        Optional<HenkiloLinkitysDto> varmantajaHenkiloLinkitysOptional = this.henkiloDataRepository.findLinkityksetByOid("5.4.3.2.1");
+        Optional<HenkiloLinkitysDto> varmantajaHenkiloLinkitysOptional = this.henkiloDataRepository.findLinkityksetByOid("5.4.3.2.1", true);
         assertThat(varmantajaHenkiloLinkitysOptional).isNotEmpty();
         HenkiloLinkitysDto varmantajaHenkiloLinkitys = varmantajaHenkiloLinkitysOptional.orElseThrow(IllegalStateException::new);
         assertThat(varmantajaHenkiloLinkitys.getHenkiloVarmennettavas()).containsExactly("1.2.3.4.5");
@@ -88,14 +87,14 @@ public class HenkiloDataRepositoryTest {
         varmennettava.setOidHenkilo("1.2.3.4.5");
         this.testEntityManager.persistAndFlush(varmennettava);
 
-        Optional<HenkiloLinkitysDto> tyhjaHenkiloLinkitysOptional = this.henkiloDataRepository.findLinkityksetByOid("1.2.3.4.5");
+        Optional<HenkiloLinkitysDto> tyhjaHenkiloLinkitysOptional = this.henkiloDataRepository.findLinkityksetByOid("1.2.3.4.5", true);
         assertThat(tyhjaHenkiloLinkitysOptional).isNotEmpty();
         HenkiloLinkitysDto tyhjaHenkiloLinkitys = tyhjaHenkiloLinkitysOptional.orElseThrow(IllegalStateException::new);
         assertThat(tyhjaHenkiloLinkitys.getHenkiloVarmennettavas())
                 .isEmpty();
         assertThat(tyhjaHenkiloLinkitys.getHenkiloVarmentajas()).isEmpty();
 
-        Optional<HenkiloLinkitysDto> olematonHenkilo = this.henkiloDataRepository.findLinkityksetByOid("ei löydy kannasta");
+        Optional<HenkiloLinkitysDto> olematonHenkilo = this.henkiloDataRepository.findLinkityksetByOid("ei löydy kannasta", true);
         assertThat(olematonHenkilo).isEmpty();
     }
 }

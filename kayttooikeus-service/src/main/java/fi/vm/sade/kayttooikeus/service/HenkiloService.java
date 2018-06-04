@@ -6,7 +6,6 @@ import fi.vm.sade.kayttooikeus.repositories.dto.HenkilohakuResultDto;
 import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
 
 import java.util.Collection;
-import java.util.List;
 
 public interface HenkiloService {
 
@@ -59,7 +58,8 @@ public interface HenkiloService {
     /**
      * Hakee henkilön linkitykset muihin henkilöihin käyttöoikeuspalvelussa
      * @param oid henkilön oid
+     * @param showPassive
      * @return Henkilön kaikki linkitykset sisältävä dto
      */
-    HenkiloLinkitysDto getLinkitykset(String oid);
+    HenkiloLinkitysDto getLinkitykset(String oid, boolean showPassive);
 }
