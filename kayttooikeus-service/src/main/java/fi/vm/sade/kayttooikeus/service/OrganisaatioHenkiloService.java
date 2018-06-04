@@ -1,6 +1,7 @@
 package fi.vm.sade.kayttooikeus.service;
 
 import fi.vm.sade.kayttooikeus.dto.*;
+import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 
 import java.util.List;
@@ -35,5 +36,5 @@ public interface OrganisaatioHenkiloService {
 
 
     // Passivoi organisaatiohenkilot joiden organisaatio on passivoitu ja poistaa näiltä organisaatiohenkilöiltä kaikki käyttöoikeudet
-    void passivoiOrganisaationHenkilot();
+    void kasitteleOrganisaatioidenLakkautus(String kasittelijaOid);
 }

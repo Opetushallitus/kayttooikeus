@@ -5,12 +5,10 @@ import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto.OrganisaatioDto;
-import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhmaTapahtumaHistoria;
+import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
-import fi.vm.sade.kayttooikeus.service.OrganisaatioHenkiloService;
-import fi.vm.sade.kayttooikeus.service.OrganisaatioService;
-import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
+import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria;
+import fi.vm.sade.kayttooikeus.service.*;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
@@ -26,8 +24,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import fi.vm.sade.kayttooikeus.model.Henkilo;
-import fi.vm.sade.kayttooikeus.model.OrganisaatioHenkilo;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
 import static fi.vm.sade.kayttooikeus.dto.Localizable.comparingPrimarlyBy;
 import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
@@ -63,12 +59,12 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
     private final HenkiloDataRepository henkiloDataRepository;
     private final MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
     private final KayttoOikeusRyhmaTapahtumaHistoriaDataRepository kayttoOikeusRyhmaTapahtumaHistoriaDataRepository;
+    private final KayttooikeusAnomusService kayttooikeusAnomusService;
+    private final HaettuKayttooikeusRyhmaRepository haettuKayttooikeusRyhmaRepository;
 
     private final LdapSynchronizationService ldapSynchronizationService;
     private final OrganisaatioService organisaatioService;
     private final PermissionCheckerService permissionCheckerService;
-
-    private final CommonProperties commonProperties;
 
     private final OrikaBeanMapper mapper;
 
@@ -211,17 +207,7 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
         OrganisaatioHenkilo organisaatioHenkilo = this.organisaatioHenkiloRepository
                 .findByHenkiloOidHenkiloAndOrganisaatioOid(oidHenkilo, henkiloOrganisationOid)
                 .orElseThrow(() -> new NotFoundException("Unknown organisation" + henkiloOrganisationOid + "for henkilo" + oidHenkilo));
-        organisaatioHenkilo.setPassivoitu(true);
-        Set<KayttoOikeusRyhmaTapahtumaHistoria> historia = organisaatioHenkilo.getMyonnettyKayttoOikeusRyhmas().stream()
-                .map(myonnettyKayttoOikeusRyhmaTapahtuma -> myonnettyKayttoOikeusRyhmaTapahtuma
-                        .toHistoria(kasittelija, KayttoOikeudenTila.SULJETTU, LocalDateTime.now(), "Henkilön passivointi"))
-                .collect(toSet());
-        organisaatioHenkilo.setKayttoOikeusRyhmaHistorias(historia);
-        this.kayttoOikeusRyhmaTapahtumaHistoriaDataRepository.saveAll(historia);
-        this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.deleteAll(organisaatioHenkilo.getMyonnettyKayttoOikeusRyhmas());
-        organisaatioHenkilo.setMyonnettyKayttoOikeusRyhmas(Sets.newHashSet());
-        ldapSynchronizationService.updateHenkiloAsap(oidHenkilo);
-
+        this.passivoiOrganisaatioHenkiloJaPoistaKayttooikeudet(organisaatioHenkilo, kasittelija, "Henkilön passivointi");
         this.henkiloDataRepository.findByOidHenkilo(oidHenkilo)
                 .ifPresent(this::disableNonValidVarmennettavas);
     }
@@ -248,32 +234,54 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
                 + organisaatioHenkilo.getOrganisaatioOid()));
     }
 
-    @Transactional
-    @Override
-    public void passivoiOrganisaationHenkilot() {
-        LOGGER.info("Aloitetaan passivoitujen organisaatioiden organisaatiohenkilöiden passivointi ja käyttöoikeuksien poisto");
-        List<String> passiivisetOids = organisaatioClient.getLakkautetutOids();
-        List<OrganisaatioHenkilo> aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios = this.organisaatioHenkiloRepository.findByOrganisaatioOidIn(passiivisetOids)
-                .stream().filter(oh -> oh.isAktiivinen()).collect(toList());
-        LOGGER.info("Löytyi {} aktiivista organisaatiohenkilöä.", aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios.size());
-        aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios.forEach(organisaatioHenkilo -> this.passivoiOrganisaatioHenkiloJaKayttooikeudet(organisaatioHenkilo));
-        LOGGER.info("Lopetetaan passivoitujen organisaatioiden organisaatiohenkilöiden passivointi ja käyttöoikeuksien poisto");
-    }
-
     // passivoi organisaatiohenkilön ja poistaa käyttöoikeudet
-    private void passivoiOrganisaatioHenkiloJaKayttooikeudet(OrganisaatioHenkilo organisaatioHenkilo) {
-        Henkilo kasittelija = this.henkiloDataRepository.findByOidHenkilo(this.commonProperties.getAdminOid())
-                .orElseThrow(() -> new NotFoundException("Could not find commonproperties admin " + this.commonProperties.getAdminOid()));
+    private void passivoiOrganisaatioHenkiloJaPoistaKayttooikeudet(OrganisaatioHenkilo organisaatioHenkilo, Henkilo kasittelija, String selite) {
         organisaatioHenkilo.setPassivoitu(true);
         Set<KayttoOikeusRyhmaTapahtumaHistoria> historia = organisaatioHenkilo.getMyonnettyKayttoOikeusRyhmas().stream()
                 .map(myonnettyKayttoOikeusRyhmaTapahtuma -> myonnettyKayttoOikeusRyhmaTapahtuma
-                        .toHistoria(kasittelija, KayttoOikeudenTila.SULJETTU, LocalDateTime.now(), "Passivoidun organisaation organisaatiohenkilön passivointi ja käyttöoikeuksien poisto"))
+                        .toHistoria(kasittelija, KayttoOikeudenTila.SULJETTU, LocalDateTime.now(), selite))
                 .collect(toSet());
         organisaatioHenkilo.setKayttoOikeusRyhmaHistorias(historia);
         this.kayttoOikeusRyhmaTapahtumaHistoriaDataRepository.saveAll(historia);
         this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.deleteAll(organisaatioHenkilo.getMyonnettyKayttoOikeusRyhmas());
         organisaatioHenkilo.setMyonnettyKayttoOikeusRyhmas(Sets.newHashSet());
         ldapSynchronizationService.updateHenkiloAsap(organisaatioHenkilo.getHenkilo().getOidHenkilo());
+    }
+
+    @Transactional
+    @Override
+    public void kasitteleOrganisaatioidenLakkautus(String kasittelijaOid) {
+        LOGGER.info("Aloitetaan passivoitujen organisaatioiden organisaatiohenkilöiden passivointi sekä käyttöoikeuksien ja anomusten poisto");
+        Henkilo kasittelija = this.henkiloDataRepository.findByOidHenkilo(kasittelijaOid)
+                .orElseThrow(() -> new NotFoundException("Could not find henkilo with oid " + kasittelijaOid));
+        Set<String> passiivisetOids = organisaatioClient.getLakkautetutOids();
+        List<OrganisaatioHenkilo> aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios = this.organisaatioHenkiloRepository.findByOrganisaatioOidIn(passiivisetOids)
+                .stream().filter(oh -> oh.isAktiivinen()).collect(toList());
+        LOGGER.info("Passivoidaan {} aktiivista organisaatiohenkilöä ja näiden voimassa olevat käyttöoikeudet.", aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios.size());
+        aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios.forEach(organisaatioHenkilo -> this.passivoiOrganisaatioHenkiloJaPoistaKayttooikeudet(organisaatioHenkilo, kasittelija, "Passivoidun organisaation organisaatiohenkilön passivointi ja käyttöoikeuksien poisto"));
+
+        AnomusCriteria anomusCriteria = AnomusCriteria.builder().organisaatioOids(passiivisetOids).onlyActive(true).build();
+        this.poistaAnomuksetOrganisaatioista(anomusCriteria);
+        LOGGER.info("Lopetetaan passivoitujen organisaatioiden organisaatiohenkilöiden passivointi sekä käyttöoikeuksien ja anomusten poisto");
+    }
+
+    private void poistaAnomuksetOrganisaatioista(AnomusCriteria criteria) {
+        List<HaettuKayttooikeusryhmaDto> haettuKayttooikeusryhmaDtos = this.kayttooikeusAnomusService.listHaetutKayttoOikeusRyhmat(criteria, null, null, null);
+
+        Set<Long> haettuKayttooikeusryhmaIds = haettuKayttooikeusryhmaDtos.stream().map(HaettuKayttooikeusryhmaDto::getId).collect(toSet());
+        Set<HaettuKayttoOikeusRyhma> haettuKayttoOikeusRyhmas = this.haettuKayttooikeusRyhmaRepository.findByIdIn(haettuKayttooikeusryhmaIds);
+
+        logger.info("Poistetaan {} haettua käyttöoikeusryhmää ja niihin liittyvät anomukset organisaatioista", haettuKayttooikeusryhmaDtos.size());
+        haettuKayttoOikeusRyhmas.stream().forEach(h -> {
+            Anomus anomus = h.getAnomus();
+            if(h.getAnomus().getHaettuKayttoOikeusRyhmas().size() == 1) {
+                // Asetetaan anomus hylätyksi, jos ollaan poistamassa viimeistä siihen liitettyä haettua käyttöoikeusryhmä
+                anomus.setAnomuksenTila(AnomuksenTila.HYLATTY);
+            }
+            anomus.getHaettuKayttoOikeusRyhmas().remove(h);
+            anomus.setAnomusTilaTapahtumaPvm(LocalDateTime.now());
+            this.haettuKayttooikeusRyhmaRepository.delete(h);
+        });
     }
 
 }

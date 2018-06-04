@@ -515,6 +515,8 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         ldapSynchronizationService.updateHenkiloAsap(oidHenkilo);
     }
 
+
+
     // Käsittelee admin, OPH-virkailija ja virkailija tyyppisiä käyttäjiä. Kaksi ensimmäistä käyttäytyvät tässä samoin.
     // Olettaa, että ennestään olleet ja haetut oikeudet voidaan myöntää uudelleen kyseiseen organisaatioon.
     @Override
@@ -591,4 +593,5 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
             return value;
         };
     }
+
 }

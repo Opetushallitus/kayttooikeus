@@ -5,6 +5,7 @@ import com.github.kagkarlsson.scheduler.task.Daily;
 import com.github.kagkarlsson.scheduler.task.ExecutionContext;
 import com.github.kagkarlsson.scheduler.task.RecurringTask;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
+import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.config.properties.KayttooikeusProperties;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioHenkiloService;
 import lombok.extern.slf4j.Slf4j;
@@ -20,21 +21,24 @@ import java.time.LocalTime;
  */
 @Slf4j
 @Component
-public class PoistaPassivoidutOrganisaatiotTask extends RecurringTask {
+public class KasitteleOrganisaatioLakkautusTask extends RecurringTask {
 
     private final OrganisaatioHenkiloService organisaatioHenkiloService;
+    private final CommonProperties commonProperties;
 
     @Autowired
-    public PoistaPassivoidutOrganisaatiotTask(KayttooikeusProperties kayttooikeusProperties,
+    public KasitteleOrganisaatioLakkautusTask(KayttooikeusProperties kayttooikeusProperties,
+                                              CommonProperties commonProperties,
                                               OrganisaatioHenkiloService organisaatioHenkiloService) {
         super("passivoi organisaatiohenkilöt, joiden organisaatiot on passivoitu task",
-                new Daily(LocalTime.of(kayttooikeusProperties.getScheduling().getConfiguration().getPassivoidutOrganisaatiotHour(), 0)));
+                new Daily(LocalTime.of(kayttooikeusProperties.getScheduling().getConfiguration().getLakkautetutOrganisaatiotHour(), 0)));
         this.organisaatioHenkiloService = organisaatioHenkiloService;
+        this.commonProperties = commonProperties;
     }
 
     @Override
     public void execute(TaskInstance<Void> taskInstance, ExecutionContext executionContext) {
-        this.organisaatioHenkiloService.passivoiOrganisaationHenkilot();
+        this.organisaatioHenkiloService.kasitteleOrganisaatioidenLakkautus(this.commonProperties.getAdminOid());
     }
 
 

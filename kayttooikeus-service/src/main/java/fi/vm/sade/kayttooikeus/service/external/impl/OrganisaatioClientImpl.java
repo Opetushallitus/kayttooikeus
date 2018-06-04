@@ -148,12 +148,12 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
     }
 
     @Override
-    public List<String> getLakkautetutOids() {
+    public Set<String> getLakkautetutOids() {
         return this.cache.getAllOrganisaatios()
                 .filter(organisaatioPerustieto -> OrganisaatioStatus.PASSIIVINEN.equals(organisaatioPerustieto.getStatus()))
                 .map(OrganisaatioPerustieto::getOid)
                 .distinct()
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
 }

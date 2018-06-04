@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 @Transactional(propagation = Propagation.MANDATORY)
@@ -16,6 +17,6 @@ public interface OrganisaatioHenkiloRepository extends CrudRepository<Organisaat
 
     Optional<OrganisaatioHenkilo> findByHenkiloOidHenkiloAndOrganisaatioOid(String oidHenkilo, String organisaatioOid);
 
-    List<OrganisaatioHenkilo> findByOrganisaatioOidIn(List<String> organisaatioOids);
+    List<OrganisaatioHenkilo> findByOrganisaatioOidIn(Set<String> organisaatioOids);
 
 }

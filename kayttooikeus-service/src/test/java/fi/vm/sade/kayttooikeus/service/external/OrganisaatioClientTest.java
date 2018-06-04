@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
+import java.util.Set;
 
 import static java.util.Collections.singletonList;
 import static net.jadler.Jadler.onRequest;
@@ -55,7 +56,7 @@ public class OrganisaatioClientTest extends AbstractClientTest {
                 .respond().withStatus(OK).withContentType(MediaType.APPLICATION_JSON_UTF8.getType())
                 .withBody(jsonResource("classpath:organisaatio/ryhmat.json"));
         this.client.refreshCache();
-        List<String> lakkautetutOids = this.client.getLakkautetutOids();
+        Set<String> lakkautetutOids = this.client.getLakkautetutOids();
 
         // lakkautetut organisaatiot sisältää sekä ryhmien että organisaatioiden passivoidut
         assertTrue(lakkautetutOids.contains("1.2.246.562.28.32497911273"));

@@ -3,6 +3,7 @@ package fi.vm.sade.kayttooikeus.service.external;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface OrganisaatioClient {
     List<String> getChildOids(String organisaatioOid);
@@ -40,5 +41,5 @@ public interface OrganisaatioClient {
     /**
      * @return kaikkien passiviisten organisaatioiden oidit
      */
-    List<String> getLakkautetutOids();
+    Set<String> getLakkautetutOids();
 }
