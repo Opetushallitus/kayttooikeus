@@ -260,18 +260,15 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
         LOGGER.info("Passivoidaan {} aktiivista organisaatiohenkilöä ja näiden voimassa olevat käyttöoikeudet.", aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios.size());
         aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios.forEach(organisaatioHenkilo -> this.passivoiOrganisaatioHenkiloJaPoistaKayttooikeudet(organisaatioHenkilo, kasittelija, "Passivoidun organisaation organisaatiohenkilön passivointi ja käyttöoikeuksien poisto"));
 
-        AnomusCriteria anomusCriteria = AnomusCriteria.builder().organisaatioOids(passiivisetOids).onlyActive(true).build();
+        AnomusCriteria anomusCriteria = AnomusCriteria.builder().organisaatioOids(passiivisetOids).onlyActive(true).adminView(true).build();
         this.poistaAnomuksetOrganisaatioista(anomusCriteria);
         LOGGER.info("Lopetetaan passivoitujen organisaatioiden organisaatiohenkilöiden passivointi sekä käyttöoikeuksien ja anomusten poisto");
     }
 
     private void poistaAnomuksetOrganisaatioista(AnomusCriteria criteria) {
-        List<HaettuKayttooikeusryhmaDto> haettuKayttooikeusryhmaDtos = this.kayttooikeusAnomusService.listHaetutKayttoOikeusRyhmat(criteria, null, null, null);
+        List<HaettuKayttoOikeusRyhma> haettuKayttoOikeusRyhmas = this.haettuKayttooikeusRyhmaRepository.findBy(criteria.createAnomusSearchCondition(this.organisaatioClient), null, null, null, criteria.getAdminView());
 
-        Set<Long> haettuKayttooikeusryhmaIds = haettuKayttooikeusryhmaDtos.stream().map(HaettuKayttooikeusryhmaDto::getId).collect(toSet());
-        Set<HaettuKayttoOikeusRyhma> haettuKayttoOikeusRyhmas = this.haettuKayttooikeusRyhmaRepository.findByIdIn(haettuKayttooikeusryhmaIds);
-
-        logger.info("Poistetaan {} haettua käyttöoikeusryhmää ja niihin liittyvät anomukset organisaatioista", haettuKayttooikeusryhmaDtos.size());
+        logger.info("Poistetaan {} haettua käyttöoikeusryhmää ja niihin liittyvät anomukset organisaatioista", haettuKayttoOikeusRyhmas.size());
         haettuKayttoOikeusRyhmas.stream().forEach(h -> {
             Anomus anomus = h.getAnomus();
             if(h.getAnomus().getHaettuKayttoOikeusRyhmas().size() == 1) {
