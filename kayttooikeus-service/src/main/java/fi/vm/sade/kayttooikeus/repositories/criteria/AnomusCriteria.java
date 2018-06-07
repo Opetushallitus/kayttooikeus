@@ -17,11 +17,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
+
 import static java.util.Objects.requireNonNull;
-import java.util.Set;
+
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
@@ -114,9 +113,7 @@ public class AnomusCriteria {
     private List<Predicate> getInSameOrganisationPredicate(OrganisaatioClient organisaatioClient, QAnomus qAnomus) {
         List<Predicate> predicates = null;
         if(!CollectionUtils.isEmpty(this.organisaatioOids)) {
-            predicates = this.organisaatioOids.stream()
-                    .map(qAnomus.organisaatioOid::eq)
-                    .collect(Collectors.toList());
+            predicates = Arrays.asList(qAnomus.organisaatioOid.in(this.organisaatioOids));
         }
         return predicates;
     }

@@ -260,20 +260,22 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
         LOGGER.info("Passivoidaan {} aktiivista organisaatiohenkilöä ja näiden voimassa olevat käyttöoikeudet.", aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios.size());
         aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios.forEach(organisaatioHenkilo -> this.passivoiOrganisaatioHenkiloJaPoistaKayttooikeudet(organisaatioHenkilo, kasittelija, "Passivoidun organisaation organisaatiohenkilön passivointi ja käyttöoikeuksien poisto"));
 
-        AnomusCriteria anomusCriteria = AnomusCriteria.builder().organisaatioOids(passiivisetOids).onlyActive(true).adminView(true).build();
+        AnomusCriteria anomusCriteria = AnomusCriteria.builder().organisaatioOids(passiivisetOids).onlyActive(true).build();
         this.poistaAnomuksetOrganisaatioista(anomusCriteria);
         LOGGER.info("Lopetetaan passivoitujen organisaatioiden organisaatiohenkilöiden passivointi sekä käyttöoikeuksien ja anomusten poisto");
     }
 
     private void poistaAnomuksetOrganisaatioista(AnomusCriteria criteria) {
-        List<HaettuKayttoOikeusRyhma> haettuKayttoOikeusRyhmas = this.haettuKayttooikeusRyhmaRepository.findBy(criteria.createAnomusSearchCondition(this.organisaatioClient), null, null, null, criteria.getAdminView());
+        List<HaettuKayttoOikeusRyhma> haettuKayttoOikeusRyhmas = this.haettuKayttooikeusRyhmaRepository.findBy(criteria.createAnomusSearchCondition(this.organisaatioClient), false);
 
-        logger.info("Poistetaan {} haettua käyttöoikeusryhmää ja niihin liittyvät anomukset organisaatioista", haettuKayttoOikeusRyhmas.size());
+        logger.info("Poistetaan {} anomusta ja {} niihin liittyvää haettua käyttöoikeusryhmää",
+                haettuKayttoOikeusRyhmas.stream().map(h -> h.getAnomus().getId()).distinct().count(), haettuKayttoOikeusRyhmas.size());
         haettuKayttoOikeusRyhmas.stream().forEach(h -> {
             Anomus anomus = h.getAnomus();
             if(h.getAnomus().getHaettuKayttoOikeusRyhmas().size() == 1) {
-                // Asetetaan anomus hylätyksi, jos ollaan poistamassa viimeistä siihen liitettyä haettua käyttöoikeusryhmä
+//                 Asetetaan anomus hylätyksi, jos ollaan poistamassa viimeistä siihen liitettyä haettua käyttöoikeusryhmä
                 anomus.setAnomuksenTila(AnomuksenTila.HYLATTY);
+                anomus.setHylkaamisperuste("Hylätään lakkautetun organisaation anomuksena");
             }
             anomus.getHaettuKayttoOikeusRyhmas().remove(h);
             anomus.setAnomusTilaTapahtumaPvm(LocalDateTime.now());
