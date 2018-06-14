@@ -37,6 +37,8 @@ cas:
   service: https://{{host_virkailija}}/kayttooikeus-service
   send-renew: false
   key: kayttooikeus-service
+  proxy:
+    enabled: true
 
 host:
   host-virkailija: {{host_virkailija}}

@@ -9,6 +9,7 @@ import fi.vm.sade.kayttooikeus.dto.HaettuKayttooikeusryhmaDto;
 import fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila;
 import fi.vm.sade.kayttooikeus.dto.KayttooikeusAnomusDto;
 import fi.vm.sade.kayttooikeus.dto.UpdateHaettuKayttooikeusryhmaDto;
+import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import fi.vm.sade.kayttooikeus.dto.types.AnomusTyyppi;
 import fi.vm.sade.kayttooikeus.enumeration.OrderByAnomus;
 import fi.vm.sade.kayttooikeus.model.*;
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindException;
 
+import javax.validation.ValidationException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -256,7 +258,11 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
     // Sets organisaatiohenkilo active since it might be passive
     private OrganisaatioHenkilo findOrCreateHaettuOrganisaatioHenkilo(String organisaatioOid, Henkilo anoja, String tehtavanimike) {
         Henkilo savedAnoja = this.henkiloDataRepository.save(anoja);
-        this.organisaatioService.throwIfActiveNotFound(organisaatioOid);
+
+        HashSet<OrganisaatioStatus> organisaatioStatuses = Sets.newHashSet(OrganisaatioStatus.AKTIIVINEN, OrganisaatioStatus.SUUNNITELTU);
+        if(!this.organisaatioClient.existsByOidAndStatus(organisaatioOid, organisaatioStatuses)) {
+            throw new ValidationException("Active or suunniteltu organisation not found with oid " + organisaatioOid);
+        }
 
         OrganisaatioHenkilo foundOrCreatedOrganisaatioHenkilo = savedAnoja.getOrganisaatioHenkilos().stream()
                 .filter(organisaatioHenkilo ->
