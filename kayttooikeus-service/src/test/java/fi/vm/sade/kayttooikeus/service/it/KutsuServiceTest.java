@@ -557,7 +557,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), "arpauser", "stronkPassword1!");
 
-        given(this.oppijanumerorekisteriClient.getHenkiloByOid(any())).willReturn(new HenkiloDto());
+        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
         this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.3.4.5");
         assertThat(henkilo.getKayttajatiedot().getUsername()).isEqualTo("arpauser");
@@ -635,8 +635,9 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
 
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), "arpauser", "stronkPassword1!");
-
         given(this.oppijanumerorekisteriClient.getHenkiloByOid(any())).willReturn(new HenkiloDto());
+        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
+
         this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.0.0.2");
         assertThat(henkilo.getKayttajatiedot().getUsername()).isEqualTo("arpauser");
@@ -678,7 +679,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), null, null);
 
-        given(this.oppijanumerorekisteriClient.getHenkiloByOid(any())).willReturn(new HenkiloDto());
+        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
         this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.3.4.5");
         assertThat(henkilo.getKayttajatiedot().getUsername()).matches("hakaIdentifier1[\\d]{3,3}");
@@ -729,7 +730,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), null, null);
 
-        given(this.oppijanumerorekisteriClient.getHenkiloByOid(any())).willReturn(new HenkiloDto());
+        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
         this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.3.4.5");
         assertThat(henkilo.getKayttajatiedot().getUsername()).matches("hakaIdentifier1[\\d]{3,3}");
