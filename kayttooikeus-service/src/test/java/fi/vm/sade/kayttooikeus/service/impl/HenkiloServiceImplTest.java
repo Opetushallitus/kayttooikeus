@@ -77,7 +77,7 @@ public class HenkiloServiceImplTest {
 
     @Test
     public void henkilohakuHakeeIlmanAliorganisaatioita() {
-        when(organisaatioHenkiloRepositoryMock.findDistinctOrganisaatiosForHenkiloOid(any())).thenReturn(asList("oid1", "oid2"));
+        when(organisaatioHenkiloRepositoryMock.findUsersOrganisaatioHenkilosByPalveluRoolis(any(),any())).thenReturn(asList("oid1", "oid2"));
         when(commonPropertiesMock.getRootOrganizationOid()).thenReturn("rootOid");
         HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto();
         henkilohakuCriteriaDto.setOrganisaatioOids(null);
@@ -93,7 +93,7 @@ public class HenkiloServiceImplTest {
 
     @Test
     public void henkilohakuHakeeAliorganisaatioilla() {
-        when(organisaatioHenkiloRepositoryMock.findDistinctOrganisaatiosForHenkiloOid(any())).thenReturn(asList("oid1", "oid2"));
+        when(organisaatioHenkiloRepositoryMock.findUsersOrganisaatioHenkilosByPalveluRoolis(any(), any())).thenReturn(asList("oid1", "oid2"));
         when(commonPropertiesMock.getRootOrganizationOid()).thenReturn("rootOid");
         when(organisaatioClientMock.getChildOids(eq("oid1"))).thenReturn(asList("childOid1"));
         when(organisaatioClientMock.getChildOids(eq("oid2"))).thenReturn(asList("childOid2"));
@@ -111,7 +111,7 @@ public class HenkiloServiceImplTest {
 
     @Test
     public void henkilohakuHakeeAnnetuillaOrganisaatioilla() {
-        when(organisaatioHenkiloRepositoryMock.findDistinctOrganisaatiosForHenkiloOid(any())).thenReturn(asList("oid1", "oid3", "oid5"));
+        when(organisaatioHenkiloRepositoryMock.findUsersOrganisaatioHenkilosByPalveluRoolis(any(),any())).thenReturn(asList("oid1", "oid3", "oid5"));
         when(commonPropertiesMock.getRootOrganizationOid()).thenReturn("rootOid");
         when(organisaatioClientMock.getChildOids(eq("oid1"))).thenReturn(asList("childOid1"));
         when(organisaatioClientMock.getChildOids(eq("oid3"))).thenReturn(asList("childOid2"));
@@ -130,7 +130,7 @@ public class HenkiloServiceImplTest {
 
     @Test
     public void henkilohakuHakeeAnnetuillaOrganisaatioillaAliorganisaatiot() {
-        when(organisaatioHenkiloRepositoryMock.findDistinctOrganisaatiosForHenkiloOid(any())).thenReturn(asList("oid1", "oid3", "oid5"));
+        when(organisaatioHenkiloRepositoryMock.findUsersOrganisaatioHenkilosByPalveluRoolis(any(), any())).thenReturn(asList("oid1", "oid3", "oid5"));
         when(commonPropertiesMock.getRootOrganizationOid()).thenReturn("rootOid");
         when(organisaatioClientMock.getChildOids(eq("oid1"))).thenReturn(asList("childOid1"));
         when(organisaatioClientMock.getChildOids(eq("oid3"))).thenReturn(asList("childOid2"));
@@ -149,7 +149,7 @@ public class HenkiloServiceImplTest {
 
     @Test
     public void henkilohakuHakeeRootVirkailijanOrganisaatioilla() {
-        when(organisaatioHenkiloRepositoryMock.findDistinctOrganisaatiosForHenkiloOid(any())).thenReturn(asList("rootOid", "oid1"));
+        when(organisaatioHenkiloRepositoryMock.findUsersOrganisaatioHenkilosByPalveluRoolis(any(), any())).thenReturn(asList("rootOid", "oid1"));
         when(commonPropertiesMock.getRootOrganizationOid()).thenReturn("rootOid");
         HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto();
         henkilohakuCriteriaDto.setOrganisaatioOids(null);
@@ -165,7 +165,7 @@ public class HenkiloServiceImplTest {
 
     @Test
     public void henkilohakuHakeeRootVirkailijanAliorganisaatioilla() {
-        when(organisaatioHenkiloRepositoryMock.findDistinctOrganisaatiosForHenkiloOid(any())).thenReturn(asList("rootOid"));
+        when(organisaatioHenkiloRepositoryMock.findUsersOrganisaatioHenkilosByPalveluRoolis(any(),any())).thenReturn(asList("rootOid"));
         when(this.permissionCheckerServiceMock.isCurrentUserMiniAdmin()).thenReturn(true);
         when(commonPropertiesMock.getRootOrganizationOid()).thenReturn("rootOid");
         HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto();
@@ -182,7 +182,7 @@ public class HenkiloServiceImplTest {
 
     @Test
     public void henkilohakuHakeeRootVirkailijanAntamallaOrganisaatiolla1() {
-        when(organisaatioHenkiloRepositoryMock.findDistinctOrganisaatiosForHenkiloOid(any())).thenReturn(asList("rootOid"));
+        when(organisaatioHenkiloRepositoryMock.findUsersOrganisaatioHenkilosByPalveluRoolis(any(), any())).thenReturn(asList("rootOid"));
         when(this.permissionCheckerServiceMock.isCurrentUserMiniAdmin()).thenReturn(true);
         when(commonPropertiesMock.getRootOrganizationOid()).thenReturn("rootOid");
         HenkilohakuCriteriaDto henkilohakuCriteriaDto = new HenkilohakuCriteriaDto();
@@ -199,7 +199,7 @@ public class HenkiloServiceImplTest {
 
     @Test
     public void henkilohakuHakeeRootVirkailijanAntamallaOrganisaatiolla2() {
-        when(organisaatioHenkiloRepositoryMock.findDistinctOrganisaatiosForHenkiloOid(any())).thenReturn(asList("rootOid"));
+        when(organisaatioHenkiloRepositoryMock.findUsersOrganisaatioHenkilosByPalveluRoolis(any(), any())).thenReturn(asList("rootOid"));
         when(this.permissionCheckerServiceMock.isCurrentUserMiniAdmin()).thenReturn(true);
         when(commonPropertiesMock.getRootOrganizationOid()).thenReturn("rootOid");
         when(organisaatioClientMock.getChildOids(any())).thenReturn(asList("childOid1", "childOid2"));

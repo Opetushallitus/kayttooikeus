@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -121,6 +122,7 @@ public class CreateUtil {
         OrganisaatioHenkilo organisaatioHenkilo = new OrganisaatioHenkilo();
         organisaatioHenkilo.setOrganisaatioOid(organisaatioOid);
         organisaatioHenkilo.setPassivoitu(passivoitu);
+        organisaatioHenkilo.setMyonnettyKayttoOikeusRyhmas(new HashSet<>());
         return organisaatioHenkilo;
     }
 

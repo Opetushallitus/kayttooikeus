@@ -1,9 +1,11 @@
 package fi.vm.sade.kayttooikeus.repositories.impl;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloDto;
@@ -14,10 +16,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static fi.vm.sade.kayttooikeus.model.QHenkilo.henkilo;
@@ -49,6 +48,34 @@ public class OrganisaatioHenkiloRepositoryImpl implements OrganisaatioHenkiloCus
                 .where(voimassa(organisaatioHenkilo, LocalDate.now())
                         .and(henkilo.oidHenkilo.eq(henkiloOid)))
                 .select(organisaatioHenkilo.organisaatioOid).distinct().fetch();
+    }
+
+    @Override
+    public List<String> findUsersOrganisaatioHenkilosByPalveluRoolis(String henkiloOid, Map<String, Set<String>> henkilohakuPalveluRoolis) {
+        QHenkilo henkilo = QHenkilo.henkilo;
+        QOrganisaatioHenkilo organisaatioHenkilo = QOrganisaatioHenkilo.organisaatioHenkilo;
+        QMyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
+        QKayttoOikeusRyhma kayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
+        QKayttoOikeus kayttoOikeus = QKayttoOikeus.kayttoOikeus;
+        QPalvelu palvelu = QPalvelu.palvelu;
+
+        BooleanBuilder hasPalveluRooliBooleanBuilder = new BooleanBuilder();
+        henkilohakuPalveluRoolis.forEach((p,r) -> {
+            hasPalveluRooliBooleanBuilder.or(palvelu.name.eq(p).and(kayttoOikeus.rooli.in(r)));
+        });
+
+        return jpa().from(organisaatioHenkilo)
+                .innerJoin(organisaatioHenkilo.henkilo, henkilo)
+                .innerJoin(organisaatioHenkilo.myonnettyKayttoOikeusRyhmas, myonnettyKayttoOikeusRyhmaTapahtuma)
+                .innerJoin(myonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma, kayttoOikeusRyhma)
+                .innerJoin(kayttoOikeusRyhma.kayttoOikeus, kayttoOikeus)
+                .innerJoin(kayttoOikeus.palvelu, palvelu)
+                .where(voimassa(organisaatioHenkilo, LocalDate.now())
+                        .and(henkilo.oidHenkilo.eq(henkiloOid))
+                        .and(hasPalveluRooliBooleanBuilder))
+                .select(organisaatioHenkilo.organisaatioOid)
+                .distinct().fetch();
+
     }
 
     @Override

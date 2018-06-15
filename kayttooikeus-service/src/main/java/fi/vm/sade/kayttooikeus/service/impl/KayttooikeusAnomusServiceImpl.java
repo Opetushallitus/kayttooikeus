@@ -39,17 +39,9 @@ import javax.validation.ValidationException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -518,6 +510,15 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         this.kayttoOikeusRyhmaTapahtumaHistoriaDataRepository.save(myonnettyKayttoOikeusRyhmaTapahtuma
                 .toHistoria(kasittelija, KayttoOikeudenTila.SULJETTU, LocalDateTime.now(), "Käyttöoikeuden sulkeminen"));
         this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.delete(myonnettyKayttoOikeusRyhmaTapahtuma);
+
+        Optional<OrganisaatioHenkilo> organisaatioHenkilo = this.organisaatioHenkiloRepository.findByHenkiloOidHenkiloAndOrganisaatioOid(oidHenkilo, organisaatioOid);
+        organisaatioHenkilo.ifPresent(oh -> {
+            if(oh.getMyonnettyKayttoOikeusRyhmas().isEmpty()) {
+                oh.setPassivoitu(true);
+            }
+            this.organisaatioHenkiloRepository.save(oh);
+        });
+
         ldapSynchronizationService.updateHenkiloAsap(oidHenkilo);
     }
 

@@ -2,6 +2,7 @@ package fi.vm.sade.kayttooikeus.service.impl;
 
 import fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila;
 import fi.vm.sade.kayttooikeus.model.*;
+
 import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaTapahtumaHistoriaDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
@@ -11,6 +12,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+
+import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +36,7 @@ public class MyonnettyKayttoOikeusServiceImpl implements MyonnettyKayttoOikeusSe
     private final MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
     private final KayttoOikeusRyhmaTapahtumaHistoriaDataRepository kayttoOikeusRyhmaTapahtumaHistoriaDataRepository;
     private final LdapSynchronizationService ldapSynchronizationService;
+    private final OrganisaatioHenkiloRepository organisaatioHenkiloRepository;
 
     @Override
     public void poistaVanhentuneet() {
@@ -56,14 +60,23 @@ public class MyonnettyKayttoOikeusServiceImpl implements MyonnettyKayttoOikeusSe
                         this.getFirstStillActiveKayttooikeusForSameOrganisation(kayttoOikeus, kayttoOikeudet)
                                 .ifPresent(myonnettyKayttooikeus -> henkiloVarmentajaSuhde.setTila(true));
                     });
+            OrganisaatioHenkilo organisaatioHenkilo = kayttoOikeus.getOrganisaatioHenkilo();
+            String henkiloOid = organisaatioHenkilo.getHenkilo().getOidHenkilo();
 
             KayttoOikeusRyhmaTapahtumaHistoria historia = kayttoOikeus.toHistoria(
                     kasittelija, KayttoOikeudenTila.SULJETTU,
                     LocalDateTime.now(), "Oikeuksien poisto, vanhentunut");
             kayttoOikeusRyhmaTapahtumaHistoriaDataRepository.save(historia);
-
             myonnettyKayttoOikeusRyhmaTapahtumaRepository.delete(kayttoOikeus);
-            ldapSynchronizationService.updateHenkilo(henkilo.getOidHenkilo());
+
+            organisaatioHenkilo.getMyonnettyKayttoOikeusRyhmas().remove(kayttoOikeus);
+            // Passivoidaan organisaatiohenkilö, jos siihen ei enää ole liitetty ainuttakaan käyttöoikeutta
+            if(organisaatioHenkilo.getMyonnettyKayttoOikeusRyhmas().size() == 0) {
+                organisaatioHenkilo.setPassivoitu(true);
+            }
+            organisaatioHenkiloRepository.save(organisaatioHenkilo);
+
+            ldapSynchronizationService.updateHenkilo(henkiloOid);
         }
         LOGGER.info("Vanhentuneiden käyttöoikeuksien poisto päättyy: poistettiin {} käyttöoikeutta", kayttoOikeudet.size());
     }

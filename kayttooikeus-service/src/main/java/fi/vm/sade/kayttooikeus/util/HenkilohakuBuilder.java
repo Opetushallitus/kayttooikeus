@@ -34,6 +34,7 @@ public class HenkilohakuBuilder {
     private HenkilohakuCriteriaDto henkilohakuCriteriaDto;
     private LinkedHashSet<HenkilohakuResultDto> henkilohakuResultDtoList = new LinkedHashSet<>();
     private Long henkilohakuResultCount;
+    private Map<String, Set<String>> henkilohakuPalveluRoolit;
 
     private final HenkiloHibernateRepository henkiloHibernateRepository;
     private final OrikaBeanMapper mapper;
@@ -46,6 +47,12 @@ public class HenkilohakuBuilder {
     public HenkilohakuBuilder builder(HenkilohakuCriteriaDto henkilohakuCriteriaDto) {
         this.henkilohakuCriteriaDto = henkilohakuCriteriaDto;
         this.henkilohakuResultDtoList = new LinkedHashSet<>();
+        HashSet<String> henkilohakuKayttooikeusRoolit = new HashSet<>(Arrays.asList("REKISTERINPITAJA", "READ", "CRUD"));
+        HashSet<String> henkilohakuOppijanumerorekisteriRoolit = new HashSet<>(Arrays.asList("REKISTERINPITAJA_READ","REKISTERINPITAJA","READ","HENKILON_RU"));
+        this.henkilohakuPalveluRoolit = new HashMap<>();
+        this.henkilohakuPalveluRoolit.put("KAYTTOOIKEUS", henkilohakuKayttooikeusRoolit);
+        this.henkilohakuPalveluRoolit.put("OPPIJANUMEROREKISTERI", henkilohakuOppijanumerorekisteriRoolit);
+
         return this;
     }
 
@@ -95,7 +102,8 @@ public class HenkilohakuBuilder {
         }
 
         List<String> currentUserOrganisaatioOids = this.organisaatioHenkiloRepository
-                .findDistinctOrganisaatiosForHenkiloOid(this.permissionCheckerService.getCurrentUserOid());
+                .findUsersOrganisaatioHenkilosByPalveluRoolis(this.permissionCheckerService.getCurrentUserOid(), henkilohakuPalveluRoolit);
+
         Set<String> criteriaOrganisaatioOids = henkilohakuCriteriaDto.getOrganisaatioOids() != null
                 ? henkilohakuCriteriaDto.getOrganisaatioOids()
                 : new HashSet<>(currentUserOrganisaatioOids);

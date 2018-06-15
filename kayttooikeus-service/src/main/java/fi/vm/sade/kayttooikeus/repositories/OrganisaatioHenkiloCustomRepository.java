@@ -4,12 +4,15 @@ import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 public interface OrganisaatioHenkiloCustomRepository {
 
     List<String> findDistinctOrganisaatiosForHenkiloOid(String henkiloOid);
+
+    List<String> findUsersOrganisaatioHenkilosByPalveluRoolis(String henkiloOid, Map<String, Set<String>> henkilohakuPalveluRoolis);
 
     List<OrganisaatioHenkiloWithOrganisaatioDto> findActiveOrganisaatioHenkiloListDtos(String henkiloOoid);
 

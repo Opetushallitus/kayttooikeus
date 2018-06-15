@@ -21,6 +21,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -104,6 +105,9 @@ public class KayttooikeusAnomusServiceTest {
 
     @MockBean
     private AnomusRepository anomusRepository;
+
+    @MockBean
+    private OrganisaatioHenkilo organisaatioHenkilo;
 
     @MockBean
     private EmailService emailService;
@@ -673,7 +677,7 @@ public class KayttooikeusAnomusServiceTest {
         given(this.permissionCheckerService.getCurrentUserOid()).willReturn("1.2.3.4.1");
         given(this.permissionCheckerService.organisaatioLimitationCheck(eq("1.2.0.0.1"), anySet())).willReturn(true);
         given(this.organisaatioHenkiloRepository.findByHenkiloOidHenkilo("1.2.3.4.1"))
-                .willReturn(Lists.newArrayList(OrganisaatioHenkilo.builder().organisaatioOid("1.2.0.0.1").build()));
+                .willReturn(Lists.newArrayList(OrganisaatioHenkilo.builder().organisaatioOid("1.2.0.0.1").passivoitu(false).build()));
         given(this.permissionCheckerService.organisaatioViiteLimitationsAreValid(2001L)).willReturn(true);
         given(this.permissionCheckerService.kayttooikeusMyontoviiteLimitationCheck(2001L)).willReturn(true);
         given(this.permissionCheckerService.notOwnData("1.2.3.4.5")).willReturn(true);
@@ -682,6 +686,8 @@ public class KayttooikeusAnomusServiceTest {
         given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findMyonnettyTapahtuma(2001L,
                 "1.2.0.0.1", "1.2.3.4.5"))
                 .willReturn(Optional.of(createMyonnettyKayttoOikeusRyhmaTapahtuma(3001L, 2001L)));
+        given(this.organisaatioHenkiloRepository.findByHenkiloOidHenkiloAndOrganisaatioOid("1.2.3.4.5", "1.2.0.0.1"))
+                .willReturn(Optional.of(createOrganisaatioHenkilo("1.2.0.0.1", false)));
         // Service call
         this.kayttooikeusAnomusService.removePrivilege("1.2.3.4.5", 2001L, "1.2.0.0.1");
         // Capture
@@ -692,10 +698,17 @@ public class KayttooikeusAnomusServiceTest {
         KayttoOikeusRyhmaTapahtumaHistoria kayttoOikeusRyhmaTapahtumaHistoria = myonnettyKayttoOikeusRyhmaTapahtumaArgumentCaptor.getValue();
         verify(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository, times(1))
                 .delete(any(MyonnettyKayttoOikeusRyhmaTapahtuma.class));
+        ArgumentCaptor<OrganisaatioHenkilo> organisaatioHenkiloArgumentCaptor = ArgumentCaptor.forClass(OrganisaatioHenkilo.class);
+        verify(this.organisaatioHenkiloRepository, times(1))
+                .findByHenkiloOidHenkiloAndOrganisaatioOid(any(), any());
+        verify(this.organisaatioHenkiloRepository, times(1))
+                .save(organisaatioHenkiloArgumentCaptor.capture());
+        OrganisaatioHenkilo organisaatioHenkilo = organisaatioHenkiloArgumentCaptor.getValue();
 
         assertThat(kayttoOikeusRyhmaTapahtumaHistoria.getTila()).isEqualTo(SULJETTU);
         assertThat(kayttoOikeusRyhmaTapahtumaHistoria.getSyy()).isEqualTo("Käyttöoikeuden sulkeminen");
         assertThat(kayttoOikeusRyhmaTapahtumaHistoria.getAikaleima()).isNotNull();
+        assertThat(organisaatioHenkilo.isPassivoitu()).isEqualTo(true);
         verify(ldapSynchronizationService).updateHenkiloAsap(eq("1.2.3.4.5"));
     }
 
