@@ -1,6 +1,6 @@
 update organisaatiohenkilo oh
-  set oh.passivoitu = true
-  where oh.passivoitu = false
+  set passivoitu = true
+  where passivoitu = false
     and not exists
       (select *
        from myonnetty_kayttooikeusryhma_tapahtuma mkt
