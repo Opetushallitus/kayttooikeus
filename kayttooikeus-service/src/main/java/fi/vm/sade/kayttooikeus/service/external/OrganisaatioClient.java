@@ -16,7 +16,7 @@ public interface OrganisaatioClient {
 
     List<OrganisaatioPerustieto> listActiveOganisaatioPerustiedotRecursiveCached(String organisaatioOid);
 
-    List<OrganisaatioPerustieto> refreshCache();
+    long refreshCache();
 
     Long getCacheOrganisationCount();
 

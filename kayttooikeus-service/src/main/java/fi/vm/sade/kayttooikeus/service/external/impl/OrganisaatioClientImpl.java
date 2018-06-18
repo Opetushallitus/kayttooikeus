@@ -13,8 +13,13 @@ import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.validation.ValidationException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.carrotsearch.sizeof.RamUsageEstimator.humanReadableUnits;
@@ -47,7 +52,7 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
     }
 
     @Override
-    public synchronized List<OrganisaatioPerustieto> refreshCache() {
+    public synchronized long refreshCache() {
         Map<String, String> queryParamsAktiivisetSuunnitellut = new HashMap<String, String>() {{
             put("aktiiviset", "true");
             put("suunnitellut", "true");
@@ -75,7 +80,7 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
                 }).collect(Collectors.toSet()));
         this.cache = new OrganisaatioCache(this.fetchPerustiedot(this.rootOrganizationOid), organisaatiosWithoutRootOrg);
         log.info("Organisation client cache refreshed. Cache size " + humanReadableUnits(sizeOf(this.cache)));
-        return organisaatiosWithoutRootOrg;
+        return cache.getCacheCount();
     }
 
     private OrganisaatioPerustieto fetchPerustiedot(String oid) {
