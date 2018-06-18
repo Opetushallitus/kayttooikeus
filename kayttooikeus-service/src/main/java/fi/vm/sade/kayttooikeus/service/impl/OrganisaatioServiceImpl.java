@@ -2,7 +2,6 @@ package fi.vm.sade.kayttooikeus.service.impl;
 
 import fi.vm.sade.kayttooikeus.service.OrganisaatioService;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
-import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ValidationException;
-import java.util.List;
 
 @Service
 @Transactional
@@ -24,8 +22,8 @@ public class OrganisaatioServiceImpl implements OrganisaatioService {
     @Override
     public void updateOrganisaatioCache() {
         LOGGER.info("Organisaatiocachen päivitys aloitetaan");
-        List<OrganisaatioPerustieto> organisaatiot = organisaatioClient.refreshCache();
-        LOGGER.info("Organisaatiocachen päivitys päättyy: tallennettiin {} organisaatiota", organisaatiot.size());
+        long maara = organisaatioClient.refreshCache();
+        LOGGER.info("Organisaatiocachen päivitys päättyy: tallennettiin {} organisaatiota", maara);
     }
 
     @Override

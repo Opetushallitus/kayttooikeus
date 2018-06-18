@@ -10,7 +10,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
@@ -46,10 +45,7 @@ public class OrganisaatioServiceImplTest {
 
     @Test
     public void updateOrganisaatioCache() {
-        when(organisaatioClientMock.refreshCache()).thenReturn(
-                Arrays.asList(organisaatio("1.2.246.562.10.48349941889",
-                        Arrays.asList(organisaatio("1.2.246.562.10.23893528846"), organisaatio("1.2.246.562.10.11762519889")))
-                ));
+        when(organisaatioClientMock.refreshCache()).thenReturn(3L);
 
         organisaatioServiceImpl.updateOrganisaatioCache();
 
