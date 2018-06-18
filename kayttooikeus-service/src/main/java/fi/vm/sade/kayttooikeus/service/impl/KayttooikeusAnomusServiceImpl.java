@@ -48,6 +48,7 @@ import java.util.stream.Collectors;
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_ANOMUSTENHALLINTA;
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.appending;
+import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.or;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -511,13 +512,12 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                 .toHistoria(kasittelija, KayttoOikeudenTila.SULJETTU, LocalDateTime.now(), "Käyttöoikeuden sulkeminen"));
         this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.delete(myonnettyKayttoOikeusRyhmaTapahtuma);
 
-        Optional<OrganisaatioHenkilo> organisaatioHenkilo = this.organisaatioHenkiloRepository.findByHenkiloOidHenkiloAndOrganisaatioOid(oidHenkilo, organisaatioOid);
-        organisaatioHenkilo.ifPresent(oh -> {
-            if(oh.getMyonnettyKayttoOikeusRyhmas().isEmpty()) {
-                oh.setPassivoitu(true);
-            }
-            this.organisaatioHenkiloRepository.save(oh);
-        });
+        List<MyonnettyKayttoOikeusRyhmaTapahtuma> byOrganisaatioHenkilo = this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findByOrganisaatioHenkilo(myonnettyKayttoOikeusRyhmaTapahtuma.getOrganisaatioHenkilo());
+        if(byOrganisaatioHenkilo.isEmpty()) {
+            OrganisaatioHenkilo organisaatioHenkilo = myonnettyKayttoOikeusRyhmaTapahtuma.getOrganisaatioHenkilo();
+            organisaatioHenkilo.setPassivoitu(true);
+            this.organisaatioHenkiloRepository.save(organisaatioHenkilo);
+        }
 
         ldapSynchronizationService.updateHenkiloAsap(oidHenkilo);
     }

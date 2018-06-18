@@ -1,6 +1,7 @@
 package fi.vm.sade.kayttooikeus.repositories;
 
 import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
+import fi.vm.sade.kayttooikeus.model.OrganisaatioHenkilo;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
@@ -42,4 +43,6 @@ public interface MyonnettyKayttoOikeusRyhmaTapahtumaRepository extends CrudRepos
     List<MyonnettyKayttoOikeusRyhmaTapahtuma> findByOrganisaatioHenkiloHenkiloOidHenkilo(String oidHenkilo);
 
     List<MyonnettyKayttoOikeusRyhmaTapahtuma> findByKayttoOikeusRyhmaId(long id);
+
+    List<MyonnettyKayttoOikeusRyhmaTapahtuma> findByOrganisaatioHenkilo(OrganisaatioHenkilo organisaatioHenkilo);
 }

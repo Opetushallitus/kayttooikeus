@@ -683,11 +683,14 @@ public class KayttooikeusAnomusServiceTest {
         given(this.permissionCheckerService.notOwnData("1.2.3.4.5")).willReturn(true);
         // Actual mocks
         given(this.henkiloDataRepository.findByOidHenkilo("1.2.3.4.1")).willReturn(Optional.of(new Henkilo()));
+        MyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma = createMyonnettyKayttoOikeusRyhmaTapahtuma(3001L, 2001L);
+        OrganisaatioHenkilo organisaatioHenkilo1 = createOrganisaatioHenkilo("1.2.3.4.1", false);
+        myonnettyKayttoOikeusRyhmaTapahtuma.setOrganisaatioHenkilo(organisaatioHenkilo1);
+
         given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findMyonnettyTapahtuma(2001L,
                 "1.2.0.0.1", "1.2.3.4.5"))
-                .willReturn(Optional.of(createMyonnettyKayttoOikeusRyhmaTapahtuma(3001L, 2001L)));
-        given(this.organisaatioHenkiloRepository.findByHenkiloOidHenkiloAndOrganisaatioOid("1.2.3.4.5", "1.2.0.0.1"))
-                .willReturn(Optional.of(createOrganisaatioHenkilo("1.2.0.0.1", false)));
+                .willReturn(Optional.of(myonnettyKayttoOikeusRyhmaTapahtuma));
+        given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findByOrganisaatioHenkilo(any())).willReturn(Arrays.asList());
         // Service call
         this.kayttooikeusAnomusService.removePrivilege("1.2.3.4.5", 2001L, "1.2.0.0.1");
         // Capture
@@ -699,8 +702,6 @@ public class KayttooikeusAnomusServiceTest {
         verify(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository, times(1))
                 .delete(any(MyonnettyKayttoOikeusRyhmaTapahtuma.class));
         ArgumentCaptor<OrganisaatioHenkilo> organisaatioHenkiloArgumentCaptor = ArgumentCaptor.forClass(OrganisaatioHenkilo.class);
-        verify(this.organisaatioHenkiloRepository, times(1))
-                .findByHenkiloOidHenkiloAndOrganisaatioOid(any(), any());
         verify(this.organisaatioHenkiloRepository, times(1))
                 .save(organisaatioHenkiloArgumentCaptor.capture());
         OrganisaatioHenkilo organisaatioHenkilo = organisaatioHenkiloArgumentCaptor.getValue();
