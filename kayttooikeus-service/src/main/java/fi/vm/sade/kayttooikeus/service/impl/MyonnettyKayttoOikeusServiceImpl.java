@@ -70,12 +70,7 @@ public class MyonnettyKayttoOikeusServiceImpl implements MyonnettyKayttoOikeusSe
             myonnettyKayttoOikeusRyhmaTapahtumaRepository.delete(kayttoOikeus);
 
             organisaatioHenkilo.getMyonnettyKayttoOikeusRyhmas().remove(kayttoOikeus);
-            // Passivoidaan organisaatiohenkilö, jos siihen ei enää ole liitetty ainuttakaan käyttöoikeutta
-            if(organisaatioHenkilo.getMyonnettyKayttoOikeusRyhmas().size() == 0) {
-                organisaatioHenkilo.setPassivoitu(true);
-            }
             organisaatioHenkiloRepository.save(organisaatioHenkilo);
-
             ldapSynchronizationService.updateHenkilo(henkiloOid);
         }
         LOGGER.info("Vanhentuneiden käyttöoikeuksien poisto päättyy: poistettiin {} käyttöoikeutta", kayttoOikeudet.size());

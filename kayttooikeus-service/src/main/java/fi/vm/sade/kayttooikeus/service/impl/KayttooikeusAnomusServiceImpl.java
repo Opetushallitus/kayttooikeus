@@ -512,13 +512,6 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                 .toHistoria(kasittelija, KayttoOikeudenTila.SULJETTU, LocalDateTime.now(), "Käyttöoikeuden sulkeminen"));
         this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.delete(myonnettyKayttoOikeusRyhmaTapahtuma);
 
-        List<MyonnettyKayttoOikeusRyhmaTapahtuma> byOrganisaatioHenkilo = this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findByOrganisaatioHenkilo(myonnettyKayttoOikeusRyhmaTapahtuma.getOrganisaatioHenkilo());
-        if(byOrganisaatioHenkilo.isEmpty()) {
-            OrganisaatioHenkilo organisaatioHenkilo = myonnettyKayttoOikeusRyhmaTapahtuma.getOrganisaatioHenkilo();
-            organisaatioHenkilo.setPassivoitu(true);
-            this.organisaatioHenkiloRepository.save(organisaatioHenkilo);
-        }
-
         ldapSynchronizationService.updateHenkiloAsap(oidHenkilo);
     }
 

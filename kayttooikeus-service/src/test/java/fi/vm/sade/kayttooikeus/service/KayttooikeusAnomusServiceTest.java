@@ -107,9 +107,6 @@ public class KayttooikeusAnomusServiceTest {
     private AnomusRepository anomusRepository;
 
     @MockBean
-    private OrganisaatioHenkilo organisaatioHenkilo;
-
-    @MockBean
     private EmailService emailService;
 
     @MockBean
@@ -683,14 +680,10 @@ public class KayttooikeusAnomusServiceTest {
         given(this.permissionCheckerService.notOwnData("1.2.3.4.5")).willReturn(true);
         // Actual mocks
         given(this.henkiloDataRepository.findByOidHenkilo("1.2.3.4.1")).willReturn(Optional.of(new Henkilo()));
-        MyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma = createMyonnettyKayttoOikeusRyhmaTapahtuma(3001L, 2001L);
-        OrganisaatioHenkilo organisaatioHenkilo1 = createOrganisaatioHenkilo("1.2.3.4.1", false);
-        myonnettyKayttoOikeusRyhmaTapahtuma.setOrganisaatioHenkilo(organisaatioHenkilo1);
 
         given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findMyonnettyTapahtuma(2001L,
                 "1.2.0.0.1", "1.2.3.4.5"))
-                .willReturn(Optional.of(myonnettyKayttoOikeusRyhmaTapahtuma));
-        given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findByOrganisaatioHenkilo(any())).willReturn(Arrays.asList());
+                .willReturn(Optional.of(createMyonnettyKayttoOikeusRyhmaTapahtuma(3001L, 2001L)));
         // Service call
         this.kayttooikeusAnomusService.removePrivilege("1.2.3.4.5", 2001L, "1.2.0.0.1");
         // Capture
@@ -701,15 +694,10 @@ public class KayttooikeusAnomusServiceTest {
         KayttoOikeusRyhmaTapahtumaHistoria kayttoOikeusRyhmaTapahtumaHistoria = myonnettyKayttoOikeusRyhmaTapahtumaArgumentCaptor.getValue();
         verify(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository, times(1))
                 .delete(any(MyonnettyKayttoOikeusRyhmaTapahtuma.class));
-        ArgumentCaptor<OrganisaatioHenkilo> organisaatioHenkiloArgumentCaptor = ArgumentCaptor.forClass(OrganisaatioHenkilo.class);
-        verify(this.organisaatioHenkiloRepository, times(1))
-                .save(organisaatioHenkiloArgumentCaptor.capture());
-        OrganisaatioHenkilo organisaatioHenkilo = organisaatioHenkiloArgumentCaptor.getValue();
 
         assertThat(kayttoOikeusRyhmaTapahtumaHistoria.getTila()).isEqualTo(SULJETTU);
         assertThat(kayttoOikeusRyhmaTapahtumaHistoria.getSyy()).isEqualTo("Käyttöoikeuden sulkeminen");
         assertThat(kayttoOikeusRyhmaTapahtumaHistoria.getAikaleima()).isNotNull();
-        assertThat(organisaatioHenkilo.isPassivoitu()).isEqualTo(true);
         verify(ldapSynchronizationService).updateHenkiloAsap(eq("1.2.3.4.5"));
     }
 
