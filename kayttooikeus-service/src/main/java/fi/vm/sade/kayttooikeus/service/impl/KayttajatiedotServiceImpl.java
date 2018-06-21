@@ -109,7 +109,7 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
 
         KayttajatiedotReadDto kayttajatiedotReadDto = henkiloDataRepository.findByOidHenkilo(henkiloOid)
                 .map(henkilo -> updateKayttajatiedot(henkilo, kayttajatiedotUpdateDto))
-                .orElseThrow(() -> new NotFoundException("Henkilöä ei löytynyt OID:lla " + henkiloOid));
+                .orElseGet(() -> updateKayttajatiedot(new Henkilo(henkiloOid), kayttajatiedotUpdateDto));
         this.ldapSynchronizationService.updateHenkiloAsap(henkiloOid);
         return kayttajatiedotReadDto;
     }

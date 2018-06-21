@@ -2,23 +2,23 @@ package fi.vm.sade.kayttooikeus.service.it;
 
 import fi.vm.sade.kayttooikeus.dto.KayttajatiedotCreateDto;
 import fi.vm.sade.kayttooikeus.dto.KayttajatiedotReadDto;
-import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.henkilo;
-import static fi.vm.sade.kayttooikeus.repositories.populate.KayttajatiedotPopulator.kayttajatiedot;
-
 import fi.vm.sade.kayttooikeus.dto.KayttajatiedotUpdateDto;
 import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
 import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService.LdapSynchronizationType;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Optional;
-import org.springframework.security.test.context.support.WithMockUser;
+
+import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.henkilo;
+import static fi.vm.sade.kayttooikeus.repositories.populate.KayttajatiedotPopulator.kayttajatiedot;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 @RunWith(SpringRunner.class)
 public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
@@ -33,7 +33,6 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
     @WithMockUser(username = "user1")
     public void createShouldReturn() {
         String oid = "1.2.3.4.5";
-        populate(henkilo(oid));
         KayttajatiedotCreateDto createDto = new KayttajatiedotCreateDto();
         createDto.setUsername("user1");
 
@@ -45,7 +44,6 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
     @Test
     public void createShouldThrowOnDuplicateUsername() {
         String oid = "1.2.3.4.5";
-        populate(henkilo(oid));
         populate(kayttajatiedot(henkilo("toinen"), "user1"));
         KayttajatiedotCreateDto createDto = new KayttajatiedotCreateDto();
         createDto.setUsername("USER1");
@@ -85,9 +83,8 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    public void updateShouldCreateKayttajatiedotIfMissing() {
+    public void updateShouldCreateHenkiloIfMissing() {
         String oid = "1.2.3.4.5";
-        populate(henkilo(oid));
         KayttajatiedotUpdateDto updateDto = new KayttajatiedotUpdateDto();
         updateDto.setUsername("user1");
 

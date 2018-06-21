@@ -246,6 +246,9 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
         this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.deleteAll(organisaatioHenkilo.getMyonnettyKayttoOikeusRyhmas());
         organisaatioHenkilo.setMyonnettyKayttoOikeusRyhmas(Sets.newHashSet());
         ldapSynchronizationService.updateHenkiloAsap(organisaatioHenkilo.getHenkilo().getOidHenkilo());
+
+        this.henkiloDataRepository.findByOidHenkilo(organisaatioHenkilo.getHenkilo().getOidHenkilo())
+                .ifPresent(this::disableNonValidVarmennettavas);
     }
 
     @Transactional

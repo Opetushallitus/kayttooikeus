@@ -21,13 +21,13 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://{{postgresql_kayttooikeus_host}}:{{port_postgresql}}/authentication?ApplicationName=kayttooikeus-service
+    url: jdbc:postgresql://{{postgresql_kayttooikeus_host}}:{{port_postgresql}}/{{postgresql_kayttooikeus_db | default('authentication')}}?ApplicationName=kayttooikeus-service
     username: {{postgresql_kayttooikeus_user}}
     password: {{postgresql_kayttooikeus_password}}
     hikari:
-      maximum-pool-size: 20
-      connection-timeout: 10000
-      max-lifetime: 900000
+      maximum-pool-size: {{postgresql_kayttooikeus_maximum_pool_size | default('20')}}
+      connection-timeout: {{postgresql_kayttooikeus_connection_timeout | default('10000')}}
+      max-lifetime: {{postgresql_kayttooikeus_max_lifetime | default('900000')}}
   ldap:
     urls: ldap://{{host_ldap}}
     base: dc=opintopolku,dc=fi
@@ -37,8 +37,6 @@ cas:
   service: https://{{host_virkailija}}/kayttooikeus-service
   send-renew: false
   key: kayttooikeus-service
-  proxy:
-    enabled: true
 
 host:
   host-virkailija: {{host_virkailija}}

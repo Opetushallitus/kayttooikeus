@@ -33,8 +33,6 @@ cas:
   service: http://localhost/kayttooikeus-service
   send-renew: false
   key: kayttooikeus-service
-  proxy:
-    enabled: true
 
 host:
   host-virkailija: localhost

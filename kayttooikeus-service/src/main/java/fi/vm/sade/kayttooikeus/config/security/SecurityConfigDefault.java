@@ -6,7 +6,6 @@ import fi.vm.sade.kayttooikeus.config.properties.CasProperties;
 import fi.vm.sade.properties.OphProperties;
 import org.jasig.cas.client.session.SingleSignOutFilter;
 import org.jasig.cas.client.validation.Cas20ProxyTicketValidator;
-import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.jasig.cas.client.validation.TicketValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -68,14 +67,9 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
 
     @Bean
     public TicketValidator ticketValidator() {
-        if (environment.getRequiredProperty("cas.proxy.enabled", Boolean.class)) {
-            Cas20ProxyTicketValidator ticketValidator = new Cas20ProxyTicketValidator(ophProperties.url("cas.url"));
-            ticketValidator.setProxyCallbackUrl(casProperties.getService() + "/j_spring_cas_security_proxyreceptor");
-            ticketValidator.setAcceptAnyProxy(true);
-            return ticketValidator;
-        } else {
-            return new Cas20ServiceTicketValidator(ophProperties.url("cas.url"));
-        }
+        Cas20ProxyTicketValidator ticketValidator = new Cas20ProxyTicketValidator(ophProperties.url("cas.url"));
+        ticketValidator.setAcceptAnyProxy(true);
+        return ticketValidator;
     }
 
     //
@@ -87,7 +81,6 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
         OpintopolkuCasAuthenticationFilter casAuthenticationFilter = new OpintopolkuCasAuthenticationFilter(serviceProperties());
         casAuthenticationFilter.setAuthenticationManager(authenticationManager());
         casAuthenticationFilter.setFilterProcessesUrl("/j_spring_cas_security_check");
-        casAuthenticationFilter.setProxyReceptorUrl("/j_spring_cas_security_proxyreceptor");
         return casAuthenticationFilter;
     }
 
