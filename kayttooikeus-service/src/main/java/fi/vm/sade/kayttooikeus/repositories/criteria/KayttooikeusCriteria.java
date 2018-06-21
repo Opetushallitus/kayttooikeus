@@ -26,7 +26,7 @@ public class KayttooikeusCriteria {
     public Predicate condition(QKayttajatiedot kayttajatiedot, QHenkilo henkilo, QKayttoOikeusRyhma kayttoOikeusRyhma) {
         BooleanBuilder builder = new BooleanBuilder();
         if(StringUtils.hasLength(this.username)) {
-            builder.and(kayttajatiedot.username.eq(this.username));
+            builder.and(kayttajatiedot.username.equalsIgnoreCase(this.username));
         }
         if(StringUtils.hasLength(this.oidHenkilo)) {
             builder.and(henkilo.oidHenkilo.eq(this.oidHenkilo));
