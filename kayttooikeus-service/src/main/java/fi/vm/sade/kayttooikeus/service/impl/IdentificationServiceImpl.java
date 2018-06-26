@@ -37,6 +37,8 @@ import java.util.stream.Collectors;
 
 import static fi.vm.sade.kayttooikeus.model.Identification.HAKA_AUTHENTICATION_IDP;
 import static fi.vm.sade.kayttooikeus.model.Identification.STRONG_AUTHENTICATION_IDP;
+import static fi.vm.sade.kayttooikeus.model.Identification.WEAK_AUTHENTICATION_IDP;
+
 import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
 
@@ -161,23 +163,43 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
     @Override
     @Transactional(readOnly = true)
     public Set<String> getHakatunnuksetByHenkiloAndIdp(String oid) {
-        List<Identification> identifications = findIdentificationsByHenkiloAndIdp(oid, HAKA_AUTHENTICATION_IDP);
+        return this.getHenkiloIdentificationsByIdp(oid, HAKA_AUTHENTICATION_IDP);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<String> getEmailIdentifications(String oid) {
+        return this.getHenkiloIdentificationsByIdp(oid, WEAK_AUTHENTICATION_IDP);
+    }
+
+    private Set<String> getHenkiloIdentificationsByIdp(String oid, String idp) {
+        List<Identification> identifications = findIdentificationsByHenkiloAndIdp(oid, idp);
         return identifications.stream().map(Identification::getIdentifier).collect(Collectors.toSet());
     }
 
     @Override
     @Transactional
+    public Set<String> updateSahkopostitunnisteet(String oid, Set<String> sahkopostitunnisteet) {
+        return this.updateHenkiloIdentificationsByIdp(oid, sahkopostitunnisteet, WEAK_AUTHENTICATION_IDP);
+    }
+
+    @Override
+    @Transactional
     public Set<String> updateHakatunnuksetByHenkiloAndIdp(String oid, Set<String> hakatunnukset) {
-        Henkilo henkilo = henkiloDataRepository.findByOidHenkilo(oid)
+        return this.updateHenkiloIdentificationsByIdp(oid, hakatunnukset, HAKA_AUTHENTICATION_IDP);
+    }
+
+    private Set<String> updateHenkiloIdentificationsByIdp(String henkiloOid, Set<String> tunnisteet, String idp) {
+        Henkilo henkilo = henkiloDataRepository.findByOidHenkilo(henkiloOid)
                 .orElseThrow(() -> new NotFoundException("Henkilo not found"));
-        List<Identification> identifications = findIdentificationsByHenkiloAndIdp(oid, HAKA_AUTHENTICATION_IDP);
+        List<Identification> identifications = findIdentificationsByHenkiloAndIdp(henkiloOid, idp);
         identificationRepository.deleteAll(identifications);
-        Set<Identification> updatedIdentifications = hakatunnukset.stream()
-                .map(hakatunnus -> new Identification(henkilo, HAKA_AUTHENTICATION_IDP, hakatunnus)).collect(Collectors.toSet());
+        Set<Identification> updatedIdentifications = tunnisteet.stream()
+                .map(hakatunnus -> new Identification(henkilo, idp, hakatunnus)).collect(Collectors.toSet());
         henkilo.setIdentifications(updatedIdentifications);
         identificationRepository.saveAll(updatedIdentifications);
-        ldapSynchronizationService.updateHenkiloAsap(oid);
-        return hakatunnukset;
+        ldapSynchronizationService.updateHenkiloAsap(henkiloOid);
+        return tunnisteet;
     }
 
     @Override
