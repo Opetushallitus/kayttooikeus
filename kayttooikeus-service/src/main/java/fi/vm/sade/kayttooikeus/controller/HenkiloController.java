@@ -171,7 +171,27 @@ public class HenkiloController {
                                                  @RequestHeader(value = "External-Permission-Service", required = false)
                                                                   ExternalPermissionService permissionService) {
         return identificationService.updateHakatunnuksetByHenkiloAndIdp(oid, hakatunnisteet);
+    }
 
+    @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPerson(#oid, {'KAYTTOOIKEUS': {'REKISTERINPITAJA'}, 'HENKILONHALLINTA': {'OPHREKISTERI'}}, #permissionService)")
+    @GetMapping("/{oid}/sahkopostitunniste")
+    @ApiOperation(value = "Hakee henkilön sähköpostitunnisteet.",
+                    notes = "Hakee annetun henkilön sähköpostitunnisteet",
+                    authorizations = @Authorization("ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA, ROLE_APP_HENKILONHALLINTA_OPHREKISTERI"),
+                    response = Set.class)
+    public Set<String> getHenkilosEmailIdentifications(@PathVariable("oid") @ApiParam("Henkilön OID") String oid) {
+        return identificationService.getEmailIdentifications(oid);
+    }
+
+    @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPerson(#oid, {'KAYTTOOIKEUS': {'REKISTERINPITAJA'}, 'HENKILONHALLINTA': {'OPHREKISTERI'}}, #permissionService)")
+    @PutMapping("/{oid}/sahkopostitunniste")
+    @ApiOperation(value = "Päivittää henkilön sähköpostitunnisteet.",
+            notes = "Päivittää annetun henkilön sähköpostitunnisteet",
+            authorizations = @Authorization("ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA, ROLE_APP_HENKILONHALLINTA_OPHREKISTERI"),
+            response = Set.class)
+    public Set<String> setHenkilosEmailIdentifications(@PathVariable("oid") @ApiParam("Henkilön OID") String oid,
+                                                        @RequestBody Set<String> sahkopostitunnisteet) {
+        return identificationService.updateSahkopostitunnisteet(oid, sahkopostitunnisteet);
     }
 
     @GetMapping("/{oid}/kayttooikeudet")
