@@ -21,6 +21,10 @@ public interface IdentificationService {
 
     Set<String> getHakatunnuksetByHenkiloAndIdp(String oid);
 
+    Set<String> getEmailIdentifications(String oid);
+
+    Set<String> updateSahkopostitunnisteet(String oid, Set<String> sahkopostitunnisteet);
+
     Set<String> updateHakatunnuksetByHenkiloAndIdp(String oid, Set<String> hakatunnisteet);
 
     String updateKutsuAndGenerateTemporaryKutsuToken(String kutsuToken, String hetu, String etunimet, String sukunimi);
