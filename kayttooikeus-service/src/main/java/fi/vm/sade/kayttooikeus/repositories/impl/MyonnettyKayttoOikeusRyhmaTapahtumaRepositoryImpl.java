@@ -161,9 +161,11 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryImpl implements Myonne
         JPAQuery<KayttooikeusPerustiedotDto> query = jpa()
                 .select(Projections.constructor(KayttooikeusPerustiedotDto.class,
                         henkilo.oidHenkilo,
+                        kayttajatiedot.username,
                         organisaatioHenkilo.organisaatioOid,
                         kayttoOikeus.rooli,
-                        palvelu.name))
+                        palvelu.name,
+                        henkilo.kayttajaTyyppi))
                 .distinct()
                 .from(myonnettyKayttoOikeusRyhmaTapahtuma)
                 .innerJoin(myonnettyKayttoOikeusRyhmaTapahtuma.organisaatioHenkilo, organisaatioHenkilo)
@@ -177,10 +179,10 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryImpl implements Myonne
                 .where(kayttoOikeusRyhma.passivoitu.isFalse())
                 .orderBy(henkilo.oidHenkilo.desc())
                 ;
-        if(limit != null) {
+        if (limit != null) {
             query.limit(limit);
         }
-        if(offset != null) {
+        if (offset != null) {
             query.offset(offset);
         }
 

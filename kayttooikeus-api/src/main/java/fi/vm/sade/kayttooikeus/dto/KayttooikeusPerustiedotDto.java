@@ -13,10 +13,14 @@ import java.util.stream.Collectors;
 @Builder
 public class KayttooikeusPerustiedotDto {
     protected String oidHenkilo;
+    protected String username;
+    protected KayttajaTyyppi kayttajaTyyppi;
     protected Set<KayttooikeusOrganisaatiotDto> organisaatiot = new HashSet<>();
 
-    public KayttooikeusPerustiedotDto(String oidHenkilo, String organisaatioOid, String oikeus, String palvelu) {
+    public KayttooikeusPerustiedotDto(String oidHenkilo, String username, String organisaatioOid, String oikeus, String palvelu, KayttajaTyyppi kayttajaTyyppi) {
         this.oidHenkilo = oidHenkilo;
+        this.username = username;
+        this.kayttajaTyyppi = kayttajaTyyppi;
         KayttooikeusOrganisaatiotDto.KayttooikeusOikeudetDto kayttooikeusOikeudetDto
                 = new KayttooikeusOrganisaatiotDto.KayttooikeusOikeudetDto(palvelu, oikeus);
         KayttooikeusOrganisaatiotDto kayttooikeusOrganisaatiotDto = new KayttooikeusOrganisaatiotDto(
@@ -27,7 +31,7 @@ public class KayttooikeusPerustiedotDto {
     }
 
     public KayttooikeusPerustiedotDto mergeIfSameOid(KayttooikeusPerustiedotDto kayttooikeusPerustiedotDto) {
-        if(kayttooikeusPerustiedotDto.getOidHenkilo().equals(this.getOidHenkilo())) {
+        if (kayttooikeusPerustiedotDto.getOidHenkilo().equals(this.getOidHenkilo())) {
             this.organisaatiot.addAll(kayttooikeusPerustiedotDto.getOrganisaatiot());
             this.setOrganisaatiot(this.getOrganisaatiot()
                     .stream()
@@ -53,7 +57,7 @@ public class KayttooikeusPerustiedotDto {
         protected Set<KayttooikeusOikeudetDto> kayttooikeudet = new HashSet<>();
 
         public KayttooikeusOrganisaatiotDto mergeIfSameOid(KayttooikeusOrganisaatiotDto kayttooikeusOrganisaatiotDto) {
-            if(kayttooikeusOrganisaatiotDto.getOrganisaatioOid().equals(this.getOrganisaatioOid())) {
+            if (kayttooikeusOrganisaatiotDto.getOrganisaatioOid().equals(this.getOrganisaatioOid())) {
                 this.kayttooikeudet.addAll(kayttooikeusOrganisaatiotDto.getKayttooikeudet());
                 this.setKayttooikeudet(this.getKayttooikeudet()
                         .stream()
