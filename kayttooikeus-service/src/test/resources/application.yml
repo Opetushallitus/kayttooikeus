@@ -1,16 +1,10 @@
 spring:
   jpa:
     hibernate:
-      dialect: org.hibernate.dialect.HSQLDialect
-      implicit-naming-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
       ddl-auto: create
-    connection:
-      charset: utf-8
-    archive:
-      autodetection: class,hbm
     show-sql: true
-    format-sql: true
-    current-session-context-class: org.springframework.orm.hibernate5.SpringSessionContext
     database-platform: org.hibernate.dialect.HSQLDialect
   ldap:
     embedded:
