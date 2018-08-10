@@ -35,16 +35,16 @@ public class HaettuKayttooikeusRyhmaRepositoryCustomTest extends AbstractReposit
         populate(anomus("arpa@kuutio.fi").tila(AnomuksenTila.ANOTTU)
                 .withHaettuRyhma(haettuKayttooikeusryhma(null)
                         .withRyhma(kayttoOikeusRyhma("Rekisterinpitäjä (vain OPHn käytössä)")
-                                .withOikeus(oikeus("HENKILOHALLINTA", KayttooikeusRooli.VASTUUKAYTTAJAT.getName())))));
+                                .withOikeus(oikeus("KAYTTOOIKEUS", KayttooikeusRooli.VASTUUKAYTTAJAT.getName())))));
         populate(anomus("arpa@kuutio.fi").tila(AnomuksenTila.ANOTTU)
                 .withHaettuRyhma(haettuKayttooikeusryhma(KayttoOikeudenTila.ANOTTU)
                 .withRyhma(kayttoOikeusRyhma("Pääkäyttäjä (kk)")
-                        .withOikeus(oikeus("HENKILOHALLINTA", KayttooikeusRooli.VASTUUKAYTTAJAT.getName())))));
+                        .withOikeus(oikeus("KAYTTOOIKEUS", KayttooikeusRooli.VASTUUKAYTTAJAT.getName())))));
         // Hidden kayttooikeusryhmas are not fetched
         populate(anomus("arpa@kuutio.fi").tila(AnomuksenTila.ANOTTU)
                 .withHaettuRyhma(haettuKayttooikeusryhma(null)
                         .withRyhma(kayttoOikeusRyhma("Koodiston ylläpitäjä")
-                                .withOikeus(oikeus("HENKILOHALLINTA", KayttooikeusRooli.VASTUUKAYTTAJAT.getName()))
+                                .withOikeus(oikeus("KAYTTOOIKEUS", KayttooikeusRooli.VASTUUKAYTTAJAT.getName()))
                                 .asPassivoitu())));
         populate(anomus("arpa@kuutio.fi").tila(AnomuksenTila.ANOTTU)
                 .withHaettuRyhma(haettuKayttooikeusryhma(KayttoOikeudenTila.MYONNETTY)
