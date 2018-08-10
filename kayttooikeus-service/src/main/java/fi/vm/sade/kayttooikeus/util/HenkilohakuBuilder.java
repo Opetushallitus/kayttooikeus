@@ -15,15 +15,21 @@ import fi.vm.sade.kayttooikeus.repositories.dto.HenkilohakuResultDto;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
-
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import static java.util.stream.Collectors.toSet;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toSet;
 
 @RequiredArgsConstructor
 public class HenkilohakuBuilder {
@@ -70,11 +76,22 @@ public class HenkilohakuBuilder {
         // Because jpaquery limitations this can't be done with subqueries and union all.
         // This needs to be done in 2 queries because postgres query planner can't optimise it correctly because of
         // kayttajatiedot outer join and where or combination.
-        HenkiloCriteria henkiloCriteria = this.mapper.map(this.henkilohakuCriteriaDto, HenkiloCriteria.class);
         this.henkilohakuResultDtoList = new LinkedHashSet<>();
-        this.henkilohakuResultDtoList.addAll(henkiloHibernateRepository.findByUsername(henkiloCriteria, offset));
+
+        // 1) käyttäjätunnuksella haku
+        HenkiloCriteria kayttajatunnusHakuCriteria = this.mapper.map(this.henkilohakuCriteriaDto, HenkiloCriteria.class);
+        if (kayttajatunnusHakuCriteria.getKayttajatunnus() == null) {
+            kayttajatunnusHakuCriteria.setKayttajatunnus(kayttajatunnusHakuCriteria.getNameQuery());
+        }
+        kayttajatunnusHakuCriteria.setSukunimi(null);
+        kayttajatunnusHakuCriteria.setNameQuery(null);
+        this.henkilohakuResultDtoList.addAll(henkiloHibernateRepository.findByUsername(kayttajatunnusHakuCriteria, offset));
+
+        // 2) nimellä haku
+        HenkiloCriteria nimiHakuCriteria = mapper.map(henkilohakuCriteriaDto, HenkiloCriteria.class);
+        nimiHakuCriteria.setKayttajatunnus(null);
         this.henkilohakuResultDtoList.addAll(this.henkiloHibernateRepository
-                .findByCriteria(henkiloCriteria,
+                .findByCriteria(nimiHakuCriteria,
                         offset,
                         limit,
                         orderBy != null ? orderBy.getValue() : null));

@@ -42,8 +42,7 @@ public class HenkiloCriteria {
 
     public Predicate condition(QHenkilo henkilo,
                                 QOrganisaatioHenkilo organisaatioHenkilo,
-                                QMyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma,
-                               boolean isKayttajanimiSearch) {
+                                QMyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma) {
         BooleanBuilder builder = new BooleanBuilder();
         // Henkilo
         if (this.passivoitu != null && !this.passivoitu) {
@@ -56,9 +55,7 @@ public class HenkiloCriteria {
             String trimmedQuery = this.nameQuery.trim();
             List<String> queryParts = Arrays.asList(trimmedQuery.split(" "));
 
-            if(isKayttajanimiSearch) {
-                builder.and(henkilo.kayttajatiedot.username.eq(trimmedQuery));
-            } else if (queryParts.size() > 1) {
+            if (queryParts.size() > 1) {
                 // expect sukunimi to be first or last of queryParts
                 // use startsWithIgnoreCase to get use of index
 
@@ -89,6 +86,9 @@ public class HenkiloCriteria {
                         )
                 );
             }
+        }
+        if (StringUtils.hasLength(kayttajatunnus)) {
+            builder.and(henkilo.kayttajatiedot.username.eq(kayttajatunnus));
         }
         if (sukunimi != null) {
             builder.and(henkilo.sukunimiCached.startsWithIgnoreCase(sukunimi));
