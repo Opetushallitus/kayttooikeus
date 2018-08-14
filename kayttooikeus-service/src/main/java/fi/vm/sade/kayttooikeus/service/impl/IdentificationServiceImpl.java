@@ -28,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -67,7 +66,7 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
     @Transactional
     public String generateAuthTokenForHenkilo(Henkilo henkilo, String idpKey, String idpIdentifier) {
 
-        Optional<Identification> identification = henkilo.getIdentifications().stream()
+        Optional<Identification> identification = identificationRepository.findByHenkilo(henkilo).stream()
                 .filter(henkiloIdentification ->
                         idpIdentifier.equals(henkiloIdentification.getIdentifier()) && idpKey.equals(henkiloIdentification.getIdpEntityId()))
                 .findFirst();
@@ -132,12 +131,11 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
         Henkilo henkilo = this.henkiloDataRepository.findByOidHenkilo(oidHenkilo)
                 .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oidHenkilo));
         String token = generateToken();
-        Identification identification = henkilo.getIdentifications().stream()
+        Identification identification = identificationRepository.findByHenkilo(henkilo).stream()
                 .filter(ident -> STRONG_AUTHENTICATION_IDP.equals(ident.getIdpEntityId()))
                 .findFirst()
                 .orElseGet(() -> {
                     Identification ident = new Identification();
-                    henkilo.getIdentifications().add(ident);
                     ident.setHenkilo(henkilo);
                     return ident;
                 });
@@ -184,9 +182,9 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
 
         List<Identification> identifications = findIdentificationsByHenkiloAndIdp(oid, HAKA_AUTHENTICATION_IDP);
         identificationRepository.deleteAll(identifications);
+        identificationRepository.flush(); // fix unique key violation
         Set<Identification> updatedIdentifications = hakatunnukset.stream()
                 .map(hakatunnus -> new Identification(henkilo, HAKA_AUTHENTICATION_IDP, hakatunnus)).collect(Collectors.toSet());
-        henkilo.setIdentifications(updatedIdentifications);
         identificationRepository.saveAll(updatedIdentifications);
         ldapSynchronizationService.updateHenkiloAsap(oid);
         return hakatunnukset;
@@ -253,16 +251,11 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
         logger.info("creating new identification token:[{}]", token);
         Identification identification = new Identification();
         identification.setHenkilo(henkilo);
-
-        if (henkilo.getIdentifications() == null) {
-            henkilo.setIdentifications(new HashSet<>());
-        }
-
-        henkilo.getIdentifications().add(identification);
         identification.setIdentifier(identifier);
         identification.setIdpEntityId(idpKey);
         identification.setAuthtoken(token);
         identification.setAuthTokenCreated(LocalDateTime.now());
+        identificationRepository.save(identification);
     }
 
     private void updateToken(Identification identification, String token) {

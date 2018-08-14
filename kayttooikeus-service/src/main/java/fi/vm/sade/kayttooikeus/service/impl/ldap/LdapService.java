@@ -3,22 +3,25 @@ package fi.vm.sade.kayttooikeus.service.impl.ldap;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.Kayttaja;
-import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
 import fi.vm.sade.kayttooikeus.model.Ryhma;
+import fi.vm.sade.kayttooikeus.repositories.IdentificationRepository;
 import fi.vm.sade.kayttooikeus.repositories.KayttajaRepository;
+import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
 import fi.vm.sade.kayttooikeus.repositories.RyhmaRepository;
 import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
-import static fi.vm.sade.kayttooikeus.service.impl.ldap.LdapUtils.generateRandomPassword;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import static java.util.stream.Collectors.partitioningBy;
-import static java.util.stream.Collectors.toSet;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static fi.vm.sade.kayttooikeus.service.impl.ldap.LdapUtils.generateRandomPassword;
+import static java.util.stream.Collectors.partitioningBy;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Palvelu LDAP:n käsittelyyn ({@link Kayttaja} ja {@link Ryhma}).
@@ -32,15 +35,16 @@ public class LdapService {
     private final KayttajaRepository kayttajaRepository;
     private final RyhmaRepository ryhmaRepository;
     private final OrikaBeanMapper mapper;
+    private final IdentificationRepository identificationRepository;
+    private final MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
 
     /**
      * Lisää tai päivittää henkilön tiedot.
      *
      * @param entity käyttöoikeuspalvelu henkilö
      * @param dto oppijanumerorekisteri henkilö
-     * @param myonnetyt henkilölle myönnetyt käyttöoikeudet
      */
-    public void upsert(Henkilo entity, HenkiloDto dto, List<MyonnettyKayttoOikeusRyhmaTapahtuma> myonnetyt) {
+    public void upsert(Henkilo entity, HenkiloDto dto) {
         String kayttajatunnus = entity.getKayttajatiedot().getUsername();
         Map<Boolean, List<Kayttaja>> kayttajat = kayttajaRepository.findByOid(dto.getOidHenkilo()).stream()
                 .collect(partitioningBy(kayttaja -> kayttaja.getKayttajatunnus().equals(kayttajatunnus)));
@@ -50,8 +54,8 @@ public class LdapService {
         LdapRoolitBuilder roolit = new LdapRoolitBuilder()
                 // käyttöoikeuspalvelun roolit
                 .kayttajaTyyppi(entity.getKayttajaTyyppi())
-                .identifications(entity.getIdentifications())
-                .myonnetyt(myonnetyt)
+                .identifications(identificationRepository.findByHenkilo(entity))
+                .myonnetyt(myonnettyKayttoOikeusRyhmaTapahtumaRepository.findValidMyonnettyKayttooikeus(dto.getOidHenkilo()))
                 // oppijanumerorekisterin roolit
                 .asiointikieli(dto.getAsiointiKieli());
         Set<String> dbRoolit = roolit.asSet();

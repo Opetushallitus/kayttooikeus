@@ -1,12 +1,10 @@
 package fi.vm.sade.kayttooikeus.repositories.populate;
 
-import com.google.common.collect.Sets;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.Identification;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
-import java.util.Collections;
 
 public class IdentificationPopulator implements Populator<Identification> {
     private HenkiloPopulator henkilo;
@@ -41,7 +39,6 @@ public class IdentificationPopulator implements Populator<Identification> {
         identification.setAuthTokenCreated(authTokenCreated);
         identification.setHenkilo(henkiloo);
         entityManager.persist(identification);
-        henkiloo.setIdentifications(Sets.newHashSet(identification));
         return entityManager.find(Identification.class, identification.getId());
     }
 }

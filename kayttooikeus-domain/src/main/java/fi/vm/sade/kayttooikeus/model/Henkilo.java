@@ -42,10 +42,6 @@ public class Henkilo implements Identifiable {
             CascadeType.REFRESH })
     private Set<OrganisaatioHenkilo> organisaatioHenkilos = new HashSet<>();
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "henkilo", cascade = { CascadeType.MERGE, CascadeType.PERSIST,
-            CascadeType.REFRESH })
-    private Set<Identification> identifications = new HashSet<>();
-
     private String etunimetCached;
 
     private String kutsumanimiCached;
