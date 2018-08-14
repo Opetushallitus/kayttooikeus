@@ -4,10 +4,7 @@ import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.dto.AsiointikieliDto;
 import fi.vm.sade.kayttooikeus.dto.IdentifiedHenkiloTypeDto;
 import fi.vm.sade.kayttooikeus.dto.YhteystietojenTyypit;
-import fi.vm.sade.kayttooikeus.model.Henkilo;
-import fi.vm.sade.kayttooikeus.model.Identification;
-import fi.vm.sade.kayttooikeus.model.Kutsu;
-import fi.vm.sade.kayttooikeus.model.TunnistusToken;
+import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.IdentificationRepository;
 import fi.vm.sade.kayttooikeus.repositories.KutsuRepository;
@@ -15,8 +12,10 @@ import fi.vm.sade.kayttooikeus.repositories.TunnistusTokenDataRepository;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
+import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
 import fi.vm.sade.kayttooikeus.service.exception.LoginTokenNotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
+import fi.vm.sade.kayttooikeus.service.exception.ValidationException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.util.YhteystietoUtil;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
@@ -37,8 +36,7 @@ import java.util.stream.Collectors;
 
 import static fi.vm.sade.kayttooikeus.model.Identification.HAKA_AUTHENTICATION_IDP;
 import static fi.vm.sade.kayttooikeus.model.Identification.STRONG_AUTHENTICATION_IDP;
-import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
-import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
+import static java.util.stream.Collectors.joining;
 
 @Service
 @RequiredArgsConstructor
@@ -170,6 +168,20 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
     public Set<String> updateHakatunnuksetByHenkiloAndIdp(String oid, Set<String> hakatunnukset) {
         Henkilo henkilo = henkiloDataRepository.findByOidHenkilo(oid)
                 .orElseThrow(() -> new NotFoundException("Henkilo not found"));
+
+        // haka-tunniste tulee olla uniikki
+        if (!hakatunnukset.isEmpty()) {
+            Set<String> duplikaatit = identificationRepository
+                    .findByidpEntityIdAndIdentifierIn(HAKA_AUTHENTICATION_IDP, hakatunnukset).stream()
+                    .filter(identification -> !identification.getHenkilo().equals(henkilo))
+                    .map(Identification::getIdentifier)
+                    .collect(Collectors.toSet());
+            if (!duplikaatit.isEmpty()) {
+                throw new ValidationException(String.format("Tunnisteet '%s' ovat jo käytössä",
+                        duplikaatit.stream().collect(joining(", "))));
+            }
+        }
+
         List<Identification> identifications = findIdentificationsByHenkiloAndIdp(oid, HAKA_AUTHENTICATION_IDP);
         identificationRepository.deleteAll(identifications);
         Set<Identification> updatedIdentifications = hakatunnukset.stream()

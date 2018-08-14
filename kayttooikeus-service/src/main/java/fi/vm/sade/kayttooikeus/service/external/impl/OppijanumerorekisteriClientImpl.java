@@ -10,6 +10,7 @@ import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.ExternalServiceException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.util.FunctionalUtils;
+import fi.vm.sade.oppijanumerorekisteri.dto.*;
 import fi.vm.sade.properties.OphProperties;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,17 +24,12 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 import static fi.vm.sade.kayttooikeus.service.external.ExternalServiceException.mapper;
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.retrying;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloCreateDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloHakuPerustietoDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloPerustietoDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
 import static java.util.Collections.singletonList;
-import java.util.function.BiFunction;
 import static java.util.stream.Collectors.toSet;
 
 @Component
@@ -240,6 +236,13 @@ public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriCli
                         this.objectMapper.writeValueAsString(henkiloUpdateDto))), 2)
                 .get()
                 .orFail(mapper(url));
+    }
+
+    @Override
+    public void yhdistaHenkilot(String oid, Collection<String> duplicateOids) {
+        String url = urlProperties.url("oppijanumerorekisteri-service.henkilo.byOid.yhdistaHenkilot", oid);
+        retrying(FunctionalUtils.io(() -> serviceAccountClient.post(url, MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsString(duplicateOids))), 2).get().orFail(mapper(url));
     }
 
     //ONR uses java.time.LocalDate

@@ -49,4 +49,6 @@ public interface OppijanumerorekisteriClient {
     void setStrongIdentifiedHetu(String oidHenkilo, HenkiloVahvaTunnistusDto henkiloVahvaTunnistusDto);
 
     void updateHenkilo(HenkiloUpdateDto henkiloUpdateDto);
+
+    void yhdistaHenkilot(String oid, Collection<String> duplicateOids);
 }

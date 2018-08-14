@@ -2,14 +2,12 @@ package fi.vm.sade.kayttooikeus.service.it;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fi.vm.sade.generic.rest.CachingRestClient;
 import fi.vm.sade.kayttooikeus.aspects.HenkiloHelper;
 import fi.vm.sade.kayttooikeus.controller.KutsuPopulator;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.enumeration.KutsuView;
 import fi.vm.sade.kayttooikeus.enumeration.KutsuOrganisaatioOrder;
 import fi.vm.sade.kayttooikeus.model.*;
-import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KutsuCriteria;
 import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
 import fi.vm.sade.kayttooikeus.repositories.populate.*;
@@ -17,21 +15,21 @@ import fi.vm.sade.kayttooikeus.service.KutsuService;
 import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioService;
 import fi.vm.sade.kayttooikeus.service.exception.ForbiddenException;
-import fi.vm.sade.kayttooikeus.service.external.*;
+import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
+import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
+import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
+import fi.vm.sade.kayttooikeus.service.external.RyhmasahkopostiClient;
 import fi.vm.sade.oppijanumerorekisteri.dto.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpVersion;
-import org.apache.http.ProtocolVersion;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -59,14 +57,11 @@ import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 
 @RunWith(SpringRunner.class)
 @EnableAspectJAutoProxy(proxyTargetClass = true)
@@ -702,6 +697,59 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 .filteredOn(identification -> identification.getIdpEntityId().equals(HAKA_AUTHENTICATION_IDP))
                 .extracting(Identification::getIdentifier)
                 .containsExactlyInAnyOrder("!haka%Identifier1/");
+
+        assertThat(kutsu.getLuotuHenkiloOid()).isEqualTo(henkilo.getOidHenkilo());
+        assertThat(kutsu.getTemporaryToken()).isNull();
+        assertThat(kutsu.getTila()).isEqualTo(KutsunTila.KAYTETTY);
+    }
+
+    @Test
+    public void createHenkiloWithDuplicateHakaIdentifier() {
+        given(this.oppijanumerorekisteriClient.getHenkilonPerustiedot(eq("1.2.3.4.1")))
+                .willReturn(Optional.of(HenkiloPerustietoDto.builder().hetu("valid hetu").build()));
+        Kutsu kutsu = populate(KutsuPopulator.kutsu("arpa", "kuutio", "arpa@kuutio.fi")
+                .hakaIdentifier("!haka%Identifier1/")
+                .temporaryToken("123")
+                .hetu("hetu")
+                .kutsuja("1.2.3.4.1")
+                .organisaatio(KutsuOrganisaatioPopulator.kutsuOrganisaatio("1.2.0.0.1")
+                        .ryhma(KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma("ryhma").withNimi(text("FI", "Kuvaus")))));
+        Henkilo henkilo = populate(HenkiloPopulator.henkilo("1.2.3.4.5"));
+        Henkilo henkilo2 = populate(IdentificationPopulator.identification(HAKA_AUTHENTICATION_IDP,
+                "!haka%Identifier1/",
+                HenkiloPopulator.henkilo("1.2.3.4.1")))
+                .getHenkilo();
+        doReturn(Optional.of("1.2.3.4.5")).when(this.oppijanumerorekisteriClient).createHenkiloForKutsu(any(HenkiloCreateDto.class));
+        doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).getOidByHetu("hetu");
+        HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
+                new KielisyysDto("fi", null), null, null);
+
+        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
+        this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);
+        assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.3.4.5");
+        assertThat(henkilo.getKayttajatiedot().getUsername()).matches("hakaIdentifier1[\\d]{3,3}");
+        assertThat(henkilo.getKayttajatiedot().getPassword()).isNull();
+        assertThat(henkilo.getOrganisaatioHenkilos())
+                .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
+                .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKayttoOikeusRyhma)
+                .extracting(KayttoOikeusRyhma::getTunniste)
+                .containsExactly("ryhma");
+        assertThat(henkilo.getOrganisaatioHenkilos())
+                .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
+                .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKasittelija)
+                .extracting(Henkilo::getOidHenkilo)
+                .containsExactly("1.2.3.4.1");
+        assertThat(henkilo.getOrganisaatioHenkilos())
+                .flatExtracting(OrganisaatioHenkilo::getOrganisaatioOid)
+                .containsExactly("1.2.0.0.1");
+
+        assertThat(henkilo.getIdentifications())
+                .filteredOn(identification -> identification.getIdpEntityId().equals(HAKA_AUTHENTICATION_IDP))
+                .extracting(Identification::getIdentifier)
+                .containsExactlyInAnyOrder("!haka%Identifier1/");
+        assertThat(henkilo2.getIdentifications())
+                .filteredOn(identification -> identification.getIdpEntityId().equals(HAKA_AUTHENTICATION_IDP))
+                .isEmpty();
 
         assertThat(kutsu.getLuotuHenkiloOid()).isEqualTo(henkilo.getOidHenkilo());
         assertThat(kutsu.getTemporaryToken()).isNull();
