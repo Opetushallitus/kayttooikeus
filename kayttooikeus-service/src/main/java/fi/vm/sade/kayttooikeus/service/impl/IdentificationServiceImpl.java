@@ -156,11 +156,17 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
         }
 
         List<Identification> identifications = findIdentificationsByHenkiloAndIdp(oid, HAKA_AUTHENTICATION_IDP);
-        identificationRepository.deleteAll(identifications);
-        identificationRepository.flush(); // fix unique key violation
-        Set<Identification> updatedIdentifications = hakatunnukset.stream()
-                .map(hakatunnus -> new Identification(henkilo, HAKA_AUTHENTICATION_IDP, hakatunnus)).collect(Collectors.toSet());
-        identificationRepository.saveAll(updatedIdentifications);
+        List<String> identifiers = identifications.stream().map(Identification::getIdentifier).collect(Collectors.toList());
+        // poistot
+        identifications.stream()
+                .filter(identification -> !hakatunnukset.contains(identification.getIdentifier()))
+                .forEach(identificationRepository::delete);
+        // lisäykset
+        hakatunnukset.stream()
+                .filter(hakatunnus -> !identifiers.contains(hakatunnus))
+                .map(hakatunnus -> new Identification(henkilo, HAKA_AUTHENTICATION_IDP, hakatunnus))
+                .forEach(identificationRepository::save);
+
         ldapSynchronizationService.updateHenkiloAsap(oid);
         return hakatunnukset;
     }
