@@ -29,12 +29,12 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static fi.vm.sade.kayttooikeus.model.Identification.HAKA_AUTHENTICATION_IDP;
 import static fi.vm.sade.kayttooikeus.model.Identification.STRONG_AUTHENTICATION_IDP;
+import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.ifPresentOrElse;
 import static java.util.stream.Collectors.joining;
 
 @Service
@@ -65,21 +65,11 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
     @Override
     @Transactional
     public String generateAuthTokenForHenkilo(Henkilo henkilo, String idpKey, String idpIdentifier) {
-
-        Optional<Identification> identification = identificationRepository.findByHenkilo(henkilo).stream()
-                .filter(henkiloIdentification ->
-                        idpIdentifier.equals(henkiloIdentification.getIdentifier()) && idpKey.equals(henkiloIdentification.getIdpEntityId()))
-                .findFirst();
-
         String token = generateToken();
-        if (identification.isPresent()) {
-            updateToken(identification.get(), token);
-        } else {
-            createIdentification(henkilo, token, idpIdentifier, idpKey);
-        }
-
+        ifPresentOrElse(identificationRepository.findByidpEntityIdAndIdentifier(idpKey, idpIdentifier),
+                identification -> updateIdentification(henkilo, token, identification),
+                () -> createIdentification(henkilo, token, idpIdentifier, idpKey));
         return token;
-
     }
 
     @Override
@@ -130,22 +120,7 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
     public String updateIdentificationAndGenerateTokenForHenkiloByOid(String oidHenkilo) {
         Henkilo henkilo = this.henkiloDataRepository.findByOidHenkilo(oidHenkilo)
                 .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oidHenkilo));
-        String token = generateToken();
-        Identification identification = identificationRepository.findByHenkilo(henkilo).stream()
-                .filter(ident -> STRONG_AUTHENTICATION_IDP.equals(ident.getIdpEntityId()))
-                .findFirst()
-                .orElseGet(() -> {
-                    Identification ident = new Identification();
-                    ident.setHenkilo(henkilo);
-                    return ident;
-                });
-        identification.setIdpEntityId(STRONG_AUTHENTICATION_IDP);
-        identification.setIdentifier(henkilo.getKayttajatiedot().getUsername());
-        identification.setAuthtoken(token);
-        identification.setAuthTokenCreated(LocalDateTime.now());
-        this.identificationRepository.save(identification);
-
-        return token;
+        return generateAuthTokenForHenkilo(henkilo, STRONG_AUTHENTICATION_IDP, henkilo.getKayttajatiedot().getUsername());
     }
 
     @Override
@@ -256,6 +231,14 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
         identification.setAuthtoken(token);
         identification.setAuthTokenCreated(LocalDateTime.now());
         identificationRepository.save(identification);
+    }
+
+    private void updateIdentification(Henkilo henkilo, String token, Identification identification) {
+        if (!henkilo.equals(identification.getHenkilo())) {
+            throw new ValidationException(String.format("Tunniste %s=%s kuuluu toiselle käyttäjälle",
+                    identification.getIdpEntityId(), identification.getIdentifier()));
+        }
+        updateToken(identification, token);
     }
 
     private void updateToken(Identification identification, String token) {
