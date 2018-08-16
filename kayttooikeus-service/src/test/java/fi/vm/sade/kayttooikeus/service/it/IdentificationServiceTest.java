@@ -12,6 +12,10 @@ import fi.vm.sade.kayttooikeus.repositories.IdentificationRepository;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.YhteystiedotRyhmaDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoTyyppi;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -24,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.henkilo;
 import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.virkailija;
@@ -34,16 +39,11 @@ import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaPop
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloKayttoOikeusPopulator.myonnettyKayttoOikeus;
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloPopulator.organisaatioHenkilo;
 import static fi.vm.sade.kayttooikeus.repositories.populate.PalveluPopulator.palvelu;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.YhteystiedotRyhmaDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoTyyppi;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import java.util.stream.Stream;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 public class IdentificationServiceTest extends AbstractServiceIntegrationTest {
@@ -216,6 +216,24 @@ public class IdentificationServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
+    public void updateIdentificationAndGenerateTokenForHenkiloByOid() {
+        String oid = "oid1";
+        populate(kayttajatiedot(henkilo(oid), "user1"));
+
+        String token1 = identificationService.updateIdentificationAndGenerateTokenForHenkiloByOid(oid);
+        assertThat(identificationRepository.findByHenkiloOidHenkiloAndIdpEntityId(oid, "vetuma"))
+                .extracting(Identification::getIdentifier)
+                .containsExactly("user1");
+
+        String token2 = identificationService.updateIdentificationAndGenerateTokenForHenkiloByOid(oid);
+        assertThat(identificationRepository.findByHenkiloOidHenkiloAndIdpEntityId(oid, "vetuma"))
+                .extracting(Identification::getIdentifier)
+                .containsExactly("user1");
+
+        assertThat(token2).isNotEqualTo(token1);
+    }
+
+    @Test
     public void updateIdentificationAndGenerateTokenForHenkiloByHetuTest() throws Exception {
         populate(kayttajatiedot(henkilo("1.2.3.4.5"), "user1"));
 
@@ -237,6 +255,23 @@ public class IdentificationServiceTest extends AbstractServiceIntegrationTest {
         assertEquals("vetuma", identification.get().getIdpEntityId());
         assertEquals("user1", identification.get().getIdentifier());
         assertEquals(id, identification.get().getId());
+    }
+
+    @Test
+    public void updateHakatunnuksetByHenkiloAndIdp() {
+        String oid = "1.2.3.4.5";
+        populate(identification("email", "test@example.com", henkilo(oid)));
+
+        assertThat(identificationService.updateHakatunnuksetByHenkiloAndIdp(oid, Stream.of("tunniste1", "tunniste2").collect(toSet())))
+                .containsExactlyInAnyOrder("tunniste1", "tunniste2");
+        assertThat(identificationService.getHakatunnuksetByHenkiloAndIdp(oid)).containsExactlyInAnyOrder("tunniste1", "tunniste2");
+        assertThat(identificationService.updateHakatunnuksetByHenkiloAndIdp(oid, Stream.of("tunniste2", "tunniste3").collect(toSet())))
+                .containsExactlyInAnyOrder("tunniste2", "tunniste3");
+        assertThat(identificationService.getHakatunnuksetByHenkiloAndIdp(oid)).containsExactlyInAnyOrder("tunniste2", "tunniste3");
+
+        assertThat(identificationRepository.findByHenkiloOidHenkiloAndIdpEntityId(oid, "email"))
+                .extracting(Identification::getIdentifier)
+                .containsExactly("test@example.com");
     }
 
     @Test

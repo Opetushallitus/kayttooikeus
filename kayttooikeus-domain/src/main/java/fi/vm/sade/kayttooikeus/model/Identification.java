@@ -1,16 +1,18 @@
 package fi.vm.sade.kayttooikeus.model;
 
-import java.time.LocalDateTime;
-import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Getter
 @Setter
-@Table(name = "identification")
+@Table(name = "identification", uniqueConstraints = {
+        @UniqueConstraint(name = "identification_uk1", columnNames = {"idpentityid", "identifier"}),
+})
 public class Identification extends IdentifiableAndVersionedEntity {
 
     public static final String WEAK_AUTHENTICATION_IDP = "email";

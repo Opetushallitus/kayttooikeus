@@ -4,10 +4,7 @@ import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.dto.AsiointikieliDto;
 import fi.vm.sade.kayttooikeus.dto.IdentifiedHenkiloTypeDto;
 import fi.vm.sade.kayttooikeus.dto.YhteystietojenTyypit;
-import fi.vm.sade.kayttooikeus.model.Henkilo;
-import fi.vm.sade.kayttooikeus.model.Identification;
-import fi.vm.sade.kayttooikeus.model.Kutsu;
-import fi.vm.sade.kayttooikeus.model.TunnistusToken;
+import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.IdentificationRepository;
 import fi.vm.sade.kayttooikeus.repositories.KutsuRepository;
@@ -15,8 +12,10 @@ import fi.vm.sade.kayttooikeus.repositories.TunnistusTokenDataRepository;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
+import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
 import fi.vm.sade.kayttooikeus.service.exception.LoginTokenNotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
+import fi.vm.sade.kayttooikeus.service.exception.ValidationException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.util.YhteystietoUtil;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
@@ -29,18 +28,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static fi.vm.sade.kayttooikeus.model.Identification.HAKA_AUTHENTICATION_IDP;
-import static fi.vm.sade.kayttooikeus.model.Identification.STRONG_AUTHENTICATION_IDP;
-import static fi.vm.sade.kayttooikeus.model.Identification.WEAK_AUTHENTICATION_IDP;
-
-import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
-import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
+import static fi.vm.sade.kayttooikeus.model.Identification.*;
+import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.ifPresentOrElse;
+import static java.util.stream.Collectors.joining;
 
 @Service
 @RequiredArgsConstructor
@@ -70,21 +64,11 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
     @Override
     @Transactional
     public String generateAuthTokenForHenkilo(Henkilo henkilo, String idpKey, String idpIdentifier) {
-
-        Optional<Identification> identification = henkilo.getIdentifications().stream()
-                .filter(henkiloIdentification ->
-                        idpIdentifier.equals(henkiloIdentification.getIdentifier()) && idpKey.equals(henkiloIdentification.getIdpEntityId()))
-                .findFirst();
-
         String token = generateToken();
-        if (identification.isPresent()) {
-            updateToken(identification.get(), token);
-        } else {
-            createIdentification(henkilo, token, idpIdentifier, idpKey);
-        }
-
+        ifPresentOrElse(identificationRepository.findByidpEntityIdAndIdentifier(idpKey, idpIdentifier),
+                identification -> updateIdentification(henkilo, token, identification),
+                () -> createIdentification(henkilo, token, idpIdentifier, idpKey));
         return token;
-
     }
 
     @Override
@@ -135,23 +119,7 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
     public String updateIdentificationAndGenerateTokenForHenkiloByOid(String oidHenkilo) {
         Henkilo henkilo = this.henkiloDataRepository.findByOidHenkilo(oidHenkilo)
                 .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oidHenkilo));
-        String token = generateToken();
-        Identification identification = henkilo.getIdentifications().stream()
-                .filter(ident -> STRONG_AUTHENTICATION_IDP.equals(ident.getIdpEntityId()))
-                .findFirst()
-                .orElseGet(() -> {
-                    Identification ident = new Identification();
-                    henkilo.getIdentifications().add(ident);
-                    ident.setHenkilo(henkilo);
-                    return ident;
-                });
-        identification.setIdpEntityId(STRONG_AUTHENTICATION_IDP);
-        identification.setIdentifier(henkilo.getKayttajatiedot().getUsername());
-        identification.setAuthtoken(token);
-        identification.setAuthTokenCreated(LocalDateTime.now());
-        this.identificationRepository.save(identification);
-
-        return token;
+        return generateAuthTokenForHenkilo(henkilo, STRONG_AUTHENTICATION_IDP, henkilo.getKayttajatiedot().getUsername());
     }
 
     @Override
@@ -192,12 +160,32 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
     private Set<String> updateHenkiloIdentificationsByIdp(String henkiloOid, Set<String> tunnisteet, String idp) {
         Henkilo henkilo = henkiloDataRepository.findByOidHenkilo(henkiloOid)
                 .orElseThrow(() -> new NotFoundException("Henkilo not found"));
+
+        // tunniste tulee olla uniikki
+        if (!tunnisteet.isEmpty()) {
+            Set<String> duplikaatit = identificationRepository
+                    .findByidpEntityIdAndIdentifierIn(idp, tunnisteet).stream()
+                    .filter(identification -> !identification.getHenkilo().equals(henkilo))
+                    .map(Identification::getIdentifier)
+                    .collect(Collectors.toSet());
+            if (!duplikaatit.isEmpty()) {
+                throw new ValidationException(String.format("Tunnisteet '%s' ovat jo käytössä",
+                        duplikaatit.stream().collect(joining(", "))));
+            }
+        }
+
         List<Identification> identifications = findIdentificationsByHenkiloAndIdp(henkiloOid, idp);
-        identificationRepository.deleteAll(identifications);
-        Set<Identification> updatedIdentifications = tunnisteet.stream()
-                .map(hakatunnus -> new Identification(henkilo, idp, hakatunnus)).collect(Collectors.toSet());
-        henkilo.setIdentifications(updatedIdentifications);
-        identificationRepository.saveAll(updatedIdentifications);
+        List<String> identifiers = identifications.stream().map(Identification::getIdentifier).collect(Collectors.toList());
+        // poistot
+        identifications.stream()
+                .filter(identification -> !tunnisteet.contains(identification.getIdentifier()))
+                .forEach(identificationRepository::delete);
+        // lisäykset
+        tunnisteet.stream()
+                .filter(tunniste -> !identifiers.contains(tunniste))
+                .map(tunniste -> new Identification(henkilo, idp, tunniste))
+                .forEach(identificationRepository::save);
+
         ldapSynchronizationService.updateHenkiloAsap(henkiloOid);
         return tunnisteet;
     }
@@ -263,16 +251,19 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
         logger.info("creating new identification token:[{}]", token);
         Identification identification = new Identification();
         identification.setHenkilo(henkilo);
-
-        if (henkilo.getIdentifications() == null) {
-            henkilo.setIdentifications(new HashSet<>());
-        }
-
-        henkilo.getIdentifications().add(identification);
         identification.setIdentifier(identifier);
         identification.setIdpEntityId(idpKey);
         identification.setAuthtoken(token);
         identification.setAuthTokenCreated(LocalDateTime.now());
+        identificationRepository.save(identification);
+    }
+
+    private void updateIdentification(Henkilo henkilo, String token, Identification identification) {
+        if (!henkilo.equals(identification.getHenkilo())) {
+            throw new ValidationException(String.format("Tunniste %s=%s kuuluu toiselle käyttäjälle",
+                    identification.getIdpEntityId(), identification.getIdentifier()));
+        }
+        updateToken(identification, token);
     }
 
     private void updateToken(Identification identification, String token) {

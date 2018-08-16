@@ -1,31 +1,24 @@
 package fi.vm.sade.kayttooikeus.service.impl.ldap;
 
-import fi.vm.sade.kayttooikeus.model.Henkilo;
-import fi.vm.sade.kayttooikeus.model.LdapPriorityType;
-import fi.vm.sade.kayttooikeus.model.LdapStatusType;
-import fi.vm.sade.kayttooikeus.model.LdapSynchronizationData;
-import fi.vm.sade.kayttooikeus.model.LdapUpdateData;
-import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
-import fi.vm.sade.kayttooikeus.repositories.HenkiloHibernateRepository;
-import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
-import fi.vm.sade.kayttooikeus.repositories.LdapUpdateDataCriteria;
-import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
+import fi.vm.sade.kayttooikeus.model.*;
+import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.service.TimeService;
 import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
-import java.util.ArrayList;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import fi.vm.sade.kayttooikeus.repositories.LdapUpdateDataRepository;
+
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 @Service
 @Transactional
@@ -41,7 +34,6 @@ public class LdapSynchronizer {
     private final LdapUpdateDataRepository ldapUpdateDataRepository;
     private final HenkiloDataRepository henkiloRepository;
     private final HenkiloHibernateRepository henkiloHibernateRepository;
-    private final MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
     private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
 
     /**
@@ -78,12 +70,8 @@ public class LdapSynchronizer {
         if (dto.isPassivoitu()) {
             ldapService.deleteByOid(dto.getOidHenkilo());
         } else {
-            ldapService.upsert(entity, dto, getMyonnetyt(dto.getOidHenkilo()));
+            ldapService.upsert(entity, dto);
         }
-    }
-
-    private List<MyonnettyKayttoOikeusRyhmaTapahtuma> getMyonnetyt(String henkiloOid) {
-        return myonnettyKayttoOikeusRyhmaTapahtumaRepository.findValidMyonnettyKayttooikeus(henkiloOid);
     }
 
     @RequiredArgsConstructor

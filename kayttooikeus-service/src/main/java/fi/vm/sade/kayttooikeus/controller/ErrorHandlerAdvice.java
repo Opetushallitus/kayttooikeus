@@ -148,6 +148,13 @@ public class ErrorHandlerAdvice {
         return handleException(req, exception, "bad_request_illegal_argument", exception.getMessage());
     }
 
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST) // 400 Bad Request
+    @ExceptionHandler(fi.vm.sade.kayttooikeus.service.exception.ValidationException.class)
+    @ResponseBody
+    public Map<String,Object> badRequest(HttpServletRequest req, fi.vm.sade.kayttooikeus.service.exception.ValidationException exception) {
+        return handleException(req, exception, "bad_request", exception.getMessage());
+    }
+
     @ResponseStatus(value = HttpStatus.FORBIDDEN) // 403 Forbidden
     @ExceptionHandler(ForbiddenException.class)
     @ResponseBody
