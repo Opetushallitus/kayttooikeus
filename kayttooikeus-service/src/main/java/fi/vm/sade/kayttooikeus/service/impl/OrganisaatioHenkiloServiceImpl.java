@@ -71,10 +71,16 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
     private final OrganisaatioClient organisaatioClient;
 
     @Override
-    @Transactional(readOnly = true)
     public List<OrganisaatioHenkiloWithOrganisaatioDto> listOrganisaatioHenkilos(String henkiloOid, String compareByLang) {
-        return organisaatioHenkiloRepository.findActiveOrganisaatioHenkiloListDtos(henkiloOid)
-                .stream().peek(organisaatioHenkilo ->
+        return listOrganisaatioHenkilos(henkiloOid, compareByLang, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrganisaatioHenkiloWithOrganisaatioDto> listOrganisaatioHenkilos(String henkiloOid, String compareByLang, boolean piilotaOikeudettomat) {
+        return organisaatioHenkiloRepository.findActiveOrganisaatioHenkiloListDtos(henkiloOid, piilotaOikeudettomat)
+                .stream()
+                .peek(organisaatioHenkilo ->
                     organisaatioHenkilo.setOrganisaatio(
                         mapOrganisaatioDtoRecursive(
                                 this.organisaatioClient

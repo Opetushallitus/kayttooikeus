@@ -7,9 +7,11 @@ import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import java.util.List;
 
 public interface OrganisaatioHenkiloService {
-    
+
     List<OrganisaatioHenkiloWithOrganisaatioDto> listOrganisaatioHenkilos(String henkiloOid, String compareByLang);
-    
+
+    List<OrganisaatioHenkiloWithOrganisaatioDto> listOrganisaatioHenkilos(String henkiloOid, String compareByLang, boolean naytaOikeudettomat);
+
     List<OrganisaatioPerustieto> listOrganisaatioPerustiedotForCurrentUser();
 
     List<KayttajaTyyppi> listPossibleHenkiloTypesAccessibleForCurrentUser();

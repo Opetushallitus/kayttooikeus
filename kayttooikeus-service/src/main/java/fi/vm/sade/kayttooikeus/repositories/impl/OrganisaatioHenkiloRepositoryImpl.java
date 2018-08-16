@@ -80,12 +80,24 @@ public class OrganisaatioHenkiloRepositoryImpl implements OrganisaatioHenkiloCus
 
     @Override
     public List<OrganisaatioHenkiloWithOrganisaatioDto> findActiveOrganisaatioHenkiloListDtos(String henkiloOoid) {
-        return jpa().from(organisaatioHenkilo)
-                .innerJoin(organisaatioHenkilo.henkilo, henkilo)
-                .where(voimassa(organisaatioHenkilo, LocalDate.now())
-                        .and(henkilo.oidHenkilo.eq(henkiloOoid)))
-                .select(organisaatioHenkiloDtoProjection(OrganisaatioHenkiloWithOrganisaatioDto.class))
-                .orderBy(organisaatioHenkilo.organisaatioOid.asc()).fetch();
+        return this.findActiveOrganisaatioHenkiloListDtos(henkiloOoid, false);
+    }
+
+
+    @Override
+    public List<OrganisaatioHenkiloWithOrganisaatioDto> findActiveOrganisaatioHenkiloListDtos(String henkiloOoid, boolean piilotaOikeudettomat) {
+//        JPAQuery<?> query = ;
+//
+//        if(piilotaOikeudettomat) {
+//            query.where(organisaatioHenkilo.myonnettyKayttoOikeusRyhmas.isNotEmpty());
+//        }
+
+       return jpa().from(organisaatioHenkilo)
+               .innerJoin(organisaatioHenkilo.henkilo, henkilo)
+               .where(voimassa(organisaatioHenkilo, LocalDate.now())
+                       .and(henkilo.oidHenkilo.eq(henkiloOoid))).select(organisaatioHenkiloDtoProjection(OrganisaatioHenkiloWithOrganisaatioDto.class))
+               .orderBy(organisaatioHenkilo.organisaatioOid.asc()).fetch();
+
     }
 
     @Override

@@ -110,7 +110,7 @@ public class HenkiloControllerTest extends AbstractControllerTest {
     @Test
     @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
     public void listOrganisatioHenkilosTest() throws Exception {
-        given(this.service.listOrganisaatioHenkilos("1.2.3.4.5", "fi")).willReturn(singletonList(
+        given(this.service.listOrganisaatioHenkilos("1.2.3.4.5", "fi", false)).willReturn(singletonList(
                 OrganisaatioHenkiloWithOrganisaatioDto.organisaatioBuilder().id(1L)
                         .voimassaAlkuPvm(LocalDate.of(2016,1,1))
                         .voimassaLoppuPvm(LocalDate.of(2016,12,31))

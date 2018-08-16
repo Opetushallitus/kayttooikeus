@@ -64,11 +64,11 @@ public class HenkiloController {
     @RequestMapping(value = "/{oid}/organisaatio", method = RequestMethod.GET)
     public List<OrganisaatioHenkiloWithOrganisaatioDto> listOrganisatioHenkilos(
             @PathVariable @ApiParam(value = "Henkilö-OID", required = true) String oid,
-            @RequestParam(required = false, defaultValue = "fi") @ApiParam("Organisaatioiden järjestyksen kielikoodi (oletus fi)")
-                    String comparisonLangCode,
+            @RequestParam(required = false, defaultValue = "fi") @ApiParam("Organisaatioiden järjestyksen kielikoodi (oletus fi)") String comparisonLangCode,
+            @RequestParam(required = false, defaultValue = "false") @ApiParam("Piilotetaanko organisaatiohenkilöt, joilla ei ole aktiivisia oikeuksia.") boolean piilotaOikeudettomat,
             @RequestHeader(value = "External-Permission-Service", required = false)
                     ExternalPermissionService permissionService) {
-        return organisaatioHenkiloService.listOrganisaatioHenkilos(oid, comparisonLangCode);
+        return organisaatioHenkiloService.listOrganisaatioHenkilos(oid, comparisonLangCode, piilotaOikeudettomat);
     }
 
     @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#henkiloOid, {'HENKILONHALLINTA': {'READ', 'READ_UPDATE', 'CRUD'}, 'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, #permissionService)")

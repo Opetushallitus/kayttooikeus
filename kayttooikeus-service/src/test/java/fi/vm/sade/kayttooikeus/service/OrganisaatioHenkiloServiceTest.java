@@ -85,7 +85,7 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
                             .build()));
             return Optional.of(orgDto);
         });
-        given(this.organisaatioHenkiloRepository.findActiveOrganisaatioHenkiloListDtos("1.2.3.4.5")).willReturn(
+        given(this.organisaatioHenkiloRepository.findActiveOrganisaatioHenkiloListDtos("1.2.3.4.5", false)).willReturn(
                 asList(OrganisaatioHenkiloWithOrganisaatioDto.organisaatioBuilder()
                                 .id(1L)
                                 .passivoitu(false)
