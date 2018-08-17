@@ -1,5 +1,6 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.HenkilohakuCriteriaDto;
@@ -12,6 +13,7 @@ import fi.vm.sade.kayttooikeus.repositories.criteria.HenkiloCriteria;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
+import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
@@ -58,6 +60,10 @@ public class HenkiloServiceImplTest {
     private OrganisaatioClient organisaatioClientMock;
     @Mock
     private KayttoOikeusService kayttoOikeusService;
+    @Mock
+    private OppijanumerorekisteriClient oppijanumerorekisteriClient;
+    @Mock
+    private ObjectMapper objectMapper;
 
     @Before
     public void setup() {
@@ -72,7 +78,10 @@ public class HenkiloServiceImplTest {
                 henkiloDataRepositoryMock,
                 commonPropertiesMock,
                 mapper,
-                organisaatioClientMock);
+                organisaatioClientMock,
+                oppijanumerorekisteriClient,
+                objectMapper
+        );
     }
 
     @Test

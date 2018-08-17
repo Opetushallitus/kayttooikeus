@@ -10,6 +10,7 @@ import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.ExternalServiceException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.util.FunctionalUtils;
+import fi.vm.sade.oppijanumerorekisteri.dto.*;
 import fi.vm.sade.properties.OphProperties;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,11 +28,6 @@ import java.util.stream.Stream;
 
 import static fi.vm.sade.kayttooikeus.service.external.ExternalServiceException.mapper;
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.retrying;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloCreateDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloHakuPerustietoDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloPerustietoDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
 import static java.util.Collections.singletonList;
 import java.util.function.BiFunction;
 import static java.util.stream.Collectors.toSet;
@@ -238,6 +234,16 @@ public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriCli
                 FunctionalUtils.io(() -> this.serviceAccountClient.put(url,
                         MediaType.APPLICATION_JSON_VALUE,
                         this.objectMapper.writeValueAsString(henkiloUpdateDto))), 2)
+                .get()
+                .orFail(mapper(url));
+    }
+
+    @Override
+    public HenkiloOmattiedotDto getOmatTiedot(String oidHenkilo) {
+        String url = this.urlProperties.url("oppijanumerorekisteri.henkilo.omattiedot-by-oid", oidHenkilo);
+        return retrying(FunctionalUtils.<HenkiloOmattiedotDto>io(
+                () -> this.objectMapper.readerFor(HenkiloOmattiedotDto.class)
+                        .readValue(this.serviceAccountClient.get(url))), 2)
                 .get()
                 .orFail(mapper(url));
     }
