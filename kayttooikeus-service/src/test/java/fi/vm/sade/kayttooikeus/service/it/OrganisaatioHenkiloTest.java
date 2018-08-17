@@ -23,8 +23,8 @@ import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.hen
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloPopulator.organisaatioHenkilo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.anyString;
 
 @RunWith(SpringRunner.class)
 public class OrganisaatioHenkiloTest extends AbstractServiceIntegrationTest {

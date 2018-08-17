@@ -12,7 +12,6 @@ import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.kayttooikeus.service.external.RyhmasahkopostiClient;
 import fi.vm.sade.kayttooikeus.util.CreateUtil;
-import fi.vm.sade.kayttooikeus.util.LocalisationUtils;
 import fi.vm.sade.oppijanumerorekisteri.dto.*;
 import fi.vm.sade.ryhmasahkoposti.api.dto.EmailData;
 import org.apache.http.message.BasicHttpResponse;
@@ -24,11 +23,11 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -37,12 +36,11 @@ import static java.util.Collections.singleton;
 import static java.util.Optional.of;
 import static org.apache.http.HttpVersion.HTTP_1_1;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
-import org.springframework.security.test.context.support.WithMockUser;
 
 @RunWith(SpringRunner.class)
 public class EmailServiceTest extends AbstractServiceTest {

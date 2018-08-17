@@ -63,7 +63,7 @@ public class HaettuKayttooikeusRyhmaRepositoryCustomTest extends AbstractReposit
                 .anomuksenTilat(Sets.newHashSet(AnomuksenTila.ANOTTU))
                 .build();
         List<HaettuKayttoOikeusRyhma> haetutResult = this.haettuKayttooikeusRyhmaRepository
-                .findBy(anomusCriteria.createAnomusSearchCondition(this.organisaatioClient), null, null, null, true);
+                .findBy(anomusCriteria.createAnomusSearchCondition(this.organisaatioClient), null, null, null);
         assertThat(haetutResult)
                 .extracting("kayttoOikeusRyhma")
                 .extracting("tunniste")
@@ -77,7 +77,7 @@ public class HaettuKayttooikeusRyhmaRepositoryCustomTest extends AbstractReposit
                 .onlyActive(true)
                 .build();
         List<HaettuKayttoOikeusRyhma> haetutResult = this.haettuKayttooikeusRyhmaRepository
-                .findBy(anomusCriteria.createAnomusSearchCondition(this.organisaatioClient), 2L, 1L, null, true);
+                .findBy(anomusCriteria.createAnomusSearchCondition(this.organisaatioClient), 2L, 1L, null);
         assertThat(haetutResult)
                 .extracting("kayttoOikeusRyhma")
                 .extracting("tunniste")
@@ -91,7 +91,7 @@ public class HaettuKayttooikeusRyhmaRepositoryCustomTest extends AbstractReposit
                 .adminView(true)
                 .build();
         List<HaettuKayttoOikeusRyhma> haetutResult = this.haettuKayttooikeusRyhmaRepository
-                .findBy(anomusCriteria.createAnomusSearchCondition(this.organisaatioClient), null, null, null, true);
+                .findBy(anomusCriteria.createAnomusSearchCondition(this.organisaatioClient), null, null, null);
         assertThat(haetutResult)
                 .extracting("kayttoOikeusRyhma")
                 .extracting("tunniste")

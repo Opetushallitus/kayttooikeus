@@ -2,9 +2,9 @@ package fi.vm.sade.kayttooikeus.service.impl;
 
 import com.google.common.collect.Sets;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
-import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto.OrganisaatioDto;
+import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria;
@@ -13,38 +13,25 @@ import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
-import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
-import static fi.vm.sade.kayttooikeus.dto.Localizable.comparingPrimarlyBy;
-import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_ANOMUSTENHALLINTA;
-
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_HENKILONHALLINTA;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.ROLE_ADMIN;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.ROLE_CRUD;
 import static fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi.PALVELU;
 import static fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi.VIRKAILIJA;
+import static fi.vm.sade.kayttooikeus.dto.Localizable.comparingPrimarlyBy;
+import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
 @RequiredArgsConstructor
@@ -275,7 +262,7 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
     }
 
     private void poistaAnomuksetOrganisaatioista(AnomusCriteria criteria) {
-        List<HaettuKayttoOikeusRyhma> haettuKayttoOikeusRyhmas = this.haettuKayttooikeusRyhmaRepository.findBy(criteria.createAnomusSearchCondition(this.organisaatioClient), false);
+        List<HaettuKayttoOikeusRyhma> haettuKayttoOikeusRyhmas = this.haettuKayttooikeusRyhmaRepository.findBy(criteria.createAnomusSearchCondition(this.organisaatioClient));
 
         logger.info("Poistetaan {} anomusta ja {} niihin liittyvää haettua käyttöoikeusryhmää",
                 haettuKayttoOikeusRyhmas.stream().map(h -> h.getAnomus().getId()).distinct().count(), haettuKayttoOikeusRyhmas.size());

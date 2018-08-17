@@ -17,10 +17,9 @@ import java.time.LocalDateTime;
 
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.endsWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -33,7 +32,7 @@ public class KutsuControllerTest extends AbstractControllerTest {
     @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_CRUD")
     public void listAvoinKutsusTest() throws Exception {
 
-        given(this.kutsuService.listKutsus(eq(KutsuOrganisaatioOrder.AIKALEIMA), eq(Sort.Direction.DESC), anyObject(), eq(null), eq(20l)))
+        given(this.kutsuService.listKutsus(eq(KutsuOrganisaatioOrder.AIKALEIMA), eq(Sort.Direction.DESC), any(), eq(null), eq(20l)))
                 .willReturn(singletonList(KutsuReadDto.builder()
                         .id(1L).aikaleima(LocalDateTime.of(2016,1,1, 0, 0, 0, 0))
                         .sahkoposti("posti@example.com")

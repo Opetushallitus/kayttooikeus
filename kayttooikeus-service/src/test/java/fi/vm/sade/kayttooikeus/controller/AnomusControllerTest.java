@@ -20,8 +20,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,7 +36,7 @@ public class AnomusControllerTest extends AbstractControllerTest {
     @Test
     @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI")
     public void getActiveAnomuksetByHenkilo() throws Exception {
-        given(this.kayttooikeusAnomusService.listHaetutKayttoOikeusRyhmat(any(AnomusCriteria.class), anyLong(), anyLong(), anyObject()))
+        given(this.kayttooikeusAnomusService.listHaetutKayttoOikeusRyhmat(any(AnomusCriteria.class), anyLong(), anyLong(), any()))
                 .willReturn(new ArrayList<>());
         this.mvc.perform(get("/kayttooikeusanomus/1.2.3.4.5").param("activeOnly", "true"))
                 .andExpect(status().isOk());

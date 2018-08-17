@@ -5,29 +5,32 @@ import fi.vm.sade.kayttooikeus.model.VarmennusPoletti;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.repositories.VarmennusPolettiRepository;
-import fi.vm.sade.kayttooikeus.service.*;
+import fi.vm.sade.kayttooikeus.service.CryptoService;
+import fi.vm.sade.kayttooikeus.service.EmailService;
+import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
+import fi.vm.sade.kayttooikeus.service.TimeService;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.YhteystiedotRyhmaDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoTyyppi;
-import java.time.LocalDateTime;
-import static java.util.Collections.singleton;
-import java.util.Optional;
-import static java.util.stream.Collectors.toSet;
-import java.util.stream.Stream;
-import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import org.mockito.Mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toSet;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UnohtunutSalasanaServiceImplTest {
