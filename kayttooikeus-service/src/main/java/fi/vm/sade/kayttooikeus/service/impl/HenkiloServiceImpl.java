@@ -242,13 +242,13 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
                 .collect(Collectors.toList());
     }
 
-    private Stream<String> getAppRolesSorted(String... additionalInfo) {
+    private Stream<String> getAppRolesSorted(String... additionalInfoArray) {
         Stream<String> roles = this.permissionCheckerService.getCasRoles().stream()
                 .map(role -> role.replaceFirst("ROLE_", ""))
                 .sorted();
-        Stream<String> additionalInfox = Arrays.stream(additionalInfo)
+        Stream<String> additionalInfo = Arrays.stream(additionalInfoArray)
                 .sorted();
-        return Stream.concat(roles, additionalInfox)
+        return Stream.concat(roles, additionalInfo)
                 .distinct();
     }
 
