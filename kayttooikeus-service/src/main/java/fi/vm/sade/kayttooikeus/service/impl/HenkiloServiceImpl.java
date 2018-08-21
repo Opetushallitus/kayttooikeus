@@ -267,7 +267,7 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
 
         String langRole = String.format("LANG_%s", omattiedotDto.getAsiointikieli());
         String usernameRole = String.format("USER_%s", henkilo.getKayttajatiedot().getUsername());
-        String kayttajatyyppiRole = henkilo.getKayttajaTyyppi().name();
+        String kayttajatyyppiRole = Optional.ofNullable(henkilo.getKayttajaTyyppi()).orElse(KayttajaTyyppi.VIRKAILIJA).name();
         meDto.setOid(oid);
         meDto.setUid(henkilo.getKayttajatiedot().getUsername());
         Stream<String> roles = this.getAppRolesSorted(langRole, usernameRole, kayttajatyyppiRole);
