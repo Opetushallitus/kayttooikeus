@@ -7,11 +7,12 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloDto;
+import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto;
 import fi.vm.sade.kayttooikeus.dto.PalveluRooliGroup;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloCustomRepository;
+import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
 import org.springframework.data.jpa.repository.JpaContext;
 import org.springframework.stereotype.Repository;
 
@@ -155,6 +156,30 @@ public class OrganisaatioHenkiloRepositoryImpl implements OrganisaatioHenkiloCus
                 organisaatioHenkilo.voimassaAlkuPvm.as("voimassaAlkuPvm"),
                 organisaatioHenkilo.voimassaLoppuPvm.as("voimassaLoppuPvm")
         );
+    }
+
+    @Override
+    public Collection<String> findOrganisaatioOidBy(OrganisaatioHenkiloCriteria criteria) {
+        QOrganisaatioHenkilo qOrganisaatioHenkilo = QOrganisaatioHenkilo.organisaatioHenkilo;
+
+        JPAQuery<String> query = jpa().from(qOrganisaatioHenkilo)
+                .select(qOrganisaatioHenkilo.organisaatioOid)
+                .distinct();
+
+        Optional.ofNullable(criteria.getPassivoitu()).ifPresent(passivoitu
+                -> query.where(qOrganisaatioHenkilo.passivoitu.eq(passivoitu)));
+        Optional.ofNullable(criteria.getOrganisaatioOids()).ifPresent(organisaatioOids
+                -> query.where(qOrganisaatioHenkilo.organisaatioOid.in(organisaatioOids)));
+        Optional.ofNullable(criteria.getKayttoOikeusRyhmaNimet()).ifPresent(tunnisteet -> {
+            QMyonnettyKayttoOikeusRyhmaTapahtuma qMyonnettyKayttoOikeusRyhma = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
+            QKayttoOikeusRyhma qKayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
+
+            query.join(qOrganisaatioHenkilo.myonnettyKayttoOikeusRyhmas, qMyonnettyKayttoOikeusRyhma);
+            query.join(qMyonnettyKayttoOikeusRyhma.kayttoOikeusRyhma, qKayttoOikeusRyhma);
+            query.where(qKayttoOikeusRyhma.tunniste.in(tunnisteet));
+        });
+
+        return query.fetch();
     }
 
     @Override
