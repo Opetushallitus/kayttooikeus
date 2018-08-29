@@ -5,7 +5,8 @@ import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
-import static com.querydsl.core.types.dsl.Expressions.anyOf;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila;
 import fi.vm.sade.kayttooikeus.enumeration.KayttooikeusRooli;
 import fi.vm.sade.kayttooikeus.model.*;
@@ -17,12 +18,15 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.*;
-
-import static java.util.Objects.requireNonNull;
-
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.querydsl.core.types.dsl.Expressions.anyOf;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 @Getter
@@ -47,8 +51,8 @@ public class AnomusCriteria {
     private List<Myontooikeus> myontooikeudet;
 
     @FunctionalInterface
-    public interface AnomusCriteriaFunction<QAnomus, QKayttoOikeus, QHaettuKayttoOikeusRyhma> {
-        Predicate apply(QAnomus qAnomus, QKayttoOikeus qKayttoOikeus, QHaettuKayttoOikeusRyhma qHaettuKayttoOikeusRyhma);
+    public interface AnomusCriteriaFunction<QAnomus, QHaettuKayttoOikeusRyhma, QKayttoOikeusRyhma> {
+        Predicate apply(QAnomus qAnomus, QHaettuKayttoOikeusRyhma qHaettuKayttoOikeusRyhma, QKayttoOikeusRyhma qKayttoOikeusRyhma);
     }
 
     public Function<QAnomus, Predicate> createEmailSendCondition(OrganisaatioClient organisaatioClient) {
@@ -58,14 +62,20 @@ public class AnomusCriteria {
         };
     }
 
-    public AnomusCriteriaFunction<QAnomus, QKayttoOikeus, QHaettuKayttoOikeusRyhma> createAnomusSearchCondition(OrganisaatioClient organisaatioClient) {
-        return (qAnomus, qKayttoOikeus, qHaettuKayttoOikeusRyhma) -> {
+    public AnomusCriteriaFunction<QAnomus, QKayttoOikeusRyhma, QHaettuKayttoOikeusRyhma> createAnomusSearchCondition(OrganisaatioClient organisaatioClient) {
+        return (qAnomus, qKayttoOikeusRyhma, qHaettuKayttoOikeusRyhma) -> {
             BooleanBuilder builder = new BooleanBuilder();
 
             builder = this.condition(qAnomus, builder, this.getInSameOrganisationPredicate(organisaatioClient, qAnomus));
 
             if (BooleanUtils.isTrue(this.adminView)) {
-                builder.and(qKayttoOikeus.rooli.eq(KayttooikeusRooli.VASTUUKAYTTAJAT.getName()));
+                QKayttoOikeusRyhma qAdminViewKor = new QKayttoOikeusRyhma("adminViewKor");
+                QKayttoOikeus qAdminViewKo = new QKayttoOikeus("adminViewKo");
+                JPQLQuery<KayttoOikeusRyhma> adminViewSubquery = JPAExpressions.select(qAdminViewKor)
+                        .from(qAdminViewKor)
+                        .join(qAdminViewKor.kayttoOikeus, qAdminViewKo)
+                        .where(qAdminViewKo.rooli.eq(KayttooikeusRooli.VASTUUKAYTTAJAT.getName()));
+                builder.and(qKayttoOikeusRyhma.in(adminViewSubquery));
             }
 
             if (BooleanUtils.isTrue(this.onlyActive)) {

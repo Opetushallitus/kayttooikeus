@@ -1,6 +1,5 @@
 package fi.vm.sade.kayttooikeus.service.external.impl;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.vm.sade.generic.rest.CachingRestClient;
 import fi.vm.sade.kayttooikeus.config.properties.ServiceUsersProperties;
@@ -38,7 +37,6 @@ public class RyhmasahkopostiClientImpl implements RyhmasahkopostiClient {
     }
     
     public HttpResponse sendRyhmasahkoposti(EmailData emailData) {
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         String url = urlProperties.url("ryhmasahkoposti-service.email");
         return retrying(io(() -> restClient.post(url, "application/json",
                     objectMapper.writerFor(EmailData.class).writeValueAsString(emailData))), 2)

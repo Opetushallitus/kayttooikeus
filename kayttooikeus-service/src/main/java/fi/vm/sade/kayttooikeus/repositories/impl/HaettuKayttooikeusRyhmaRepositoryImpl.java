@@ -4,14 +4,12 @@ import com.querydsl.jpa.impl.JPAQuery;
 import fi.vm.sade.kayttooikeus.enumeration.OrderByAnomus;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.HaettuKayttooikeusRyhmaRepositoryCustom;
-
-import java.util.List;
-import javax.persistence.EntityManager;
-
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria;
-import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import org.springframework.data.jpa.repository.JpaContext;
 import org.springframework.stereotype.Repository;
+
+import javax.persistence.EntityManager;
+import java.util.List;
 
 @Repository
 public class HaettuKayttooikeusRyhmaRepositoryImpl implements HaettuKayttooikeusRyhmaRepositoryCustom {
@@ -22,25 +20,20 @@ public class HaettuKayttooikeusRyhmaRepositoryImpl implements HaettuKayttooikeus
         this.entityManager = jpaContext.getEntityManagerByManagedType(HaettuKayttoOikeusRyhma.class);
     }
 
-    public List<HaettuKayttoOikeusRyhma> findBy(AnomusCriteria.AnomusCriteriaFunction<QAnomus, QKayttoOikeus, QHaettuKayttoOikeusRyhma> criteriaFunction,
+    public List<HaettuKayttoOikeusRyhma> findBy(AnomusCriteria.AnomusCriteriaFunction<QAnomus, QKayttoOikeusRyhma, QHaettuKayttoOikeusRyhma> criteriaFunction,
                                                 Long limit,
                                                 Long offset,
-                                                OrderByAnomus orderBy,
-                                                Boolean adminView) {
+                                                OrderByAnomus orderBy) {
         QHaettuKayttoOikeusRyhma qHaettuKayttoOikeusRyhma = QHaettuKayttoOikeusRyhma.haettuKayttoOikeusRyhma;
         QAnomus qAnomus = QAnomus.anomus;
         QKayttoOikeusRyhma qKayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
-        QKayttoOikeus qKayttoOikeus = QKayttoOikeus.kayttoOikeus;
 
         JPAQuery<HaettuKayttoOikeusRyhma> query = new JPAQuery<>(entityManager)
                 .select(qHaettuKayttoOikeusRyhma)
                 .from(qHaettuKayttoOikeusRyhma)
                 .leftJoin(qHaettuKayttoOikeusRyhma.anomus, qAnomus)
                 .leftJoin(qHaettuKayttoOikeusRyhma.kayttoOikeusRyhma, qKayttoOikeusRyhma);
-        if (adminView != null && adminView) {
-            query.leftJoin(qKayttoOikeusRyhma.kayttoOikeus, qKayttoOikeus);
-        }
-        query.where(criteriaFunction.apply(qAnomus, qKayttoOikeus, qHaettuKayttoOikeusRyhma));
+        query.where(criteriaFunction.apply(qAnomus, qKayttoOikeusRyhma, qHaettuKayttoOikeusRyhma));
         query.where(qKayttoOikeusRyhma.passivoitu.isFalse());
 
         if (limit != null) {
@@ -56,8 +49,8 @@ public class HaettuKayttooikeusRyhmaRepositoryImpl implements HaettuKayttooikeus
     }
 
     @Override
-    public List<HaettuKayttoOikeusRyhma> findBy(AnomusCriteria.AnomusCriteriaFunction<QAnomus, QKayttoOikeus, QHaettuKayttoOikeusRyhma> criteriaFunction, Boolean adminView) {
-        return this.findBy(criteriaFunction, null, null, null, adminView);
+    public List<HaettuKayttoOikeusRyhma> findBy(AnomusCriteria.AnomusCriteriaFunction<QAnomus, QKayttoOikeusRyhma, QHaettuKayttoOikeusRyhma> criteriaFunction) {
+        return this.findBy(criteriaFunction, null, null, null);
     }
 
 }

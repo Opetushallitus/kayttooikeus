@@ -1,11 +1,8 @@
 package fi.vm.sade.kayttooikeus.service.external;
 
 import fi.vm.sade.kayttooikeus.service.dto.HenkiloVahvaTunnistusDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloCreateDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloHakuPerustietoDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloPerustietoDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.*;
+
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -51,4 +48,11 @@ public interface OppijanumerorekisteriClient {
     void updateHenkilo(HenkiloUpdateDto henkiloUpdateDto);
 
     void yhdistaHenkilot(String oid, Collection<String> duplicateOids);
+
+    /**
+     * Palauttaa haetun käyttäjän omat tiedot
+     * @param oidHenkilo käyttäjän henkilöoid
+     * @return haetun käyttäjän omat tiedot
+     */
+    HenkiloOmattiedotDto getOmatTiedot(String oidHenkilo);
 }

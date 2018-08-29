@@ -1,27 +1,25 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
-import fi.vm.sade.kayttooikeus.service.impl.ldap.LdapSynchronizer;
 import fi.vm.sade.kayttooikeus.config.properties.LdapSynchronizationProperties;
 import fi.vm.sade.kayttooikeus.model.LdapSynchronizationData;
 import fi.vm.sade.kayttooikeus.repositories.LdapSynchronizationDataRepository;
+import fi.vm.sade.kayttooikeus.repositories.LdapUpdateDataRepository;
 import fi.vm.sade.kayttooikeus.service.TimeService;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
+import fi.vm.sade.kayttooikeus.service.impl.ldap.LdapSynchronizer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
 import org.mockito.Mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-import org.mockito.runners.MockitoJUnitRunner;
-import fi.vm.sade.kayttooikeus.repositories.LdapUpdateDataRepository;
-import static org.mockito.Matchers.anyLong;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LdapSynchronizationServiceImplTest {

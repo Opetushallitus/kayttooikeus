@@ -1,5 +1,7 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.dto.*;
@@ -17,8 +19,10 @@ import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.exception.ForbiddenException;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
+import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.util.HenkilohakuBuilder;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloOmattiedotDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +33,10 @@ import java.time.LocalDateTime;
 import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi.VIRKAILIJA;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +58,9 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
     private final OrikaBeanMapper mapper;
 
     private final OrganisaatioClient organisaatioClient;
+    private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
+
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -219,4 +230,52 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
                 .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oid));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getMyRoles() {
+        String oid = this.permissionCheckerService.getCurrentUserOid();
+        HenkiloOmattiedotDto omattiedotDto = this.oppijanumerorekisteriClient.getOmatTiedot(oid);
+        Henkilo henkilo = this.henkiloDataRepository.findByOidHenkilo(oid)
+                .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oid));
+        return this.getAppRolesSorted(
+                String.format("LANG_%s", omattiedotDto.getAsiointikieli()),
+                String.format("USER_%s", henkilo.getKayttajatiedot().getUsername()),
+                Optional.ofNullable(henkilo.getKayttajaTyyppi()).map(KayttajaTyyppi::name).orElse(VIRKAILIJA.name()))
+                .collect(Collectors.toList());
+    }
+
+    private Stream<String> getAppRolesSorted(String... additionalInfoArray) {
+        Stream<String> roles = this.permissionCheckerService.getCasRoles().stream()
+                .map(role -> role.replaceFirst("ROLE_", ""))
+                .sorted();
+        Stream<String> additionalInfo = Arrays.stream(additionalInfoArray)
+                .sorted();
+        return Stream.concat(roles, additionalInfo)
+                .distinct();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MeDto getMe() throws JsonProcessingException {
+        String oid = this.permissionCheckerService.getCurrentUserOid();
+        Henkilo henkilo = this.henkiloDataRepository.findByOidHenkilo(oid)
+                .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oid));
+
+        MeDto meDto = new MeDto();
+        HenkiloOmattiedotDto omattiedotDto = this.oppijanumerorekisteriClient.getOmatTiedot(oid);
+        meDto.setFirstName(omattiedotDto.getKutsumanimi());
+        meDto.setLastName(omattiedotDto.getSukunimi());
+        meDto.setLang(omattiedotDto.getAsiointikieli());
+
+        String langRole = String.format("LANG_%s", omattiedotDto.getAsiointikieli());
+        String usernameRole = String.format("USER_%s", henkilo.getKayttajatiedot().getUsername());
+        String kayttajatyyppiRole = Optional.ofNullable(henkilo.getKayttajaTyyppi()).map(KayttajaTyyppi::name).orElse(VIRKAILIJA.name());
+
+        meDto.setOid(oid);
+        meDto.setUid(henkilo.getKayttajatiedot().getUsername());
+        Stream<String> roles = this.getAppRolesSorted(langRole, usernameRole, kayttajatyyppiRole);
+        meDto.setRoles(this.objectMapper.writeValueAsString(roles));
+        meDto.setGroups(getAppRolesSorted(langRole, kayttajatyyppiRole).toArray(String[]::new));
+        return meDto;
+    }
 }

@@ -5,7 +5,6 @@ import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -16,8 +15,10 @@ import java.time.LocalDateTime;
 
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.anyMap;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -230,7 +231,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     @Test
     @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD")
     public void createKayttoOikeusRyhmaTest() throws Exception {
-        given(this.kayttoOikeusService.createKayttoOikeusRyhma(Matchers.any(KayttoOikeusRyhmaModifyDto.class)))
+        given(this.kayttoOikeusService.createKayttoOikeusRyhma(any(KayttoOikeusRyhmaModifyDto.class)))
                 .willReturn(234L);
 
         this.mvc.perform(post("/kayttooikeusryhma").contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -252,7 +253,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     @Test
     @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD")
     public void createNewKayttoOikeusTest() throws Exception {
-        given(this.kayttoOikeusService.createKayttoOikeus(Matchers.any(KayttoOikeusCreateDto.class)))
+        given(this.kayttoOikeusService.createKayttoOikeus(any(KayttoOikeusCreateDto.class)))
                 .willReturn(1L);
 
         given(this.kayttoOikeusService.findKayttoOikeusById(1L))
@@ -309,7 +310,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     @Test
     @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD")
     public void updateKayttoOikeusRyhmaTest() throws Exception {
-        given(kayttoOikeusService.findKayttoOikeusRyhma(Matchers.eq(345L)))
+        given(kayttoOikeusService.findKayttoOikeusRyhma(eq(345L)))
                 .willReturn(KayttoOikeusRyhmaDto.builder()
                         .id(345L)
                         .tunniste("kayttooikeusryhmä")

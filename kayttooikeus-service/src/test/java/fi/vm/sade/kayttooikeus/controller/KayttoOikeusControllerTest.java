@@ -6,7 +6,6 @@ import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.TaskExecutorService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -14,15 +13,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.singletonList;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.anyString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -77,7 +76,7 @@ public class KayttoOikeusControllerTest extends AbstractControllerTest {
     @Test
     @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_SCHEDULE")
     public void sendExpirationRemindersTest() throws Exception {
-        given(this.taskExecutorService.sendExpirationReminders(Matchers.any(Period.class))).willReturn(1);
+        given(this.taskExecutorService.sendExpirationReminders(any(Period.class))).willReturn(1);
         this.mvc.perform(post("/kayttooikeus/expirationReminders")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.TEXT_PLAIN)
