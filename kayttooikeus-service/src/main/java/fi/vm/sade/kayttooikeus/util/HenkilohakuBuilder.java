@@ -4,6 +4,7 @@ import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.HenkilohakuCriteriaDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioMinimalDto;
+import fi.vm.sade.kayttooikeus.dto.PalveluRooliGroup;
 import fi.vm.sade.kayttooikeus.enumeration.OrderByHenkilohaku;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.OrganisaatioHenkilo;
@@ -43,7 +44,6 @@ public class HenkilohakuBuilder {
     private HenkilohakuCriteriaDto henkilohakuCriteriaDto;
     private LinkedHashSet<HenkilohakuResultDto> henkilohakuResultDtoList = new LinkedHashSet<>();
     private Long henkilohakuResultCount;
-    private Map<String, Set<String>> henkilohakuPalveluRoolit;
 
     private final HenkiloHibernateRepository henkiloHibernateRepository;
     private final OrikaBeanMapper mapper;
@@ -56,12 +56,6 @@ public class HenkilohakuBuilder {
     public HenkilohakuBuilder builder(HenkilohakuCriteriaDto henkilohakuCriteriaDto) {
         this.henkilohakuCriteriaDto = henkilohakuCriteriaDto;
         this.henkilohakuResultDtoList = new LinkedHashSet<>();
-        HashSet<String> henkilohakuKayttooikeusRoolit = new HashSet<>(Arrays.asList("REKISTERINPITAJA", "READ", "CRUD"));
-        HashSet<String> henkilohakuOppijanumerorekisteriRoolit = new HashSet<>(Arrays.asList("REKISTERINPITAJA_READ","REKISTERINPITAJA","READ","HENKILON_RU"));
-        this.henkilohakuPalveluRoolit = new HashMap<>();
-        this.henkilohakuPalveluRoolit.put("KAYTTOOIKEUS", henkilohakuKayttooikeusRoolit);
-        this.henkilohakuPalveluRoolit.put("OPPIJANUMEROREKISTERI", henkilohakuOppijanumerorekisteriRoolit);
-
         return this;
     }
 
@@ -122,7 +116,7 @@ public class HenkilohakuBuilder {
         }
 
         List<String> currentUserOrganisaatioOids = this.organisaatioHenkiloRepository
-                .findUsersOrganisaatioHenkilosByPalveluRoolis(this.permissionCheckerService.getCurrentUserOid(), henkilohakuPalveluRoolit);
+                .findUsersOrganisaatioHenkilosByPalveluRoolis(this.permissionCheckerService.getCurrentUserOid(), PalveluRooliGroup.HENKILOHAKU);
 
         Set<String> criteriaOrganisaatioOids = henkilohakuCriteriaDto.getOrganisaatioOids() != null
                 ? henkilohakuCriteriaDto.getOrganisaatioOids()

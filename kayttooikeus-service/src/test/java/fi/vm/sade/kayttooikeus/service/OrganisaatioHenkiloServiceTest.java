@@ -85,7 +85,7 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
                             .build()));
             return Optional.of(orgDto);
         });
-        given(this.organisaatioHenkiloRepository.findActiveOrganisaatioHenkiloListDtos("1.2.3.4.5", false)).willReturn(
+        given(this.organisaatioHenkiloRepository.findActiveOrganisaatioHenkiloListDtos("1.2.3.4.5", null)).willReturn(
                 asList(OrganisaatioHenkiloWithOrganisaatioDto.organisaatioBuilder()
                                 .id(1L)
                                 .passivoitu(false)
@@ -109,7 +109,7 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
                                 .organisaatio(OrganisaatioDto.builder().oid("1.2.3.4.3").build()).build()
                 ));
 
-        List<OrganisaatioHenkiloWithOrganisaatioDto> result = organisaatioHenkiloService.listOrganisaatioHenkilos("1.2.3.4.5", "fi");
+        List<OrganisaatioHenkiloWithOrganisaatioDto> result = organisaatioHenkiloService.listOrganisaatioHenkilos("1.2.3.4.5", "fi", null);
         assertThat(result)
                 .extracting(OrganisaatioHenkiloWithOrganisaatioDto::getOrganisaatio)
                 .extracting(OrganisaatioDto::getOid)

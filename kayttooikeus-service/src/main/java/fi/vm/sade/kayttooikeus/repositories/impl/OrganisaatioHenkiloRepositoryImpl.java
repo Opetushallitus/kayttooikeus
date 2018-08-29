@@ -9,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloDto;
+import fi.vm.sade.kayttooikeus.dto.PalveluRooliGroup;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloCustomRepository;
 import org.springframework.data.jpa.repository.JpaContext;
@@ -17,7 +18,6 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static fi.vm.sade.kayttooikeus.model.QHenkilo.henkilo;
 import static fi.vm.sade.kayttooikeus.model.QOrganisaatioHenkilo.organisaatioHenkilo;
@@ -41,6 +41,22 @@ public class OrganisaatioHenkiloRepositoryImpl implements OrganisaatioHenkiloCus
                 .and(oh.voimassaLoppuPvm.isNull().or(oh.voimassaLoppuPvm.goe(at)));
     }
 
+    public static BooleanBuilder hasAnyPalveluRooli(QPalvelu palvelu, QKayttoOikeus kayttoOikeus, PalveluRooliGroup palveluRooliList) {
+        HashMap<String, Set<String>> requiredRoles = new HashMap<>();
+        if(palveluRooliList == PalveluRooliGroup.HENKILOHAKU) {
+            HashSet<String> henkilohakuKayttooikeusRoolit = new HashSet<>(Arrays.asList("REKISTERINPITAJA", "READ", "CRUD"));
+            HashSet<String> henkilohakuOppijanumerorekisteriRoolit = new HashSet<>(Arrays.asList("REKISTERINPITAJA_READ","REKISTERINPITAJA","READ","HENKILON_RU"));
+            requiredRoles.put("KAYTTOOIKEUS", henkilohakuKayttooikeusRoolit);
+            requiredRoles.put("OPPIJANUMEROREKISTERI", henkilohakuOppijanumerorekisteriRoolit);
+        }
+
+        BooleanBuilder hasPalveluRooliBooleanBuilder = new BooleanBuilder();
+        requiredRoles.forEach((p,r) -> {
+            hasPalveluRooliBooleanBuilder.or(palvelu.name.eq(p).and(kayttoOikeus.rooli.in(r)));
+        });
+        return hasPalveluRooliBooleanBuilder;
+    }
+
     @Override
     public List<String> findDistinctOrganisaatiosForHenkiloOid(String henkiloOid) {
         return jpa().from(organisaatioHenkilo)
@@ -51,18 +67,13 @@ public class OrganisaatioHenkiloRepositoryImpl implements OrganisaatioHenkiloCus
     }
 
     @Override
-    public List<String> findUsersOrganisaatioHenkilosByPalveluRoolis(String henkiloOid, Map<String, Set<String>> henkilohakuPalveluRoolis) {
+    public List<String> findUsersOrganisaatioHenkilosByPalveluRoolis(String henkiloOid, PalveluRooliGroup requiredRoles) {
         QHenkilo henkilo = QHenkilo.henkilo;
         QOrganisaatioHenkilo organisaatioHenkilo = QOrganisaatioHenkilo.organisaatioHenkilo;
         QMyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
         QKayttoOikeusRyhma kayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
         QKayttoOikeus kayttoOikeus = QKayttoOikeus.kayttoOikeus;
         QPalvelu palvelu = QPalvelu.palvelu;
-
-        BooleanBuilder hasPalveluRooliBooleanBuilder = new BooleanBuilder();
-        henkilohakuPalveluRoolis.forEach((p,r) -> {
-            hasPalveluRooliBooleanBuilder.or(palvelu.name.eq(p).and(kayttoOikeus.rooli.in(r)));
-        });
 
         return jpa().from(organisaatioHenkilo)
                 .innerJoin(organisaatioHenkilo.henkilo, henkilo)
@@ -72,7 +83,7 @@ public class OrganisaatioHenkiloRepositoryImpl implements OrganisaatioHenkiloCus
                 .innerJoin(kayttoOikeus.palvelu, palvelu)
                 .where(voimassa(organisaatioHenkilo, LocalDate.now())
                         .and(henkilo.oidHenkilo.eq(henkiloOid))
-                        .and(hasPalveluRooliBooleanBuilder))
+                        .and(hasAnyPalveluRooli(palvelu, kayttoOikeus, requiredRoles)))
                 .select(organisaatioHenkilo.organisaatioOid)
                 .distinct().fetch();
 
@@ -80,23 +91,38 @@ public class OrganisaatioHenkiloRepositoryImpl implements OrganisaatioHenkiloCus
 
     @Override
     public List<OrganisaatioHenkiloWithOrganisaatioDto> findActiveOrganisaatioHenkiloListDtos(String henkiloOoid) {
-        return this.findActiveOrganisaatioHenkiloListDtos(henkiloOoid, false);
+        return this.findActiveOrganisaatioHenkiloListDtos(henkiloOoid, null);
     }
 
-
     @Override
-    public List<OrganisaatioHenkiloWithOrganisaatioDto> findActiveOrganisaatioHenkiloListDtos(String henkiloOoid, boolean piilotaOikeudettomat) {
+    public List<OrganisaatioHenkiloWithOrganisaatioDto> findActiveOrganisaatioHenkiloListDtos(String henkiloOoid, PalveluRooliGroup requiredRoles) {
+        QOrganisaatioHenkilo organisaatioHenkilo = QOrganisaatioHenkilo.organisaatioHenkilo;
+        QHenkilo henkilo = QHenkilo.henkilo;
+        QMyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
+        QKayttoOikeusRyhma kayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
+        QKayttoOikeus kayttoOikeus = QKayttoOikeus.kayttoOikeus;
+        QPalvelu palvelu = QPalvelu.palvelu;
+
         JPAQuery<?> query = jpa().from(organisaatioHenkilo)
                 .innerJoin(organisaatioHenkilo.henkilo, henkilo)
-                .where(voimassa(organisaatioHenkilo, LocalDate.now())
-                        .and(henkilo.oidHenkilo.eq(henkiloOoid)));
+                .leftJoin(organisaatioHenkilo.myonnettyKayttoOikeusRyhmas, myonnettyKayttoOikeusRyhmaTapahtuma)
+                .leftJoin(myonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma, kayttoOikeusRyhma)
+                .leftJoin(kayttoOikeusRyhma.kayttoOikeus, kayttoOikeus)
+                .leftJoin(kayttoOikeus.palvelu, palvelu);
 
-        if(piilotaOikeudettomat) {
-            query.where(organisaatioHenkilo.myonnettyKayttoOikeusRyhmas.isNotEmpty());
+        query.where(voimassa(organisaatioHenkilo, LocalDate.now())
+            .and(henkilo.oidHenkilo.eq(henkiloOoid)));
+
+        // Suodatetaan pois henkilön organisaatiot, joihin henkilöllä ei ole yhtäkään parametrina annetun palveluroolilistan mukaista palveluroolia
+        if(PalveluRooliGroup.HENKILOHAKU.equals(requiredRoles)) {
+            query.where( organisaatioHenkilo.myonnettyKayttoOikeusRyhmas.isNotEmpty()
+                    .and(hasAnyPalveluRooli(palvelu, kayttoOikeus, requiredRoles)));
         }
 
         return query.select(organisaatioHenkiloDtoProjection(OrganisaatioHenkiloWithOrganisaatioDto.class))
-                .orderBy(organisaatioHenkilo.organisaatioOid.asc()).fetch();
+                .orderBy(organisaatioHenkilo.organisaatioOid.asc())
+                .distinct()
+                .fetch();
 
     }
 

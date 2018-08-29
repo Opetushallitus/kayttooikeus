@@ -60,15 +60,15 @@ public class HenkiloController {
     @ApiOperation(value = "Listaa henkilön aktiiviset organisaatiot (organisaatiohenkilöt) organisaatioiden tai " +
             "ryhmien tiedoilla rekursiivisesti.",
             notes = "Hakee annetun henkilön aktiiviset ja suunnitellut organisaatiohenkilöt organisaation tai ryhmän tiedoilla siten, " +
-                    "että organisaatio sisältää myös lapsiorganisaationsa rekursiivisesti.")
+                    "että organisaatio sisältää myös lapsiorganisaationsa rekursiivisesti. Oletuksena haetaan myös ne organisaatiot, joihin ei ole voimassa olevia käyttöoikeuksia. ")
     @RequestMapping(value = "/{oid}/organisaatio", method = RequestMethod.GET)
     public List<OrganisaatioHenkiloWithOrganisaatioDto> listOrganisatioHenkilos(
             @PathVariable @ApiParam(value = "Henkilö-OID", required = true) String oid,
             @RequestParam(required = false, defaultValue = "fi") @ApiParam("Organisaatioiden järjestyksen kielikoodi (oletus fi)") String comparisonLangCode,
-            @RequestParam(required = false, defaultValue = "false") @ApiParam("Piilotetaanko organisaatiohenkilöt, joilla ei ole aktiivisia oikeuksia.") boolean piilotaOikeudettomat,
+            @RequestParam(required = false) @ApiParam("Ylimääräinen suodatus, jolla mahdollisten organisaatiohenkilöiden tuloslistaa rajataan.") PalveluRooliGroup requiredRoles,
             @RequestHeader(value = "External-Permission-Service", required = false)
                     ExternalPermissionService permissionService) {
-        return organisaatioHenkiloService.listOrganisaatioHenkilos(oid, comparisonLangCode, piilotaOikeudettomat);
+        return organisaatioHenkiloService.listOrganisaatioHenkilos(oid, comparisonLangCode, requiredRoles);
     }
 
     @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#henkiloOid, {'HENKILONHALLINTA': {'READ', 'READ_UPDATE', 'CRUD'}, 'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, #permissionService)")
@@ -129,8 +129,6 @@ public class HenkiloController {
                                  @ApiParam(value = "Format: \"password\"", required = true) @RequestBody String password) {
             this.kayttajatiedotService.changePasswordAsAdmin(henkiloOid, password);
     }
-
-
 
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
     @RequestMapping(value = "/{henkiloOid}/passivoi", method = RequestMethod.DELETE)

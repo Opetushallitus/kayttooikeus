@@ -2,13 +2,21 @@ package fi.vm.sade.kayttooikeus.repositories;
 
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto;
+import fi.vm.sade.kayttooikeus.dto.PalveluRooliGroup;
+import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhma;
+import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
 import fi.vm.sade.kayttooikeus.model.OrganisaatioHenkilo;
+import fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusPopulator;
+import fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaPopulator;
+import fi.vm.sade.kayttooikeus.repositories.populate.MyonnettyKayttooikeusRyhmaTapahtumaPopulator;
+import org.assertj.core.util.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -63,6 +71,38 @@ public class OrganisaatioHenkiloRepositoryTest extends AbstractRepositoryTest {
         assertThat(result2.getOrganisaatioHenkiloTyyppi()).isEqualTo(OPISKELIJA);
         assertThat(result2.getVoimassaAlkuPvm()).isEqualTo(oh2.getVoimassaAlkuPvm());
         assertThat(result2.getVoimassaLoppuPvm()).isEqualTo(oh2.getVoimassaLoppuPvm());
+    }
+
+    @Test
+    public void findActiveOrganisaatioHenkiloListDtosWithoutGivenRoles() {
+        // organisaatio, johon 'henkilö'llä on voimassa oleva palvelurooli KAYTTOOIKEUS_READ
+        OrganisaatioHenkilo oh1 = populate(organisaatioHenkilo(henkilo("henkilo"), "oh1")
+                .voimassaAlkaen(LocalDate.now().minusDays(2)).tyyppi(OPISKELIJA)
+                .voimassaAsti(LocalDate.now().plusYears(1))
+                .tehtavanimike("Devaaja"));
+        KayttoOikeusRyhmaPopulator kor1Populator = KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma("kor1Populator");
+        kor1Populator.withOikeus(KayttoOikeusPopulator.oikeus("KAYTTOOIKEUS", "READ"));
+        KayttoOikeusRyhma kor1 = populate(kor1Populator);
+        MyonnettyKayttoOikeusRyhmaTapahtuma mkor1 = populate(MyonnettyKayttooikeusRyhmaTapahtumaPopulator.kayttooikeusTapahtuma(oh1, kor1));
+        oh1.setMyonnettyKayttoOikeusRyhmas(Sets.newHashSet(Arrays.asList(mkor1)));
+
+        //organisaatio, johon henkilöllä voimassa oleva palvelurooli KAYTTOOIKEUS_VASTUUKAYTTAJA
+        OrganisaatioHenkilo oh2 = populate(organisaatioHenkilo(henkilo("henkilo"), "oh2")
+            .voimassaAlkaen(LocalDate.now().minusDays(2)).tyyppi(OPISKELIJA)
+                .voimassaAsti(LocalDate.now().plusYears(1))
+                .tehtavanimike("Devaaja"));
+        KayttoOikeusRyhmaPopulator kor2Populator = KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma("kor2Populator");
+        kor2Populator.withOikeus(KayttoOikeusPopulator.oikeus("KAYTTOOIKEUS", "VASTUUKAYTTAJA"));
+        KayttoOikeusRyhma kor2 = populate(kor2Populator);
+        MyonnettyKayttoOikeusRyhmaTapahtuma mkor2 = populate(MyonnettyKayttooikeusRyhmaTapahtumaPopulator.kayttooikeusTapahtuma(oh2, kor2));
+        oh2.setMyonnettyKayttoOikeusRyhmas(Sets.newHashSet(Arrays.asList(mkor2)));
+
+        OrganisaatioHenkilo oh3 = populate(organisaatioHenkilo(henkilo("henkilo"),"oh3" ));
+
+        List<OrganisaatioHenkiloWithOrganisaatioDto> results = organisaatioHenkiloRepository.findActiveOrganisaatioHenkiloListDtos("henkilo", PalveluRooliGroup.HENKILOHAKU);
+        assertThat(results.size()).isEqualTo(1);
+        assertThat(results.get(0).getOrganisaatio().getOid()).isEqualTo("oh1");
+
     }
 
     @Test
