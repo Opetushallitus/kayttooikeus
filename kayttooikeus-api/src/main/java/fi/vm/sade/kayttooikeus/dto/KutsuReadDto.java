@@ -2,6 +2,7 @@ package fi.vm.sade.kayttooikeus.dto;
 
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,6 +29,7 @@ public class KutsuReadDto {
     @AllArgsConstructor
     public static class KutsuOrganisaatioDto extends LocalizableOrganisaatio {
         private Set<KayttoOikeusRyhmaDto> kayttoOikeusRyhmat;
+        private LocalDate voimassaLoppuPvm;
 
         public KutsuOrganisaatioDto(TextGroupMapDto nimi, String organisaatioOid, Set<KayttoOikeusRyhmaDto> kayttoOikeusRyhmat) {
             this.nimi = nimi;
