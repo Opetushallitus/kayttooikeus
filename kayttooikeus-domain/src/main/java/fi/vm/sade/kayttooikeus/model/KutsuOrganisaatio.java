@@ -3,6 +3,7 @@ package fi.vm.sade.kayttooikeus.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,4 +31,8 @@ public class KutsuOrganisaatio extends IdentifiableAndVersionedEntity {
     @JoinTable(name = "kutsu_organisaatio_ryhma", joinColumns = @JoinColumn(name = "kutsu_organisaatio", nullable = false, updatable = false),
             inverseJoinColumns = @JoinColumn(name = "ryhma", nullable = false, updatable = false))
     private Set<KayttoOikeusRyhma> ryhmat = new HashSet<>(0);
+
+    @Column(name = "voimassa_loppu_pvm")
+    private LocalDate voimassaLoppuPvm; // myönnettävien käyttöoikeuksien päättymispäivämäärä
+
 }

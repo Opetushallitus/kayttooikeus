@@ -302,15 +302,16 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                                                                     Collection<KayttoOikeusRyhma> kayttooikeusryhmas) {
         this.grantKayttooikeusryhmaAsAdminWithoutPermissionCheck(anoja,
                 organisaatioOid,
+                LocalDate.now().plusYears(1),
                 kayttooikeusryhmas,
                 this.permissionCheckerService.getCurrentUserOid());
     }
 
     @Override
-    public void grantKayttooikeusryhmaAsAdminWithoutPermissionCheck(String anoja, String organisaatioOid, Collection<KayttoOikeusRyhma> kayttooikeusryhmas, String myontajaOid) {
+    public void grantKayttooikeusryhmaAsAdminWithoutPermissionCheck(String anoja, String organisaatioOid, LocalDate voimassaLoppuPvm, Collection<KayttoOikeusRyhma> kayttooikeusryhmas, String myontajaOid) {
         kayttooikeusryhmas.forEach(kayttooikeusryhma -> this.grantKayttooikeusryhma(
                 LocalDate.now(),
-                LocalDate.now().plusYears(1),
+                voimassaLoppuPvm,
                 anoja,
                 organisaatioOid,
                 kayttooikeusryhma,

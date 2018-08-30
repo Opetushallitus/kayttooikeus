@@ -27,6 +27,7 @@ public interface KayttooikeusAnomusService {
 
     void grantKayttooikeusryhmaAsAdminWithoutPermissionCheck(String anoja,
                                                              String organisaatioOid,
+                                                             LocalDate voimassaLoppuPvm,
                                                              Collection<KayttoOikeusRyhma> kayttooikeusryhmas,
                                                              String myontaja);
 

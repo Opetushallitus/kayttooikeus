@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -344,6 +345,8 @@ public class KutsuServiceImpl implements KutsuService {
                 this.kayttooikeusAnomusService.grantKayttooikeusryhmaAsAdminWithoutPermissionCheck(
                         henkiloOid,
                         kutsuOrganisaatio.getOrganisaatioOid(),
+                        Optional.ofNullable(kutsuOrganisaatio.getVoimassaLoppuPvm())
+                                .orElseGet(() -> LocalDate.now().plusYears(1)),
                         kutsuOrganisaatio.getRyhmat(),
                         kutsuByToken.getKutsuja()));
 

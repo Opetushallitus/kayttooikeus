@@ -5,8 +5,10 @@ import lombok.Setter;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.Set;
 
 @Getter
@@ -33,6 +35,8 @@ public class KutsuCreateDto {
         @Valid
         @NotNull
         private Set<KayttoOikeusRyhmaDto> kayttoOikeusRyhmat;
+        @FutureOrPresent
+        private LocalDate voimassaLoppuPvm;
     }
 
     @Getter
