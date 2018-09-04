@@ -166,18 +166,36 @@ public class OrganisaatioHenkiloRepositoryImpl implements OrganisaatioHenkiloCus
                 .select(qOrganisaatioHenkilo.organisaatioOid)
                 .distinct();
 
+        Optional.ofNullable(criteria.getKayttajaTyyppi()).ifPresent(kayttajaTyyppi -> {
+            QHenkilo qHenkilo = QHenkilo.henkilo;
+
+            query.join(qOrganisaatioHenkilo.henkilo, qHenkilo);
+            query.where(qHenkilo.kayttajaTyyppi.eq(kayttajaTyyppi));
+        });
         Optional.ofNullable(criteria.getPassivoitu()).ifPresent(passivoitu
                 -> query.where(qOrganisaatioHenkilo.passivoitu.eq(passivoitu)));
         Optional.ofNullable(criteria.getOrganisaatioOids()).ifPresent(organisaatioOids
                 -> query.where(qOrganisaatioHenkilo.organisaatioOid.in(organisaatioOids)));
-        Optional.ofNullable(criteria.getKayttoOikeusRyhmaNimet()).ifPresent(tunnisteet -> {
+
+        if (criteria.getKayttoOikeusRyhmaNimet() != null || criteria.getKayttooikeudet() != null) {
             QMyonnettyKayttoOikeusRyhmaTapahtuma qMyonnettyKayttoOikeusRyhma = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
             QKayttoOikeusRyhma qKayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
 
             query.join(qOrganisaatioHenkilo.myonnettyKayttoOikeusRyhmas, qMyonnettyKayttoOikeusRyhma);
             query.join(qMyonnettyKayttoOikeusRyhma.kayttoOikeusRyhma, qKayttoOikeusRyhma);
-            query.where(qKayttoOikeusRyhma.tunniste.in(tunnisteet));
-        });
+
+            if (criteria.getKayttoOikeusRyhmaNimet() != null) {
+                query.where(qKayttoOikeusRyhma.tunniste.in(criteria.getKayttoOikeusRyhmaNimet()));
+            }
+            if (criteria.getKayttooikeudet() != null) {
+                QKayttoOikeus qKayttoOikeus = QKayttoOikeus.kayttoOikeus;
+                QPalvelu qPalvelu = QPalvelu.palvelu;
+
+                query.join(qKayttoOikeusRyhma.kayttoOikeus, qKayttoOikeus);
+                query.join(qKayttoOikeus.palvelu, qPalvelu);
+                query.where(qPalvelu.name.concat("_").concat(qKayttoOikeus.rooli).in(criteria.getKayttooikeudet()));
+            }
+        }
 
         return query.fetch();
     }

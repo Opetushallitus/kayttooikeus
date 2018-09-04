@@ -3,12 +3,7 @@ package fi.vm.sade.kayttooikeus.repositories.impl;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQuery;
-import fi.vm.sade.kayttooikeus.model.Henkilo;
-import fi.vm.sade.kayttooikeus.model.QHenkilo;
-import fi.vm.sade.kayttooikeus.model.QKayttajatiedot;
-import fi.vm.sade.kayttooikeus.model.QKayttoOikeusRyhma;
-import fi.vm.sade.kayttooikeus.model.QMyonnettyKayttoOikeusRyhmaTapahtuma;
-import fi.vm.sade.kayttooikeus.model.QOrganisaatioHenkilo;
+import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloHibernateRepository;
 import fi.vm.sade.kayttooikeus.repositories.criteria.HenkiloCriteria;
 import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
@@ -18,11 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.querydsl.core.types.ExpressionUtils.eq;
@@ -42,18 +33,32 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
                 .from(qOrganisaatio)
                 .join(qOrganisaatio.henkilo, qHenkilo);
 
+        Optional.ofNullable(criteria.getKayttajaTyyppi()).ifPresent(kayttajaTyyppi
+                -> query.where(qHenkilo.kayttajaTyyppi.eq(kayttajaTyyppi)));
         Optional.ofNullable(criteria.getPassivoitu()).ifPresent(passivoitu
                 -> query.where(qOrganisaatio.passivoitu.eq(passivoitu)));
         Optional.ofNullable(criteria.getOrganisaatioOids()).ifPresent(organisaatioOid
                 -> query.where(qOrganisaatio.organisaatioOid.in(organisaatioOid)));
-        Optional.ofNullable(criteria.getKayttoOikeusRyhmaNimet()).ifPresent(kayttoOikeusRyhmaNimet -> {
+
+        if (criteria.getKayttoOikeusRyhmaNimet() != null || criteria.getKayttooikeudet() != null) {
             QMyonnettyKayttoOikeusRyhmaTapahtuma qMyonnettyKayttoOikeusRyhma = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
             QKayttoOikeusRyhma qKayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
 
             query.join(qOrganisaatio.myonnettyKayttoOikeusRyhmas, qMyonnettyKayttoOikeusRyhma);
             query.join(qMyonnettyKayttoOikeusRyhma.kayttoOikeusRyhma, qKayttoOikeusRyhma);
-            query.where(qKayttoOikeusRyhma.tunniste.in(kayttoOikeusRyhmaNimet));
-        });
+
+            if (criteria.getKayttoOikeusRyhmaNimet() != null) {
+                query.where(qKayttoOikeusRyhma.tunniste.in(criteria.getKayttoOikeusRyhmaNimet()));
+            }
+            if (criteria.getKayttooikeudet() != null) {
+                QKayttoOikeus qKayttoOikeus = QKayttoOikeus.kayttoOikeus;
+                QPalvelu qPalvelu = QPalvelu.palvelu;
+
+                query.join(qKayttoOikeusRyhma.kayttoOikeus, qKayttoOikeus);
+                query.join(qKayttoOikeus.palvelu, qPalvelu);
+                query.where(qPalvelu.name.concat("_").concat(qKayttoOikeus.rooli).in(criteria.getKayttooikeudet()));
+            }
+        }
 
         return new LinkedHashSet<>(query.fetch());
     }
@@ -73,20 +78,34 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
                 .where(qHenkilo.oidHenkilo.eq(henkiloOid))
                 .where(eq(qOrganisaatio.organisaatioOid, qOrganisaatioTarget.organisaatioOid));
 
+        Optional.ofNullable(criteria.getKayttajaTyyppi()).ifPresent(kayttajaTyyppi
+                -> query.where(qHenkilo.kayttajaTyyppi.eq(kayttajaTyyppi)));
         Optional.ofNullable(criteria.getPassivoitu()).ifPresent(passivoitu -> {
             query.where(qOrganisaatio.passivoitu.eq(passivoitu));
             query.where(qOrganisaatioTarget.passivoitu.eq(passivoitu));
         });
         Optional.ofNullable(criteria.getOrganisaatioOids()).ifPresent(organisaatioOid
                 -> query.where(qOrganisaatio.organisaatioOid.in(organisaatioOid)));
-        Optional.ofNullable(criteria.getKayttoOikeusRyhmaNimet()).ifPresent(kayttoOikeusRyhmaNimet -> {
+
+        if (criteria.getKayttoOikeusRyhmaNimet() != null || criteria.getKayttooikeudet() != null) {
             QMyonnettyKayttoOikeusRyhmaTapahtuma qMyonnettyKayttoOikeusRyhma = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
             QKayttoOikeusRyhma qKayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
 
             query.join(qOrganisaatio.myonnettyKayttoOikeusRyhmas, qMyonnettyKayttoOikeusRyhma);
             query.join(qMyonnettyKayttoOikeusRyhma.kayttoOikeusRyhma, qKayttoOikeusRyhma);
-            query.where(qKayttoOikeusRyhma.tunniste.in(kayttoOikeusRyhmaNimet));
-        });
+
+            if (criteria.getKayttoOikeusRyhmaNimet() != null) {
+                query.where(qKayttoOikeusRyhma.tunniste.in(criteria.getKayttoOikeusRyhmaNimet()));
+            }
+            if (criteria.getKayttooikeudet() != null) {
+                QKayttoOikeus qKayttoOikeus = QKayttoOikeus.kayttoOikeus;
+                QPalvelu qPalvelu = QPalvelu.palvelu;
+
+                query.join(qKayttoOikeusRyhma.kayttoOikeus, qKayttoOikeus);
+                query.join(qKayttoOikeus.palvelu, qPalvelu);
+                query.where(qPalvelu.name.concat("_").concat(qKayttoOikeus.rooli).in(criteria.getKayttooikeudet()));
+            }
+        }
 
         return new LinkedHashSet<>(query.fetch());
     }

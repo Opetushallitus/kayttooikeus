@@ -1,6 +1,8 @@
 package fi.vm.sade.kayttooikeus.service;
 
 import fi.vm.sade.kayttooikeus.dto.VirkailijaCreateDto;
+import fi.vm.sade.kayttooikeus.dto.VirkailijaCriteriaDto;
+import fi.vm.sade.kayttooikeus.dto.KayttajaReadDto;
 
 /**
  * Virkailijoihin liittyvät toiminnot.
@@ -16,5 +18,7 @@ public interface VirkailijaService {
      * @return luodun virkailijan oid
      */
     String create(VirkailijaCreateDto dto);
+
+    Iterable<KayttajaReadDto> list(VirkailijaCriteriaDto criteria);
 
 }

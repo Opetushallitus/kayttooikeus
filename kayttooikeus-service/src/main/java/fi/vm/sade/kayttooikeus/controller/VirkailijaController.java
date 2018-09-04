@@ -1,6 +1,8 @@
 package fi.vm.sade.kayttooikeus.controller;
 
 import fi.vm.sade.kayttooikeus.dto.VirkailijaCreateDto;
+import fi.vm.sade.kayttooikeus.dto.VirkailijaCriteriaDto;
+import fi.vm.sade.kayttooikeus.dto.KayttajaReadDto;
 import fi.vm.sade.kayttooikeus.service.VirkailijaService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,15 @@ public class VirkailijaController {
             notes = "Tarkoitettu vain testikäyttöön, tuotannossa virkailijat luodaan kutsun kautta.")
     public String create(@Valid @RequestBody VirkailijaCreateDto dto) {
         return virkailijaService.create(dto);
+    }
+
+    @PostMapping("/haku")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_READ'," +
+            "'ROLE_APP_KAYTTOOIKEUS_CRUD'," +
+            "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
+    @ApiOperation("Virkailijoiden haku")
+    public Iterable<KayttajaReadDto> list(@RequestBody VirkailijaCriteriaDto criteria) {
+        return virkailijaService.list(criteria);
     }
 
 }
