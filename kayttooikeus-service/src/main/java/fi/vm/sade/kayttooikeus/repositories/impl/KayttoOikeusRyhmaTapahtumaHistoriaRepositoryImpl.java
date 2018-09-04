@@ -11,9 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Arrays;
 import java.util.List;
 
-import static fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila.HYLATTY;
-import static fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila.PERUUTETTU;
-import static fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila.SULJETTU;
+import static fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila.*;
 
 @Repository
 public class KayttoOikeusRyhmaTapahtumaHistoriaRepositoryImpl extends AbstractRepository implements KayttoOikeusRyhmaTapahtumaHistoriaRepository {
@@ -27,7 +25,7 @@ public class KayttoOikeusRyhmaTapahtumaHistoriaRepositoryImpl extends AbstractRe
         QPalvelu palvelu = new QPalvelu("p1");
 
         BooleanBuilder booleanBuilder = new BooleanBuilder()
-                .and(korth.tila.in(Arrays.asList(HYLATTY, PERUUTETTU, SULJETTU)))
+                .and(korth.tila.in(Arrays.asList(HYLATTY, PERUUTETTU, SULJETTU, VANHENTUNUT)))
                 .and(kor.passivoitu.eq(false))
                 .and(oh.henkilo.oidHenkilo.eq(henkiloOid));
 
