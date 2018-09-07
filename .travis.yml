@@ -1,0 +1,27 @@
+sudo: required
+language: java
+jdk:
+  - oraclejdk8
+services:
+  - docker
+
+env:
+  global:
+    # AWS_ACCESS_KEY_ID
+    - secure: "gquTcygcjgTvwO15I6NFjM5dekuaPd5flcYjT12BgxxtOYE//aTdxOFTBcpHd/g3psi2fBfZWlXA0JBV9mvWScL1WQQy1veY6dpK76WDTn0UoXCIybPuqhUT8xIXikf7NdM4Ze6IPpQiQvxmWDQ66zov4s37U4jcr7J394OHAmotwBv1dzIgJtuasaJ54TcJstcf3/7S7COyJ6bEjALAWyYpoZUGNaF0fuRda31phGu/Y2wMokut89pyg2xz0U0pWrZumW2IIsv9gU4jh2OOz2w3xmflrdV+yTuv0sk4B3gktOtuxMr3NPUv6NGEbz+FJKDwaYwwVlRD/Ho4CwSzTcToqzlC5k5yT63h1GCQ+sVRRc1IrqxE4Ei++UIiRJnxaAdRgTM8OkxgAxJHp1J479kJvujQIzkIRFRkfiMLcf2a1rdvuVVlfPQdqg08daA5tQs9bX7OlphfQbfe23tsTfVLWLwrAO8c9wbNv3nyGYyqMhhzY/7vVnhByRhBiwgPrPCZn/MHIiOtgdAwgHNeLDW0WVmoL0kHCjDdWm5L/66k07i0Ws4O79UKHfIUmF3kYokEHX3BLdA5VPCpRRvobV/QmHgfMrLG4rXGGYByCkEVmCbopZ19iaH3WHJWr1k1kNWbvRjJreg4CxjOdqi1FDr02sSUCMsQM4Xe9TmbmAc="
+    # AWS_SECRET_ACCESS_KEY
+    - secure: "jIc+JdS7+ul3SZSrRi+JNCwRqUM13MQTIxQUxmEyZvJ6Q3xbTZWSjqoQTF9SuZcLQ0Nz0tmY6KJpTsqblHqEk+yLO0SCtT3lRxm93s0oMFT+znfh3OxuO4H84bHZN6K+V+SNp+vHQfAi5HBRpiWQm1m2vVZDc8p/WvwcCPupttVPMABoUdnDaK05fzS2y2XT5n0v5NrD+9JicbExOWB/CCZj/+MQnboUaT7ag8ncz0k2LSbsOrtMpt4rTaLu3TVTecBfo/PugFQ1AxgpRt78EtnbjYLWigqxtlKt7segPBtbcK/v7GK3H1rSYUgLYOqdg6xw0k/MnO955iiuH7Ugg9fZ0DpkiZDx2Yv74+kF71Y3NwdwFq6ikCn6oOE7RuBBout894gvB2pisTR96a+8oJGujHe09RxGwT5xqi+W+Aq/axGL1tdCHlcNh8VZW8SEDK9D4JaQY76vRhGE4yhmn3C3n0VR9qCBwRMV2VQDHiTDbRxgta96TNOx4A+UM5UHWlSai+EBC0uFK13XnuuHba/wJSci12TUsskXm3gs5Cvz0s+B636tP2csIdmiTNuNIFqZUUO98/fpYrUxy6yOPcaR5efL4kTkzkkfOKwae7UhQUDM9CTNPiqyy6v64b8X89QtFbZ3I95iRUikdj8Tjp6yE1UFh8sl+CBJuLMsMw4="
+
+install:
+  - git clone https://github.com/Opetushallitus/ci-tools.git
+  - source ci-tools/common/setup-tools.sh
+
+script:
+  - mvn clean install -DskipTests -Dbranch=${TRAVIS_BRANCH} -Drevision=${TRAVIS_COMMIT} -DbuildNumber=${TRAVIS_BUILD_NUMBER}
+  - find .
+  - mv kayttooikeus-service/target/kayttooikeus-service-*.jar $DOCKER_BUILD_DIR/artifact/kayttooikeus.jar
+  - cp -vr src/main/resources/oph-configuration $DOCKER_BUILD_DIR/config/
+
+  - export BASE_IMAGE="base-legacy:0.1"
+  - ./ci-tools/common/pull-image.sh
+  - ./ci-tools/build/build-fatjar.sh kayttooikeus

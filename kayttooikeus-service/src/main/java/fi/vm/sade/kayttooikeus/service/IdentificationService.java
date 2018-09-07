@@ -29,7 +29,7 @@ public interface IdentificationService {
 
     String updateKutsuAndGenerateTemporaryKutsuToken(String kutsuToken, String hetu, String etunimet, String sukunimi);
 
-    String createLoginToken(String oidHenkilo, Boolean salasananVaihto);
+    String createLoginToken(String oidHenkilo, Boolean salasananVaihto, String hetu);
 
     TunnistusToken updateLoginToken(String loginToken, String hetu);
 

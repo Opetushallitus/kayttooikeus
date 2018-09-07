@@ -75,7 +75,7 @@ public class VahvaTunnistusServiceTest extends AbstractServiceIntegrationTest {
         Henkilo henkilo = saveHenkilo(oid, kayttajatunnus);
         String hetu = "hetu123";
         String tyosahkopostiosoite = "etu.suku@example.com";
-        String loginToken = identificationService.createLoginToken(oid, false);
+        String loginToken = identificationService.createLoginToken(oid, false, null);
         identificationService.updateLoginToken(loginToken, hetu);
 
         VahvaTunnistusRequestDto requestDto = new VahvaTunnistusRequestDto();
@@ -107,7 +107,7 @@ public class VahvaTunnistusServiceTest extends AbstractServiceIntegrationTest {
         Henkilo henkilo = saveHenkilo(oid, kayttajatunnus);
         String hetu = "hetu123";
         String tyosahkopostiosoite = "";
-        String loginToken = identificationService.createLoginToken(oid, false);
+        String loginToken = identificationService.createLoginToken(oid, false, null);
         identificationService.updateLoginToken(loginToken, hetu);
 
         VahvaTunnistusRequestDto requestDto = new VahvaTunnistusRequestDto();
