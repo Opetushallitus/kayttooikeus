@@ -1,9 +1,11 @@
 package fi.vm.sade.kayttooikeus.controller;
 
-import fi.vm.sade.kayttooikeus.dto.*;
+import fi.vm.sade.kayttooikeus.dto.IdentifiedHenkiloTypeDto;
+import fi.vm.sade.kayttooikeus.dto.VahvaTunnistusRequestDto;
+import fi.vm.sade.kayttooikeus.dto.VahvaTunnistusResponseDto;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
-import fi.vm.sade.kayttooikeus.service.exception.*;
+import fi.vm.sade.kayttooikeus.service.VahvaTunnistusService;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.properties.OphProperties;
 import io.swagger.annotations.Api;
@@ -18,18 +20,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
-
-import fi.vm.sade.kayttooikeus.model.TunnistusToken;
-import fi.vm.sade.kayttooikeus.service.VahvaTunnistusService;
-import fi.vm.sade.kayttooikeus.util.HenkiloUtils;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoTyyppi;
-import java.util.Optional;
 import javax.validation.Valid;
+import java.io.IOException;
 
 @Slf4j
 @RestController
@@ -91,7 +83,7 @@ public class CasController {
     @ApiOperation("Luo tilapäisen tokenin henkilön vahvan tunnistaumisen ajaksi")
     @RequestMapping(value = "/auth/henkilo/{oidHenkilo}/loginToken", method = RequestMethod.GET)
     public String createLoginToken(@PathVariable String oidHenkilo, @RequestParam(required = false) Boolean salasananVaihto) {
-        return this.identificationService.createLoginToken(oidHenkilo, salasananVaihto);
+        return this.identificationService.createLoginToken(oidHenkilo, salasananVaihto, null);
     }
 
     // Palomuurilla rajoitettu pääsy vain verkon sisältä
@@ -122,69 +114,19 @@ public class CasController {
                            @RequestHeader(value = "firstname", required = false) String etunimet,
                            @RequestHeader(value = "sn", required = false) String sukunimi) throws IOException {
         // Vaihdetaan kutsuToken väliaikaiseen ja tallennetaan tiedot vetumasta
-        Map<String, String> queryParams;
         if (StringUtils.hasLength(kutsuToken)) {
-            try {
-                // Dekoodataan etunimet ja sukunimi manuaalisesti, koska shibboleth välittää ASCII-enkoodatut request headerit UTF-8 -merkistössä
-                Charset windows1252 = Charset.forName("Windows-1252");
-                Charset utf8 = Charset.forName("UTF-8");
-                etunimet = new String(etunimet.getBytes(windows1252), utf8);
-                sukunimi = new String(sukunimi.getBytes(windows1252), utf8);
-
-                String temporaryKutsuToken = this.identificationService
-                        .updateKutsuAndGenerateTemporaryKutsuToken(kutsuToken, hetu, etunimet, sukunimi);
-                queryParams = new HashMap<String, String>() {{
-                    put("temporaryKutsuToken", temporaryKutsuToken);
-                }};
-                response.sendRedirect(this.ophProperties.url("henkilo-ui.rekisteroidy", queryParams));
-            } catch (NotFoundException e) {
-                response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vanhakutsu"));
-            }
+            String redirectUrl = this.vahvaTunnistusService.kasitteleKutsunTunnistus(kutsuToken, kielisyys, hetu, etunimet, sukunimi);
+            response.sendRedirect(redirectUrl);
         }
         // Kirjataan henkilön vahva tunnistautuminen järjestelmään, vaihe 1
         else if (StringUtils.hasLength(loginToken)) {
-            try {
-                // otetaan hetu talteen jotta se on vielä tiedossa seuraavassa vaiheessa
-                TunnistusToken tunnistusToken = identificationService.updateLoginToken(loginToken, hetu);
-                HenkiloDto henkiloByLoginToken = oppijanumerorekisteriClient.getHenkiloByOid(tunnistusToken.getHenkilo().getOidHenkilo());
-                if(KayttajaTyyppi.PALVELU.equals(tunnistusToken.getHenkilo().getKayttajaTyyppi())) {
-                    throw new PalvelukayttajaLoginException("Palvelukäyttäjänä kirjautuminen on estetty");
-                }
-
-                // tarkistetaan että virkailijalla on tämä hetu käytössä
-                Optional.ofNullable(henkiloByLoginToken.getHetu()).ifPresent(tallennettuHetu -> {
-                    if (!tallennettuHetu.equals(hetu)) {
-                        throw new HetuVaaraException(String.format("Vahvan tunnistuksen henkilötunnus %s on eri kuin virkailijan henkilötunnus %s", hetu, tallennettuHetu));
-                    }
-                });
-
-                boolean sahkopostinAsetus = !HenkiloUtils
-                        .getYhteystieto(henkiloByLoginToken, YhteystietojenTyypit.TYOOSOITE, YhteystietoTyyppi.YHTEYSTIETO_SAHKOPOSTI)
-                        .isPresent();
-                boolean salasananVaihto = Boolean.TRUE.equals(tunnistusToken.getSalasananVaihto());
-                if (sahkopostinAsetus || salasananVaihto) {
-                    // pyydetään käyttäjää täydentämään tietoja ("uudelleenrekisteröinti")
-                    response.sendRedirect(ophProperties.url("henkilo-ui.uudelleenrekisterointi", kielisyys, loginToken, sahkopostinAsetus, salasananVaihto));
-                } else {
-                    // jos mitään tietoja ei tarvitse täyttää, suoritetaan tunnistautuminen ilman rekisteröintisivua
-                    VahvaTunnistusRequestDto vahvaTunnistusRequestDto = new VahvaTunnistusRequestDto();
-                    VahvaTunnistusResponseDto vahvaTunnistusResponseDto = tunnistauduVahvasti(kielisyys, loginToken, vahvaTunnistusRequestDto);
-                    response.sendRedirect(ophProperties.url("cas.login", vahvaTunnistusResponseDto.asMap()));
-                }
-            } catch (LoginTokenNotFoundException e) {
-                response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vanha"));
-            } catch (HetuVaaraException e) {
-                response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vaara"));
-            } catch(PalvelukayttajaLoginException e) {
-                response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "palvelukayttaja"));
-            } catch (Exception e) {
-                log.warn("User failed strong identification", e);
-                response.sendRedirect(this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, loginToken));
-            }
+            // Joko päästetään suoraan sisään tai käytetään lisätietojen keräyssivun kautta
+            String redirectUrl = this.vahvaTunnistusService.kirjaaVahvaTunnistus(loginToken, kielisyys, hetu);
+            response.sendRedirect(redirectUrl);
         }
-        // Tarkista että vaaditut tokenit ja tiedot löytyvät (riippuen casesta) -> Error sivu
         else {
-            throw new UnsupportedOperationException("Provide loginToken or kutsuToken");
+            String redirectUrl = this.vahvaTunnistusService.kirjaaKayttajaVahvallaTunnistuksella(hetu, kielisyys);
+            response.sendRedirect(redirectUrl);
         }
     }
 
@@ -193,9 +135,9 @@ public class CasController {
     public VahvaTunnistusResponseDto tunnistauduVahvasti(
             @RequestParam(value = "kielisyys") String kielisyys,
             @RequestParam(value = "loginToken") String loginToken,
-            @RequestBody @Valid VahvaTunnistusRequestDto dto) throws IOException {
+            @RequestBody @Valid VahvaTunnistusRequestDto dto) {
         // Kirjataan henkilön vahva tunnistautuminen järjestelmään, vaihe 2
-        return vahvaTunnistusService.tunnistauduIlmanTransaktiota(loginToken, dto);
+        return vahvaTunnistusService.tunnistaudu(loginToken, dto);
     }
 
     @ApiOperation(value = "Auttaa CAS session avaamisessa käyttöoikeuspalveluun.",
