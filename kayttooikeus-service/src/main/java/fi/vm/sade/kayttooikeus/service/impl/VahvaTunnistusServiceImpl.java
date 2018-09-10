@@ -159,7 +159,7 @@ public class VahvaTunnistusServiceImpl implements VahvaTunnistusService {
         }
 
         // ei haka-käyttäjille salasananvaihtoa = jos käyttäjällä on salasana on CAS-käyttäjä
-        Boolean salasananVaihto = Boolean.FALSE.equals(henkilo.get().getVahvastiTunnistettu())
+        Boolean salasananVaihto = !Boolean.TRUE.equals(henkilo.get().getVahvastiTunnistettu())
                 && StringUtils.hasLength(henkilo.get().getKayttajatiedot().getPassword());
         String loginToken = this.identificationService.createLoginToken(henkilo.get().getOidHenkilo(), salasananVaihto, hetu);
         return getRedirectUrl(loginToken, kielisyys, salasananVaihto, henkiloDto.get());
