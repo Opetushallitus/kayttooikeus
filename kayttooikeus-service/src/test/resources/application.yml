@@ -4,7 +4,7 @@ spring:
       naming:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
       ddl-auto: create
-    show-sql: true
+    show-sql: false
     database-platform: org.hibernate.dialect.H2Dialect
   ldap:
     embedded:

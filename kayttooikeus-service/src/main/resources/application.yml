@@ -18,7 +18,7 @@ spring:
     table: schema_table_ko
     out-of-order: true
     # Only for initial production release, set false afterwards
-    baseline-on-migrate: true
+    baseline-on-migrate: false
     # If DB is not empty will not run migrations until this version
     baseline-version: 20180419161113283
   ldap:
