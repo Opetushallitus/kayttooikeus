@@ -9,6 +9,7 @@ import fi.vm.sade.kayttooikeus.dto.enumeration.KutsuView;
 import fi.vm.sade.kayttooikeus.enumeration.KutsuOrganisaatioOrder;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.IdentificationRepository;
+import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloRepository;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KutsuCriteria;
 import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
 import fi.vm.sade.kayttooikeus.repositories.populate.*;
@@ -72,6 +73,9 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
 
     @Autowired
     private IdentificationRepository identificationRepository;
+
+    @Autowired
+    private OrganisaatioHenkiloRepository organisaatioHenkiloRepository;
     
     @MockBean
     private OrganisaatioClient organisaatioClient;
@@ -561,17 +565,17 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.3.4.5");
         assertThat(henkilo.getKayttajatiedot().getUsername()).isEqualTo("arpauser");
         assertThat(henkilo.getKayttajatiedot().getPassword()).isNotEmpty();
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
                 .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKayttoOikeusRyhma)
                 .extracting(KayttoOikeusRyhma::getTunniste)
                 .containsExactly("ryhma");
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
                 .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKasittelija)
                 .extracting(Henkilo::getOidHenkilo)
                 .containsExactly("1.2.3.4.1");
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getOrganisaatioOid)
                 .containsExactly("1.2.0.0.1");
 
@@ -641,17 +645,17 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.0.0.2");
         assertThat(henkilo.getKayttajatiedot().getUsername()).isEqualTo("arpauser");
         assertThat(henkilo.getKayttajatiedot().getPassword()).isNotEmpty();
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
                 .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKayttoOikeusRyhma)
                 .extracting(KayttoOikeusRyhma::getTunniste)
                 .containsExactly("ryhma");
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
                 .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKasittelija)
                 .extracting(Henkilo::getOidHenkilo)
                 .containsExactly("1.2.3.4.1");
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getOrganisaatioOid)
                 .containsExactlyInAnyOrder("1.2.0.0.1", "2.1.0.1");
 
@@ -683,17 +687,17 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.3.4.5");
         assertThat(henkilo.getKayttajatiedot().getUsername()).matches("hakaIdentifier1[\\d]{3,3}");
         assertThat(henkilo.getKayttajatiedot().getPassword()).isNull();
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
                 .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKayttoOikeusRyhma)
                 .extracting(KayttoOikeusRyhma::getTunniste)
                 .containsExactly("ryhma");
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
                 .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKasittelija)
                 .extracting(Henkilo::getOidHenkilo)
                 .containsExactly("1.2.3.4.1");
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getOrganisaatioOid)
                 .containsExactly("1.2.0.0.1");
 
@@ -733,17 +737,17 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.3.4.5");
         assertThat(henkilo.getKayttajatiedot().getUsername()).matches("hakaIdentifier1[\\d]{3,3}");
         assertThat(henkilo.getKayttajatiedot().getPassword()).isNull();
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
                 .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKayttoOikeusRyhma)
                 .extracting(KayttoOikeusRyhma::getTunniste)
                 .containsExactly("ryhma");
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
                 .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKasittelija)
                 .extracting(Henkilo::getOidHenkilo)
                 .containsExactly("1.2.3.4.1");
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getOrganisaatioOid)
                 .containsExactly("1.2.0.0.1");
 
@@ -787,17 +791,17 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.3.4.5");
         assertThat(henkilo.getKayttajatiedot().getUsername()).matches("hakaIdentifier1[\\d]{3,3}");
         assertThat(henkilo.getKayttajatiedot().getPassword()).isNull();
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
                 .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKayttoOikeusRyhma)
                 .extracting(KayttoOikeusRyhma::getTunniste)
                 .containsExactly("ryhma");
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
                 .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKasittelija)
                 .extracting(Henkilo::getOidHenkilo)
                 .containsExactly("1.2.3.4.1");
-        assertThat(henkilo.getOrganisaatioHenkilos())
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
                 .flatExtracting(OrganisaatioHenkilo::getOrganisaatioOid)
                 .containsExactly("1.2.0.0.1");
 
