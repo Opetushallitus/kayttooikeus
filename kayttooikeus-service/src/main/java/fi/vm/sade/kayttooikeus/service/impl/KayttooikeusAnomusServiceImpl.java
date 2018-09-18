@@ -247,11 +247,11 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                 .filter(organisaatioHenkilo ->
                         Objects.equals(organisaatioHenkilo.getOrganisaatioOid(), organisaatioOid))
                 .findFirst().orElseGet(() ->
-                        this.organisaatioHenkiloRepository.save(savedAnoja.addOrganisaatioHenkilo(OrganisaatioHenkilo.builder()
+                        this.organisaatioHenkiloRepository.save(OrganisaatioHenkilo.builder()
                                 .organisaatioOid(organisaatioOid)
                                 .tehtavanimike(tehtavanimike)
                                 .henkilo(savedAnoja)
-                                .build())));
+                                .build()));
         foundOrCreatedOrganisaatioHenkilo.setPassivoitu(false);
         return foundOrCreatedOrganisaatioHenkilo;
     }
