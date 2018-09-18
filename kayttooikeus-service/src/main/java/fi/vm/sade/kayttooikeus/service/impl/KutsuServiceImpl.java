@@ -279,7 +279,7 @@ public class KutsuServiceImpl implements KutsuService {
             addEmailToExistingHenkiloUpdateDto(henkiloOid, kutsuByToken.getSahkoposti(), henkiloUpdateDto);
         }
 
-        this.ldapSynchronizationService.updateHenkiloAsap(henkiloOid);
+        this.ldapSynchronizationService.updateHenkiloNow(henkiloOid);
         return henkiloUpdateDto;
     }
 
