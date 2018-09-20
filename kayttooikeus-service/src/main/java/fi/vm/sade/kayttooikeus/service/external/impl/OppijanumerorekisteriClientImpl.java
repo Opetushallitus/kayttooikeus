@@ -244,7 +244,7 @@ public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriCli
         retrying(FunctionalUtils.io(() -> serviceAccountClient.post(url, MediaType.APPLICATION_JSON_VALUE,
                 objectMapper.writeValueAsString(duplicateOids))), 2).get().orFail(mapper(url));
     }
-    
+
     @Override
     public HenkiloOmattiedotDto getOmatTiedot(String oidHenkilo) {
         String url = this.urlProperties.url("oppijanumerorekisteri.henkilo.omattiedot-by-oid", oidHenkilo);
