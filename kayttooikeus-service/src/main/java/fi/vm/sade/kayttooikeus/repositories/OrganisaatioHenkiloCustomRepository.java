@@ -3,9 +3,10 @@ package fi.vm.sade.kayttooikeus.repositories;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto;
 import fi.vm.sade.kayttooikeus.dto.PalveluRooliGroup;
+import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,6 +23,8 @@ public interface OrganisaatioHenkiloCustomRepository {
     Optional<OrganisaatioHenkiloDto> findByHenkiloOidAndOrganisaatioOid(String henkiloOid, String organisaatioOid);
 
     List<OrganisaatioHenkiloDto> findOrganisaatioHenkilosForHenkilo(String henkiloOid);
+
+    Collection<String> findOrganisaatioOidBy(OrganisaatioHenkiloCriteria criteria);
 
     /**
      * Palauttaa tiedon kuuluuko henkilö annettuun organisaatioon.

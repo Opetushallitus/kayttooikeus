@@ -8,6 +8,7 @@ import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria;
+import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
 import fi.vm.sade.kayttooikeus.service.*;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
@@ -116,6 +117,11 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
             return singletonList(VIRKAILIJA);
         }
         return emptyList();
+    }
+
+    @Override
+    public Collection<String> listOrganisaatioOidBy(OrganisaatioHenkiloCriteria criteria) {
+        return organisaatioHenkiloRepository.findOrganisaatioOidBy(criteria);
     }
 
     @Override

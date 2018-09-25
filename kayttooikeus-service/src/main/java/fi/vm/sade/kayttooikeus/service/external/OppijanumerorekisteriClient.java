@@ -1,6 +1,7 @@
 package fi.vm.sade.kayttooikeus.service.external;
 
 import fi.vm.sade.kayttooikeus.service.dto.HenkiloVahvaTunnistusDto;
+import fi.vm.sade.kayttooikeus.service.dto.HenkiloYhteystiedotDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.*;
 
 import java.time.LocalDateTime;
@@ -38,6 +39,8 @@ public interface OppijanumerorekisteriClient {
     Optional<HenkiloDto> getHenkiloByHetu(String hetu);
 
     Set<String> listOidByYhteystieto(String arvo);
+
+    Collection<HenkiloYhteystiedotDto> listYhteystiedot(HenkiloHakuCriteria criteria);
 
     Optional<String> createHenkiloForKutsu(HenkiloCreateDto henkiloCreateDto);
 

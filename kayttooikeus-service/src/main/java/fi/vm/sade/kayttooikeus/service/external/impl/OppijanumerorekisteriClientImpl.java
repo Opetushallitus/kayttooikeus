@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.vm.sade.generic.rest.CachingRestClient;
 import fi.vm.sade.kayttooikeus.config.properties.ServiceUsersProperties;
 import fi.vm.sade.kayttooikeus.service.dto.HenkiloVahvaTunnistusDto;
+import fi.vm.sade.kayttooikeus.service.dto.HenkiloYhteystiedotDto;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.ExternalServiceException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
@@ -184,6 +185,17 @@ public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriCli
         return retrying(FunctionalUtils.<Set<String>>io(
                 () -> this.objectMapper.readerFor(new TypeReference<Set<String>>() {
                 }).readValue(this.serviceAccountClient.get(url))), 2).get()
+                .orFail(mapper(url));
+    }
+
+    @Override
+    public Collection<HenkiloYhteystiedotDto> listYhteystiedot(HenkiloHakuCriteria criteria) {
+        String url = urlProperties.url("oppijanumerorekisteri-service.henkilo.yhteystiedot");
+
+        return retrying(FunctionalUtils.<Collection<HenkiloYhteystiedotDto>>io(
+                () -> objectMapper.readerFor(new TypeReference<Collection<HenkiloYhteystiedotDto>>() {})
+                        .readValue(IOUtils.toString(serviceAccountClient.post(url, MediaType.APPLICATION_JSON_VALUE,
+                                objectMapper.writeValueAsString(criteria)).getEntity().getContent()))), 2).get()
                 .orFail(mapper(url));
     }
 

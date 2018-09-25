@@ -3,6 +3,7 @@ package fi.vm.sade.kayttooikeus.controller;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloCreateDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloUpdateDto;
+import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioHenkiloService;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -52,6 +54,13 @@ public class OrganisaatioHenkiloController {
             notes = "Listaa ne organisaatiohenkilötyypit joita kirjautunt käyttäjä saa luoda henkilöhallintaan.")
     public List<KayttajaTyyppi> listPossibleHenkiloTypesByCurrentHenkilo() {
         return organisaatioHenkiloService.listPossibleHenkiloTypesAccessibleForCurrentUser();
+    }
+
+    @PreAuthorize("hasRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
+    @GetMapping("/organisaatioOid")
+    @ApiOperation("Listaa henkilöiden organisaatio OID:t annettujen hakukriteerien mukaisesti")
+    public Collection<String> listOrganisaatioOidBy(OrganisaatioHenkiloCriteria criteria) {
+        return organisaatioHenkiloService.listOrganisaatioOidBy(criteria);
     }
 
     @PreAuthorize("@permissionCheckerServiceImpl.hasRoleForOrganisations(#organisaatioHenkiloList, {'HENKILONHALLINTA': {'CRUD'}, 'KAYTTOOIKEUS': {'CRUD'}})")

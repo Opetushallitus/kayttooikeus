@@ -1,15 +1,11 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
-import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
-import fi.vm.sade.kayttooikeus.dto.VirkailijaCreateDto;
+import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
-import fi.vm.sade.kayttooikeus.service.CryptoService;
-import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
-import fi.vm.sade.kayttooikeus.service.VirkailijaService;
+import fi.vm.sade.kayttooikeus.service.*;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloCreateDto;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class VirkailijaServiceImpl implements VirkailijaService {
 
+    private final KayttajaService kayttajaService;
     private final KayttajatiedotService kayttajatiedotService;
     private final CryptoService cryptoService;
     private final LdapSynchronizationService ldapSynchronizationService;
@@ -58,6 +55,14 @@ public class VirkailijaServiceImpl implements VirkailijaService {
         ldapSynchronizationService.updateHenkiloAsap(oid);
 
         return oid;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Iterable<KayttajaReadDto> list(VirkailijaCriteriaDto virkailijaCriteria) {
+        KayttajaCriteriaDto kayttajaCriteria = mapper.map(virkailijaCriteria, KayttajaCriteriaDto.class);
+        kayttajaCriteria.setKayttajaTyyppi(KayttajaTyyppi.VIRKAILIJA);
+        return kayttajaService.list(kayttajaCriteria);
     }
 
 }
