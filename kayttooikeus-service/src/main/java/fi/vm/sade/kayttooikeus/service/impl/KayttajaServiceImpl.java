@@ -1,9 +1,12 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
+import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.KayttajaCriteriaDto;
 import fi.vm.sade.kayttooikeus.dto.KayttajaReadDto;
+import fi.vm.sade.kayttooikeus.dto.PalveluRooliGroup;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloHibernateRepository;
+import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloRepository;
 import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
 import fi.vm.sade.kayttooikeus.service.KayttajaService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
@@ -15,11 +18,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 @Service
 @Transactional
@@ -31,7 +34,9 @@ public class KayttajaServiceImpl implements KayttajaService {
     private final PermissionCheckerService permissionCheckerService;
     private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
     private final HenkiloHibernateRepository henkiloHibernateRepository;
+    private final OrganisaatioHenkiloRepository organisaatioHenkiloRepository;
     private final OrikaBeanMapper mapper;
+    private final CommonProperties commonProperties;
 
     @Override
     public Iterable<KayttajaReadDto> list(KayttajaCriteriaDto criteria) {
@@ -55,20 +60,15 @@ public class KayttajaServiceImpl implements KayttajaService {
 
     private Set<String> getHenkiloOids(KayttajaCriteriaDto kayttajaCriteria) {
         OrganisaatioHenkiloCriteria organisaatioHenkiloCriteria = mapper.map(kayttajaCriteria, OrganisaatioHenkiloCriteria.class);
-        if (kayttajaCriteria.getKayttooikeudet() != null) {
-            organisaatioHenkiloCriteria.setKayttooikeudet(kayttajaCriteria.getKayttooikeudet().entrySet().stream()
-                    .flatMap(entry -> entry.getValue().stream().map(value -> entry.getKey() + "_" + value))
-                    .collect(toSet()));
-        }
 
-        // juuriorganisaatioon kuuluvalla henkilöllä on oikeus kaikkiin alla oleviin organisaatioihin
-        if (this.permissionCheckerService.isCurrentUserMiniAdmin()) {
-            return henkiloHibernateRepository.findOidsBy(organisaatioHenkiloCriteria);
-        }
-
-        // perustapauksena henkilöllä on oikeus omien organisaatioiden henkilötietoihin
         String kayttajaOid = permissionCheckerService.getCurrentUserOid();
-        return henkiloHibernateRepository.findOidsBySamaOrganisaatio(kayttajaOid, organisaatioHenkiloCriteria);
+        List<String> organisaatioOids = organisaatioHenkiloRepository.findUsersOrganisaatioHenkilosByPalveluRoolis(
+                kayttajaOid, PalveluRooliGroup.KAYTTAJAHAKU);
+        if (!organisaatioOids.contains(commonProperties.getRootOrganizationOid())) {
+            organisaatioHenkiloCriteria.setOrRetainOrganisaatioOids(organisaatioOids);
+        }
+
+        return henkiloHibernateRepository.findOidsBy(organisaatioHenkiloCriteria);
     }
 
 }
