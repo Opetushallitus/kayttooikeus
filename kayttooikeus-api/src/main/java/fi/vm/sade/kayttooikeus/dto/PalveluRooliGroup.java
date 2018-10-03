@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum PalveluRooliGroup {
+    KAYTTAJAHAKU("KAYTTAJAHAKU"),
     HENKILOHAKU("HENKILOHAKU");
 
     private String palveluRooliGroup;
