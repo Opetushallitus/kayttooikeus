@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -76,34 +77,46 @@ public class HenkilohakuBuilder {
         this.henkilohakuResultDtoList = new LinkedHashSet<>();
 
         // 1) käyttäjätunnuksella haku
-        HenkiloCriteria kayttajatunnusHakuCriteria = this.mapper.map(this.henkilohakuCriteriaDto, HenkiloCriteria.class);
-        if (kayttajatunnusHakuCriteria.getKayttajatunnus() == null) {
-            kayttajatunnusHakuCriteria.setKayttajatunnus(kayttajatunnusHakuCriteria.getNameQuery());
-        }
-        kayttajatunnusHakuCriteria.setSukunimi(null);
-        kayttajatunnusHakuCriteria.setNameQuery(null);
-        this.henkilohakuResultDtoList.addAll(henkiloHibernateRepository.findByUsername(kayttajatunnusHakuCriteria, offset));
+        this.henkilohakuResultDtoList.addAll(findByUsername(offset));
 
         // 2) nimellä haku
-        HenkiloCriteria nimiHakuCriteria = mapper.map(henkilohakuCriteriaDto, HenkiloCriteria.class);
-        nimiHakuCriteria.setKayttajatunnus(null);
-        this.henkilohakuResultDtoList.addAll(this.henkiloHibernateRepository
-                .findByCriteria(nimiHakuCriteria,
+        this.henkilohakuResultDtoList.addAll(findByName(criteria -> this.henkiloHibernateRepository
+                .findByCriteria(criteria,
                         offset,
                         limit,
-                        orderBy != null ? orderBy.getValue() : null));
+                        orderBy != null ? orderBy.getValue() : null)));
 
         return this;
     }
 
     // Find count of result with criteria
     public HenkilohakuBuilder searchCount() {
-        HenkiloCriteria henkiloCriteria = this.mapper.map(this.henkilohakuCriteriaDto, HenkiloCriteria.class);
-        List<HenkilohakuResultDto> henkiloCountByUsername = this.henkiloHibernateRepository.findByUsername(henkiloCriteria, 0L);
+        // 1) käyttäjätunnuksella haku
+        List<HenkilohakuResultDto> henkiloCountByUsername = findByUsername(0L);
+
+        // 2) nimellä haku
         List<String> henkiloOids = henkiloCountByUsername.stream().map( h -> h.getOidHenkilo()).collect(Collectors.toList());
-        Long henkiloCountByCriteria = this.henkiloHibernateRepository.findByCriteriaCount(henkiloCriteria, henkiloOids);
+        Long henkiloCountByCriteria = findByName(criteria -> this.henkiloHibernateRepository
+                .findByCriteriaCount(criteria, henkiloOids));
+
         this.henkilohakuResultCount = henkiloCountByCriteria + henkiloCountByUsername.size();
         return this;
+    }
+
+    private List<HenkilohakuResultDto> findByUsername(Long offset) {
+        HenkiloCriteria criteria = this.mapper.map(this.henkilohakuCriteriaDto, HenkiloCriteria.class);
+        if (criteria.getKayttajatunnus() == null) {
+            criteria.setKayttajatunnus(criteria.getNameQuery());
+        }
+        criteria.setSukunimi(null);
+        criteria.setNameQuery(null);
+        return henkiloHibernateRepository.findByUsername(criteria, offset);
+    }
+
+    private <T> T findByName(Function<HenkiloCriteria, T> findByFunction) {
+        HenkiloCriteria criteria = this.mapper.map(this.henkilohakuCriteriaDto, HenkiloCriteria.class);
+        criteria.setKayttajatunnus(null);
+        return findByFunction.apply(criteria);
     }
 
     // Remove henkilos the user has no access (and who have organisation)
