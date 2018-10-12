@@ -33,4 +33,6 @@ public interface KayttajatiedotService {
     void throwIfUsernameExists(String username);
 
     void throwIfUsernameIsNotValid(String username);
+
+    KayttajatiedotReadDto getByUsernameAndPassword(String username, String password);
 }

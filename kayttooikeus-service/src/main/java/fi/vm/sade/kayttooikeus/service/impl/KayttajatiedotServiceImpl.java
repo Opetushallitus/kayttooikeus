@@ -11,14 +11,15 @@ import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.service.CryptoService;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
+import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
+import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService.LdapSynchronizationType;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
+import fi.vm.sade.kayttooikeus.service.exception.UnauthorizedException;
 import fi.vm.sade.kayttooikeus.service.exception.UsernameAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService.LdapSynchronizationType;
 import org.springframework.util.StringUtils;
 
 import java.util.Optional;
@@ -154,6 +155,14 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
         if(!username.matches(Constants.USERNAME_REGEXP)) {
             throw new IllegalArgumentException("Username is not valid with pattern " + Constants.USERNAME_REGEXP);
         }
+    }
+
+    @Override
+    public KayttajatiedotReadDto getByUsernameAndPassword(String username, String password) {
+        return kayttajatiedotRepository.findByUsername(username)
+                .filter(entity -> cryptoService.check(password, entity.getPassword(), entity.getSalt()))
+                .map(entity -> mapper.map(entity, KayttajatiedotReadDto.class))
+                .orElseThrow(UnauthorizedException::new);
     }
 
     private void changePassword(String oid, String newPassword, LdapSynchronizationType ldapSynchronizationType) {

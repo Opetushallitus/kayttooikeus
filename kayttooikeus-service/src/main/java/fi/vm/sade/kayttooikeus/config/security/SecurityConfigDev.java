@@ -42,7 +42,7 @@ public class SecurityConfigDev extends WebSecurityConfigurerAdapter {
                 .antMatchers("/kutsu/token/*").permitAll()
                 .antMatchers("/cas/tunnistus").permitAll()
                 .antMatchers("/cas/uudelleenrekisterointi").permitAll()
-                .antMatchers("/userDetails/*").permitAll()
+                .antMatchers("/userDetails", "/userDetails/*").permitAll()
                 .antMatchers("/swagger-resources/**").permitAll()
                 .antMatchers("/webjars/springfox-swagger-ui/**").permitAll()
                 .antMatchers("/v2/api-docs").permitAll()
