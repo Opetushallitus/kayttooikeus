@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -44,6 +45,24 @@ public class UserDetailsControllerTest extends AbstractControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"username\":\"user1\",\"password\":\"pass1\"}"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void getByUsernameAndPasswordReturnsBadRequestWithoutUsername() throws Exception {
+        mvc.perform(post("/userDetails")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\":null,\"password\":\"pass1\"}"))
+                .andExpect(status().isBadRequest());
+        verifyZeroInteractions(kayttajatiedotService);
+    }
+
+    @Test
+    public void getByUsernameAndPasswordReturnsBadRequestWithoutPassword() throws Exception {
+        mvc.perform(post("/userDetails")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\":\"user1\",\"password\":null}"))
+                .andExpect(status().isBadRequest());
+        verifyZeroInteractions(kayttajatiedotService);
     }
 
 }
