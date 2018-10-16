@@ -2,18 +2,17 @@ package fi.vm.sade.kayttooikeus.service.impl;
 
 import com.google.common.collect.Sets;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
+import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.enumeration.OrderByHenkilohaku;
-import fi.vm.sade.kayttooikeus.repositories.criteria.KayttooikeusCriteria;
-import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
-import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
-import fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila;
-import fi.vm.sade.kayttooikeus.dto.KayttooikeudetDto;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
+import fi.vm.sade.kayttooikeus.repositories.criteria.KayttooikeusCriteria;
+import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
 import fi.vm.sade.kayttooikeus.repositories.dto.HenkilohakuResultDto;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
+import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.exception.ForbiddenException;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
@@ -26,8 +25,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
-
 import java.util.*;
 
 @Service
@@ -45,6 +42,7 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
     private final MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
     private final LdapSynchronizationService ldapSynchronizationService;
     private final HenkiloDataRepository henkiloDataRepository;
+    private final KayttajatiedotRepository kayttajatiedotRepository;
     private final CommonProperties commonProperties;
 
     private final OrikaBeanMapper mapper;
@@ -87,12 +85,19 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
 
     @Override
     @Transactional
-    public void disableHenkiloOrganisationsAndKayttooikeus(String henkiloOid, String kasittelijaOid) {
+    public void passivoi(String henkiloOid, String kasittelijaOid) {
+        henkiloDataRepository.findByOidHenkilo(henkiloOid).ifPresent(henkilo -> passivoi(henkilo, kasittelijaOid));
+    }
+
+    private void passivoi(Henkilo henkilo, String kasittelijaOid) {
+        henkilo.setKayttajatiedot(null);
+        kayttajatiedotRepository.deleteByHenkilo(henkilo);
+
         if (StringUtils.isEmpty(kasittelijaOid)) {
             kasittelijaOid = getCurrentUserOid();
         }
         final String kasittelijaOidFinal = kasittelijaOid;
-        List<OrganisaatioHenkilo> orgHenkilos = this.organisaatioHenkiloRepository.findByHenkiloOidHenkilo(henkiloOid);
+        List<OrganisaatioHenkilo> orgHenkilos = this.organisaatioHenkiloRepository.findByHenkilo(henkilo);
         for (OrganisaatioHenkilo oh : orgHenkilos) {
             oh.setPassivoitu(true);
             Set<MyonnettyKayttoOikeusRyhmaTapahtuma> mkorts = oh.getMyonnettyKayttoOikeusRyhmas();
@@ -114,11 +119,9 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
             }
         }
 
-        this.henkiloDataRepository.findByOidHenkilo(henkiloOid)
-                .ifPresent(henkilo -> henkilo.getHenkiloVarmennettavas()
-                        .forEach(henkiloVarmentaja -> henkiloVarmentaja.setTila(false)));
+        henkilo.getHenkiloVarmennettavas().forEach(henkiloVarmentaja -> henkiloVarmentaja.setTila(false));
 
-        ldapSynchronizationService.updateHenkiloAsap(henkiloOid);
+        ldapSynchronizationService.updateHenkiloAsap(henkilo.getOidHenkilo());
     }
 
     @Override

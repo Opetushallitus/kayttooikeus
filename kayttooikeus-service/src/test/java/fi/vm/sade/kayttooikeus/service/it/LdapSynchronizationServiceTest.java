@@ -21,6 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.henkilo;
@@ -71,7 +72,7 @@ public class LdapSynchronizationServiceTest extends AbstractServiceIntegrationTe
             String kayttajatunnus, String organisaatioOid,
             String kayttoOikeusRyhma, String palvelu, String rooli) {
         HenkiloDto henkiloDto = createValidHenkiloDto(oid);
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(any())).thenReturn(henkiloDto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(any())).thenReturn(Optional.of(henkiloDto));
         HenkiloPopulator henkiloPopulator = henkilo(oid);
         populate(kayttajatiedot(henkiloPopulator, kayttajatunnus));
         return populate(myonnettyKayttoOikeus(organisaatioHenkilo(
@@ -108,10 +109,10 @@ public class LdapSynchronizationServiceTest extends AbstractServiceIntegrationTe
     public void updateHenkiloKayttajatiedot() {
         populate(kayttajatiedot(henkilo("oid1"), "user1"));
         HenkiloDto henkilo1Dto = createValidHenkiloDto("oid1");
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(eq("oid1"))).thenReturn(henkilo1Dto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(eq("oid1"))).thenReturn(Optional.of(henkilo1Dto));
         populate(kayttajatiedot(henkilo("oid2"), "user2"));
         HenkiloDto henkilo2Dto = createValidHenkiloDto("oid2");
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(eq("oid2"))).thenReturn(henkilo2Dto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(eq("oid2"))).thenReturn(Optional.of(henkilo2Dto));
 
         ldapSynchronizationService.updateHenkilo("oid1");
         ldapSynchronizationService.updateHenkilo("oid2");
@@ -130,7 +131,7 @@ public class LdapSynchronizationServiceTest extends AbstractServiceIntegrationTe
     public void updateHenkiloKayttajatunnus() {
         Kayttajatiedot kayttajatiedot1 = populate(kayttajatiedot(henkilo("oid1"), "user1"));
         HenkiloDto henkilo1Dto = createValidHenkiloDto("oid1");
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(eq("oid1"))).thenReturn(henkilo1Dto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(eq("oid1"))).thenReturn(Optional.of(henkilo1Dto));
 
         ldapSynchronizationService.updateHenkilo("oid1");
         ldapSynchronizationService.runSynchronizer();
@@ -150,7 +151,7 @@ public class LdapSynchronizationServiceTest extends AbstractServiceIntegrationTe
 
         Kayttajatiedot kayttajatiedot2 = populate(kayttajatiedot(henkilo("oid2"), "user1"));
         HenkiloDto henkilo2Dto = createValidHenkiloDto("oid2");
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(eq("oid2"))).thenReturn(henkilo2Dto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(eq("oid2"))).thenReturn(Optional.of(henkilo2Dto));
 
         ldapSynchronizationService.updateHenkilo("oid2");
         ldapSynchronizationService.runSynchronizer();
@@ -165,7 +166,7 @@ public class LdapSynchronizationServiceTest extends AbstractServiceIntegrationTe
         populate(kayttajatiedot(henkilo("oid1"), "user1"));
         HenkiloDto henkiloDto = createValidHenkiloDto("oid1");
         henkiloDto.setAsiointiKieli(new KielisyysDto("fi", "suomi"));
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(any())).thenReturn(henkiloDto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(any())).thenReturn(Optional.of(henkiloDto));
 
         ldapSynchronizationService.updateHenkilo("oid1");
         ldapSynchronizationService.runSynchronizer();
@@ -181,7 +182,7 @@ public class LdapSynchronizationServiceTest extends AbstractServiceIntegrationTe
         Kayttajatiedot kayttajatiedot = populate(kayttajatiedot(henkilo("oid1"), "user1"));
         HenkiloDto henkiloDto = createValidHenkiloDto("oid1");
         henkiloDto.setAsiointiKieli(new KielisyysDto("fi", "suomi"));
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(any())).thenReturn(henkiloDto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(any())).thenReturn(Optional.of(henkiloDto));
 
         ldapSynchronizationService.updateHenkilo("oid1");
         ldapSynchronizationService.runSynchronizer();
@@ -208,7 +209,7 @@ public class LdapSynchronizationServiceTest extends AbstractServiceIntegrationTe
     public void updateHenkiloTyyppi() {
         populate(kayttajatiedot(virkailija("oid1"), "user1"));
         HenkiloDto henkiloDto = createValidHenkiloDto("oid1");
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(any())).thenReturn(henkiloDto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(any())).thenReturn(Optional.of(henkiloDto));
 
         ldapSynchronizationService.updateHenkilo("oid1");
         ldapSynchronizationService.runSynchronizer();
@@ -239,7 +240,7 @@ public class LdapSynchronizationServiceTest extends AbstractServiceIntegrationTe
         populate(kayttajatiedot(henkiloPopulator, "user1"));
         populate(identification("vetuma", "userVetuma", henkiloPopulator));
         HenkiloDto henkiloDto = createValidHenkiloDto("oid1");
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(any())).thenReturn(henkiloDto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(any())).thenReturn(Optional.of(henkiloDto));
 
         ldapSynchronizationService.updateHenkilo("oid1");
         ldapSynchronizationService.runSynchronizer();
@@ -255,7 +256,7 @@ public class LdapSynchronizationServiceTest extends AbstractServiceIntegrationTe
     public void updateHenkiloPassivointi() {
         populate(kayttajatiedot(henkilo("oid1"), "user1"));
         HenkiloDto henkiloDto = createValidHenkiloDto("oid1");
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(any())).thenReturn(henkiloDto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(any())).thenReturn(Optional.of(henkiloDto));
 
         ldapSynchronizationService.updateHenkilo("oid1");
         ldapSynchronizationService.runSynchronizer();
@@ -271,15 +272,35 @@ public class LdapSynchronizationServiceTest extends AbstractServiceIntegrationTe
     }
 
     @Test
+    public void updateHenkiloRemoveKayttajatiedot() {
+        Kayttajatiedot kayttajatiedot = populate(kayttajatiedot(henkilo("oid1"), "user1"));
+        HenkiloDto henkiloDto = createValidHenkiloDto("oid1");
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(any())).thenReturn(Optional.of(henkiloDto));
+
+        ldapSynchronizationService.updateHenkilo("oid1");
+        ldapSynchronizationService.runSynchronizer();
+        assertThat(kayttajaRepository.findAll())
+                .extracting("kayttajatunnus", "oid")
+                .containsExactly(tuple("user1", "oid1"));
+
+        kayttajatiedot.getHenkilo().setKayttajatiedot(null);
+        em.remove(kayttajatiedot);
+        ldapSynchronizationService.updateHenkilo("oid1");
+        ldapSynchronizationService.runSynchronizer();
+        assertThat(kayttajaRepository.findAll()).isEmpty();
+        assertThat(ryhmaRepository.findAll()).isEmpty();
+    }
+
+    @Test
     public void updateHenkiloDeleteRyhma() {
         populate(kayttajatiedot(henkilo("oid1"), "user1"));
         HenkiloDto henkilo1Dto = createValidHenkiloDto("oid1");
         henkilo1Dto.setAsiointiKieli(new KielisyysDto("fi", "suomi"));
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(eq("oid1"))).thenReturn(henkilo1Dto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(eq("oid1"))).thenReturn(Optional.of(henkilo1Dto));
         populate(kayttajatiedot(henkilo("oid2"), "user2"));
         HenkiloDto henkilo2Dto = createValidHenkiloDto("oid2");
         henkilo2Dto.setAsiointiKieli(new KielisyysDto("fi", "suomi"));
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(eq("oid2"))).thenReturn(henkilo2Dto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(eq("oid2"))).thenReturn(Optional.of(henkilo2Dto));
 
         ldapSynchronizationService.updateHenkilo("oid1");
         ldapSynchronizationService.updateHenkilo("oid2");
@@ -317,13 +338,13 @@ public class LdapSynchronizationServiceTest extends AbstractServiceIntegrationTe
     public void updateAll() {
         populate(kayttajatiedot(henkilo("oid1"), "user1"));
         HenkiloDto henkilo1Dto = createValidHenkiloDto("oid1");
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(eq("oid1"))).thenReturn(henkilo1Dto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(eq("oid1"))).thenReturn(Optional.of(henkilo1Dto));
         populate(henkilo("oid2"));
         HenkiloDto henkilo2Dto = createValidHenkiloDto("oid2");
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(eq("oid2"))).thenReturn(henkilo2Dto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(eq("oid2"))).thenReturn(Optional.of(henkilo2Dto));
         populate(kayttajatiedot(henkilo("oid3"), "user3"));
         HenkiloDto henkilo3Dto = createValidHenkiloDto("oid3");
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(eq("oid3"))).thenReturn(henkilo3Dto);
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(eq("oid3"))).thenReturn(Optional.of(henkilo3Dto));
 
         ldapSynchronizationService.updateAllAtNight();
         assertThat(ldapUpdateDataRepository.findAll())

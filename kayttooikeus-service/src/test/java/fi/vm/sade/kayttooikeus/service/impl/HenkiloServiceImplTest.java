@@ -3,32 +3,30 @@ package fi.vm.sade.kayttooikeus.service.impl;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.HenkilohakuCriteriaDto;
-import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
-import fi.vm.sade.kayttooikeus.repositories.HenkiloHibernateRepository;
-import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaTapahtumaHistoriaDataRepository;
-import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
-import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloRepository;
+import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.HenkiloCriteria;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toSet;
-import java.util.stream.Stream;
-import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.Mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.stream.Stream;
+
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toSet;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = OrikaBeanMapper.class)
@@ -51,6 +49,8 @@ public class HenkiloServiceImplTest {
     @Mock
     private HenkiloDataRepository henkiloDataRepositoryMock;
     @Mock
+    private KayttajatiedotRepository kayttajatiedotRepositoryMock;
+    @Mock
     private CommonProperties commonPropertiesMock;
     @Autowired
     private OrikaBeanMapper mapper;
@@ -70,6 +70,7 @@ public class HenkiloServiceImplTest {
                 myonnettyKayttoOikeusRyhmaTapahtumaRepositoryMock,
                 ldapSynchronizationServiceMock,
                 henkiloDataRepositoryMock,
+                kayttajatiedotRepositoryMock,
                 commonPropertiesMock,
                 mapper,
                 organisaatioClientMock);

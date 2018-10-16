@@ -5,8 +5,10 @@ import com.google.common.collect.Sets;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.enumeration.OrderByHenkilohaku;
+import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
 import fi.vm.sade.kayttooikeus.model.OrganisaatioHenkilo;
+import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
 import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloRepository;
 import fi.vm.sade.kayttooikeus.repositories.dto.HenkilohakuResultDto;
@@ -47,6 +49,9 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     private HenkiloService henkiloService;
 
     @Autowired
+    private KayttajatiedotRepository kayttajatiedotRepository;
+
+    @Autowired
     private OrganisaatioHenkiloRepository organisaatioHenkiloRepository;
 
     @Autowired
@@ -68,23 +73,27 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
         assertThat(dto.getOid()).isEqualTo("oid1");
     }
 
+    @Test
     @Transactional
     @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
-    public void passivoiHenkiloOrganisationsAndKayttooikeus() {
+    public void passivoiHenkilo() {
         // Käsittelijä
-        populate(henkilo("1.2.3.4.1"));
+        populate(kayttajatiedot(henkilo("1.2.3.4.1"), "Käsittelijä"));
         // Passivoitava
         String oidHenkilo = "1.2.3.4.5";
         MyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma = populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(henkilo(oidHenkilo), "4.5.6.7.8")
+                organisaatioHenkilo(henkilo(oidHenkilo).withUsername("Passivoitava"), "4.5.6.7.8")
                         .tehtavanimike("testaaja"),
                 kayttoOikeusRyhma("RYHMA2")
                         .withOikeus(oikeus("KOODISTO", "WRITE")))
                 .voimassaAlkaen(LocalDate.now().minusMonths(1)).voimassaPaattyen(LocalDate.now().plusMonths(1)));
         myonnettyKayttoOikeusRyhmaTapahtuma.getOrganisaatioHenkilo().setMyonnettyKayttoOikeusRyhmas(Sets.newHashSet(myonnettyKayttoOikeusRyhmaTapahtuma));
         this.em.persist(myonnettyKayttoOikeusRyhmaTapahtuma);
-        this.henkiloService.disableHenkiloOrganisationsAndKayttooikeus("1.2.3.4.5", "1.2.3.4.1");
+        this.henkiloService.passivoi("1.2.3.4.5", "1.2.3.4.1");
 
+        assertThat(kayttajatiedotRepository.findByHenkiloOidHenkilo("1.2.3.4.1")).map(Kayttajatiedot::getUsername)
+                .hasValue("Käsittelijä");
+        assertThat(kayttajatiedotRepository.findByHenkiloOidHenkilo("1.2.3.4.5")).isNotPresent();
         List<OrganisaatioHenkilo> henkilo = this.organisaatioHenkiloRepository.findByHenkiloOidHenkilo(oidHenkilo);
         assertThat(henkilo.size()).isEqualTo(1);
         assertThat(henkilo.get(0).getMyonnettyKayttoOikeusRyhmas()).isEmpty();

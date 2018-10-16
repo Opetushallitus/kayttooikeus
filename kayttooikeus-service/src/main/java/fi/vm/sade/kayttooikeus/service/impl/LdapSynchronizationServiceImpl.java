@@ -1,24 +1,24 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
-import fi.vm.sade.kayttooikeus.service.impl.ldap.LdapSynchronizer;
 import fi.vm.sade.kayttooikeus.config.properties.LdapSynchronizationProperties;
 import fi.vm.sade.kayttooikeus.model.LdapPriorityType;
 import fi.vm.sade.kayttooikeus.model.LdapStatusType;
 import fi.vm.sade.kayttooikeus.model.LdapSynchronizationData;
 import fi.vm.sade.kayttooikeus.model.LdapUpdateData;
 import fi.vm.sade.kayttooikeus.repositories.LdapSynchronizationDataRepository;
+import fi.vm.sade.kayttooikeus.repositories.LdapUpdateDataRepository;
+import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.TimeService;
+import fi.vm.sade.kayttooikeus.service.impl.ldap.LdapSynchronizer;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import fi.vm.sade.kayttooikeus.repositories.LdapUpdateDataRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -100,7 +100,7 @@ public class LdapSynchronizationServiceImpl implements LdapSynchronizationServic
         LOGGER.info("LDAP-synkronointi henkilölle {} aloitetaan", henkiloOid);
         long start = timeService.getCurrentTimeMillis();
 
-        ldapSynchronizer.run(henkiloOid);
+        ldapSynchronizer.synchronize(henkiloOid);
 
         LOGGER.info("LDAP-synkronointi henkilölle {} päättyy, kesto: {}ms", henkiloOid, timeService.getCurrentTimeMillis() - start);
     }

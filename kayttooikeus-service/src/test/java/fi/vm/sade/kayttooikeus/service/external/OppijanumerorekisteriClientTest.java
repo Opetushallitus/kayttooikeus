@@ -8,6 +8,7 @@ import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoDto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -25,7 +26,6 @@ import static org.hamcrest.Matchers.equalToIgnoringWhiteSpace;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import org.springframework.http.HttpStatus;
 
 @RunWith(SpringRunner.class)
 public class OppijanumerorekisteriClientTest extends AbstractClientTest {
@@ -101,6 +101,26 @@ public class OppijanumerorekisteriClientTest extends AbstractClientTest {
         assertEquals("yhteystietotyyppi2email@emai.fi", henkiloDto.getYhteystiedotRyhma().iterator().next().getYhteystieto()
                 .stream().filter(yhteystietoDto -> yhteystietoDto.getYhteystietoTyyppi().equals(YHTEYSTIETO_SAHKOPOSTI))
                 .findFirst().orElse(new YhteystietoDto()).getYhteystietoArvo());
+    }
+
+    @Test
+    public void findHenkiloByOid() {
+        casAuthenticated("test");
+        onRequest().havingMethod(is("GET"))
+                .havingPath(is("/oppijanumerorekisteri-service/henkilo/1.2.3.4.5"))
+                .respond().withStatus(OK).withContentType(MediaType.APPLICATION_JSON_UTF8.getType())
+                .withBody(jsonResource("classpath:henkilo/henkiloDto.json"));
+        assertThat(this.client.findHenkiloByOid("1.2.3.4.5")).map(HenkiloDto::getOidHenkilo).hasValue("1.2.3.4.5");
+    }
+
+    @Test
+    public void findHenkiloByOidWithNotFound() {
+        casAuthenticated("test");
+        onRequest().havingMethod(is("GET"))
+                .havingPath(is("/oppijanumerorekisteri-service/henkilo/1.2.3.4.5"))
+                .respond().withStatus(HttpStatus.NOT_FOUND.value()).withContentType(MediaType.APPLICATION_JSON_UTF8.getType())
+                .withBody("{}");
+        assertThat(this.client.findHenkiloByOid("1.2.3.4.5")).isNotPresent();
     }
 
     @Test
