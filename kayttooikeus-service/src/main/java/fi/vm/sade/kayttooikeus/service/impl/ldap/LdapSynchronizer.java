@@ -1,9 +1,11 @@
 package fi.vm.sade.kayttooikeus.service.impl.ldap;
 
 import fi.vm.sade.kayttooikeus.model.*;
-import fi.vm.sade.kayttooikeus.repositories.*;
+import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
+import fi.vm.sade.kayttooikeus.repositories.HenkiloHibernateRepository;
+import fi.vm.sade.kayttooikeus.repositories.LdapUpdateDataCriteria;
+import fi.vm.sade.kayttooikeus.repositories.LdapUpdateDataRepository;
 import fi.vm.sade.kayttooikeus.service.TimeService;
-import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.ifPresentOrElse;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
@@ -53,25 +56,27 @@ public class LdapSynchronizer {
     /**
      * Päivittää henkilön tiedot välittömästi LDAPiin.
      *
-     * @param henkiloOid henkilö oid
+     * @param oid henkilö oid
      */
-    public void run(String henkiloOid) {
-        synchronize(henkiloOid);
+    public void synchronize(String oid) {
+        ifPresentOrElse(oppijanumerorekisteriClient.findHenkiloByOid(oid).filter(LdapSynchronizer::isValid),
+                this::synchronize,
+                () -> ldapService.deleteByOid(oid));
     }
 
-    private void synchronize(String henkiloOid) {
-        HenkiloDto dto = oppijanumerorekisteriClient.getHenkiloByOid(henkiloOid);
-        Henkilo entity = henkiloRepository.findByOidHenkilo(dto.getOidHenkilo())
-                .orElseThrow(() -> new DataInconsistencyException("Henkilöä ei löytynyt OID:lla " + dto.getOidHenkilo()));
-        if (entity.getKayttajatiedot() == null || entity.getKayttajatiedot().getUsername() == null) {
-            LOGGER.info("Henkilöllä {} ei ole käyttäjätunnusta joten LDAP-synkronointia ei tehdä", entity.getOidHenkilo());
-            return;
-        }
-        if (dto.isPassivoitu()) {
-            ldapService.deleteByOid(dto.getOidHenkilo());
-        } else {
-            ldapService.upsert(entity, dto);
-        }
+    private static boolean isValid(HenkiloDto henkilo) {
+        return !henkilo.isPassivoitu();
+    }
+
+    private void synchronize(HenkiloDto dto) {
+        String oid = dto.getOidHenkilo();
+        ifPresentOrElse(henkiloRepository.findByOidHenkilo(oid).filter(LdapSynchronizer::isValid),
+                entity -> ldapService.upsert(entity, dto),
+                () -> ldapService.deleteByOid(oid));
+    }
+
+    private static boolean isValid(Henkilo henkilo) {
+        return henkilo.getKayttajatiedot() != null && henkilo.getKayttajatiedot().getUsername() != null;
     }
 
     @RequiredArgsConstructor

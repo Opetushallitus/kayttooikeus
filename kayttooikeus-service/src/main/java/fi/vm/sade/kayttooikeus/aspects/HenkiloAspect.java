@@ -22,7 +22,7 @@ public class HenkiloAspect {
         henkiloHelper = helper;
     }
 
-    @Around(value = "execution(public * fi.vm.sade.kayttooikeus.service.HenkiloService.disableHenkiloOrganisationsAndKayttooikeus(..))" +
+    @Around(value = "execution(public * fi.vm.sade.kayttooikeus.service.HenkiloService.passivoi(..))" +
             "&& args(henkiloOid, kasittelijaOid)", argNames = "proceedingJoinPoint, henkiloOid, kasittelijaOid")
     private Object logPassivoiHenkilo(ProceedingJoinPoint proceedingJoinPoint, String henkiloOid, String kasittelijaOid) throws Throwable {
         Object result = proceedingJoinPoint.proceed();

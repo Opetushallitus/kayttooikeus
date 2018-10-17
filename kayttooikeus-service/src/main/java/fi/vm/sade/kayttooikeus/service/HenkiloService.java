@@ -37,7 +37,12 @@ public interface HenkiloService {
      */
     KayttooikeudetDto getKayttooikeudet(String henkiloOid, OrganisaatioHenkiloCriteria criteria);
 
-    void disableHenkiloOrganisationsAndKayttooikeus(String henkiloOid, String kasittelijaOid);
+    /**
+     * Poistaa henkilöltä käyttäjätunnuksen ja käyttöoikeudet sekä passivoi henkilön organisaatiot ja varmentajat.
+     * @param henkiloOid passivoitavan oid
+     * @param kasittelijaOid käsittelijän oid (jos null, käytetään nykyisen käyttäjän oidia)
+     */
+    void passivoi(String henkiloOid, String kasittelijaOid);
 
     Collection<HenkilohakuResultDto> henkilohaku(HenkilohakuCriteriaDto henkilohakuCriteriaDto, Long offset, OrderByHenkilohaku orderBy);
 

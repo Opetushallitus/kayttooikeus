@@ -170,6 +170,15 @@ public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriCli
     }
 
     @Override
+    public Optional<HenkiloDto> findHenkiloByOid(String oid) {
+        try {
+            return Optional.of(getHenkiloByOid(oid));
+        } catch (NotFoundException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
     public Optional<HenkiloDto> getHenkiloByHetu(String hetu) {
         String url = this.urlProperties.url("oppijanumerorekisteri-service.henkilo.henkiloByHetu", hetu);
 

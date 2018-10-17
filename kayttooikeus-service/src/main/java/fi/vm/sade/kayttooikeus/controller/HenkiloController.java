@@ -139,7 +139,7 @@ public class HenkiloController {
     public void passivoi(@ApiParam(value = "Henkilön OID", required = true) @PathVariable(value = "henkiloOid") String henkiloOid,
                          @ApiParam(value = "Jos ei annettu käytetään kirjautunutta")
                          @RequestParam(value = "kasittelijaOid", required = false) String kasittelijaOid) {
-        this.henkiloService.disableHenkiloOrganisationsAndKayttooikeus(henkiloOid, kasittelijaOid);
+        this.henkiloService.passivoi(henkiloOid, kasittelijaOid);
     }
 
     @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPerson(#oid, {'HENKILONHALLINTA': {'CRUD', 'KKVASTUU'}, 'KAYTTOOIKEUS': {'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, #permissionService)")

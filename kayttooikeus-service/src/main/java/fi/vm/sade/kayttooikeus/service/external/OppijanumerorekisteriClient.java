@@ -36,6 +36,8 @@ public interface OppijanumerorekisteriClient {
 
     HenkiloDto getHenkiloByOid(String oid);
 
+    Optional<HenkiloDto> findHenkiloByOid(String oid);
+
     Optional<HenkiloDto> getHenkiloByHetu(String hetu);
 
     Set<String> listOidByYhteystieto(String arvo);

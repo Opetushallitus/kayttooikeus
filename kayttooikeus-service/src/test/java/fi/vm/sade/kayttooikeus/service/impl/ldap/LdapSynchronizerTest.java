@@ -53,7 +53,7 @@ public class LdapSynchronizerTest {
 
     @Before
     public void setup() {
-        when(oppijanumerorekisteriClientMock.getHenkiloByOid(any())).thenReturn(new HenkiloDto());
+        when(oppijanumerorekisteriClientMock.findHenkiloByOid(any())).thenReturn(Optional.of(new HenkiloDto()));
         when(henkiloRepositoryMock.findByOidHenkilo(any())).thenReturn(Optional.of(new Henkilo()));
         ldapSynchronizer = new LdapSynchronizer(timeService, ldapServiceMock,
                 ldapUpdateDataRepositoryMock, henkiloRepositoryMock,

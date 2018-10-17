@@ -1,11 +1,15 @@
 package fi.vm.sade.kayttooikeus.repositories;
 
+import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
-import java.util.Optional;
 import org.springframework.data.repository.CrudRepository;
+
+import java.util.Optional;
 
 public interface KayttajatiedotRepository extends CrudRepository<Kayttajatiedot, Long>, KayttajatiedotRepositoryCustom {
 
     Optional<Kayttajatiedot> findByHenkiloOidHenkilo(String oidHenkilo);
+
+    long deleteByHenkilo(Henkilo henkilo);
 
 }
