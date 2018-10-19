@@ -1,12 +1,16 @@
 package fi.vm.sade.kayttooikeus.service.external;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import lombok.*;
 
 import java.util.*;
 import java.util.stream.Stream;
+
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.stream.Collectors.toList;
 
 @Getter
 @Setter
@@ -14,6 +18,22 @@ import java.util.stream.Stream;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrganisaatioPerustieto {
+
+    private static final Map<String, String> ORGANISAATIOTYYPIT;
+
+    static {
+        Map<String, String> tmp = new LinkedHashMap<>();
+        tmp.put("KOULUTUSTOIMIJA", "organisaatiotyyppi_01");
+        tmp.put("OPPILAITOS", "organisaatiotyyppi_02");
+        tmp.put("TOIMIPISTE", "organisaatiotyyppi_03");
+        tmp.put("OPPISOPIMUSTOIMIPISTE", "organisaatiotyyppi_04");
+        tmp.put("MUU_ORGANISAATIO", "organisaatiotyyppi_05");
+        tmp.put("TYOELAMAJARJESTO", "organisaatiotyyppi_06");
+        tmp.put("VARHAISKASVATUKSEN_JARJESTAJA", "organisaatiotyyppi_07");
+        tmp.put("VARHAISKASVATUKSEN_TOIMIPAIKKA", "organisaatiotyyppi_08");
+        ORGANISAATIOTYYPIT = unmodifiableMap(tmp);
+    }
+
     private String oid;
     private String parentOidPath;
     private String oppilaitostyyppi;
@@ -30,6 +50,25 @@ public class OrganisaatioPerustieto {
             return this.organisaatiotyypit;
         }
         return this.tyypit;
+    }
+
+    /**
+     * Palauttaa organisaation tyypit koodiston koodiUri-muodossa.
+     * @return organisaatiotyypit
+     */
+    @JsonIgnore // pidetään tämä ainakin toistaiseksi piilossa frontilta ettei eri formaatit sekoita
+    public List<String> getOrganisaatiotyyppiKoodit() {
+        return Optional.ofNullable(organisaatiotyypit)
+                .map(tyypit -> tyypit.stream().map(ORGANISAATIOTYYPIT::get).filter(Objects::nonNull).collect(toList()))
+                .orElse(emptyList());
+    }
+
+    public boolean hasOrganisaatiotyyppiKoodi(String organisaatiotyyppiKoodi) {
+        return hasAnyOrganisaatiotyyppiKoodi(singletonList(organisaatiotyyppiKoodi));
+    }
+
+    public boolean hasAnyOrganisaatiotyyppiKoodi(Collection<String> organisaatiotyyppiKoodit) {
+        return getOrganisaatiotyyppiKoodit().stream().anyMatch(organisaatiotyyppiKoodit::contains);
     }
 
     public Stream<OrganisaatioPerustieto> andChildren() {

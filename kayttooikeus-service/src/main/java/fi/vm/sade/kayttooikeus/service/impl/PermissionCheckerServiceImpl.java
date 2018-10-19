@@ -598,6 +598,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
                                                     // Format: getOppilaitostyyppi() = "oppilaitostyyppi_11#1"
                                                     ? childOrganisation.getOppilaitostyyppi().substring(17, 19)
                                                     : null)
+                                            || childOrganisation.hasOrganisaatiotyyppiKoodi(organisaatioViite.getOrganisaatioTyyppi())
                                             || organisaatioViite.getOrganisaatioTyyppi().equals(organisaatioOid));
     }
 }

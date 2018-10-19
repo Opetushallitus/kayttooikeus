@@ -501,12 +501,11 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
         }
 
         return oidIsFoundInViites(organisaatioOid, tyyppis) || hakuTulos.stream()
-                .filter(perustieto -> !isEmpty(perustieto.getChildren()))
                 .anyMatch(perustieto -> orgTypeMatchesOrOidIsFoundInViites(organisaatioOid, tyyppis, perustieto));
     }
 
     private boolean orgTypeMatchesOrOidIsFoundInViites(String organisaatioOid, Set<String> organisaatioTyyppis, OrganisaatioPerustieto opt) {
-        return opt.getChildren().stream()
+        return opt.hasAnyOrganisaatiotyyppiKoodi(organisaatioTyyppis) || opt.getChildren() != null && opt.getChildren().stream()
                 .anyMatch(child -> {
                     String laitosTyyppi = StringUtils.hasLength(child.getOppilaitostyyppi()) ? child.getOppilaitostyyppi().substring(17, 19) : null;
                     return organisaatioTyyppis.stream()

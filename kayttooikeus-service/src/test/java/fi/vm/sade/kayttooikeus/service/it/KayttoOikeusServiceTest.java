@@ -149,8 +149,21 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
         given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(eq("1.2.246.562.10.12345678910")))
                 .willReturn(asList(koulutustoimija1, oppilaitos11, oppilaitos12));
 
+        OrganisaatioPerustieto toimipiste211 = OrganisaatioPerustieto.builder()
+                .oid("1.2.246.562.10.12345678921")
+                .organisaatiotyypit(asList("KOULUTUSTOIMIJA", "OPPILAITOS"))
+                .build();
+        OrganisaatioPerustieto oppilaitos21 = oppilaitos("1.2.246.562.10.12345678921", "11");
+        oppilaitos21.setChildren(singletonList(toimipiste211));
+        OrganisaatioPerustieto koulutustoimija2 = new OrganisaatioPerustieto();
+        koulutustoimija2.setOid("1.2.246.562.10.12345678920");
+        koulutustoimija2.setChildren(singletonList(oppilaitos21));
+        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(eq("1.2.246.562.10.12345678921")))
+                .willReturn(asList(koulutustoimija2, oppilaitos21, toimipiste211));
+
         populate(viite(kayttoOikeusRyhma("RYHMA-ORGANISAATIOLLE"), "1.2.246.562.10.12345678901"));
         populate(viite(kayttoOikeusRyhma("RYHMA-OPPILAITOKSEN_PERUSTEELLA"), "12"));
+        populate(viite(kayttoOikeusRyhma("RYHMA-ORGANISAATIONTYYPIN_PERUSTEELLA"), "organisaatiotyyppi_01"));
         populate(viite(kayttoOikeusRyhma("RYHMA-ORGANISAATIORYHMILLE1"), "1.2.246.562.28"));
         populate(kayttoOikeusRyhma("RYHMA-ORGANISAATIORYHMILLE2").asRyhmaRestriction());
         populate(kayttoOikeusRyhma("RYHMA-VAIN_OPH"));
@@ -166,6 +179,10 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
         ryhmat = kayttoOikeusService.listPossibleRyhmasByOrganization("1.2.246.562.10.12345678910");
         assertThat(ryhmat).extracting(KayttoOikeusRyhmaDto::getTunniste)
                 .containsExactlyInAnyOrder("RYHMA-OPPILAITOKSEN_PERUSTEELLA");
+
+        ryhmat = kayttoOikeusService.listPossibleRyhmasByOrganization("1.2.246.562.10.12345678921");
+        assertThat(ryhmat).extracting(KayttoOikeusRyhmaDto::getTunniste)
+                .containsExactlyInAnyOrder("RYHMA-ORGANISAATIONTYYPIN_PERUSTEELLA");
 
         ryhmat = kayttoOikeusService.listPossibleRyhmasByOrganization("1.2.246.562.28.12345678901");
         assertThat(ryhmat).extracting(KayttoOikeusRyhmaDto::getTunniste)
