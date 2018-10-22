@@ -2,7 +2,10 @@ package fi.vm.sade.kayttooikeus.service.it;
 
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
-import fi.vm.sade.kayttooikeus.model.*;
+import fi.vm.sade.kayttooikeus.model.KayttoOikeus;
+import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
+import fi.vm.sade.kayttooikeus.model.OrganisaatioHenkilo;
+import fi.vm.sade.kayttooikeus.model.Palvelu;
 import fi.vm.sade.kayttooikeus.repositories.dto.ExpiringKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaPopulator;
 import fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloPopulator;
@@ -36,12 +39,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.hamcrest.Matchers.isOneOf;
+import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 @RunWith(SpringRunner.class)
 public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
@@ -146,24 +147,31 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
         OrganisaatioPerustieto koulutustoimija1 = new OrganisaatioPerustieto();
         koulutustoimija1.setOid("1.2.246.562.10.12345678910");
         koulutustoimija1.setChildren(asList(oppilaitos11, oppilaitos12));
-        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(eq("1.2.246.562.10.12345678910")))
+        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(argThat(isOneOf(
+                "1.2.246.562.10.12345678910", "1.2.246.562.10.12345678911", "1.2.246.562.10.12345678912"))))
                 .willReturn(asList(koulutustoimija1, oppilaitos11, oppilaitos12));
 
         OrganisaatioPerustieto toimipiste211 = OrganisaatioPerustieto.builder()
-                .oid("1.2.246.562.10.12345678921")
-                .organisaatiotyypit(asList("KOULUTUSTOIMIJA", "OPPILAITOS"))
+                .oid("1.2.246.562.10.123456789211")
+                .organisaatiotyypit(singletonList("TOIMIPISTE"))
                 .build();
-        OrganisaatioPerustieto oppilaitos21 = oppilaitos("1.2.246.562.10.12345678921", "11");
-        oppilaitos21.setChildren(singletonList(toimipiste211));
-        OrganisaatioPerustieto koulutustoimija2 = new OrganisaatioPerustieto();
-        koulutustoimija2.setOid("1.2.246.562.10.12345678920");
-        koulutustoimija2.setChildren(singletonList(oppilaitos21));
-        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(eq("1.2.246.562.10.12345678921")))
+        OrganisaatioPerustieto oppilaitos21 = OrganisaatioPerustieto.builder()
+                .oid("1.2.246.562.10.12345678921")
+                .organisaatiotyypit(singletonList("OPPILAITOS"))
+                .children(singletonList(toimipiste211))
+                .build();
+        OrganisaatioPerustieto koulutustoimija2 = OrganisaatioPerustieto.builder()
+                .oid("1.2.246.562.10.12345678920")
+                .organisaatiotyypit(singletonList("KOULUTUSTOIMIJA"))
+                .children(singletonList(oppilaitos21))
+                .build();
+        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(argThat(isOneOf(
+                "1.2.246.562.10.12345678920", "1.2.246.562.10.12345678921", "1.2.246.562.10.123456789211"))))
                 .willReturn(asList(koulutustoimija2, oppilaitos21, toimipiste211));
 
         populate(viite(kayttoOikeusRyhma("RYHMA-ORGANISAATIOLLE"), "1.2.246.562.10.12345678901"));
         populate(viite(kayttoOikeusRyhma("RYHMA-OPPILAITOKSEN_PERUSTEELLA"), "12"));
-        populate(viite(kayttoOikeusRyhma("RYHMA-ORGANISAATIONTYYPIN_PERUSTEELLA"), "organisaatiotyyppi_01"));
+        populate(viite(kayttoOikeusRyhma("RYHMA-ORGANISAATIONTYYPIN_PERUSTEELLA"), "organisaatiotyyppi_02"));
         populate(viite(kayttoOikeusRyhma("RYHMA-ORGANISAATIORYHMILLE1"), "1.2.246.562.28"));
         populate(kayttoOikeusRyhma("RYHMA-ORGANISAATIORYHMILLE2").asRyhmaRestriction());
         populate(kayttoOikeusRyhma("RYHMA-VAIN_OPH"));
@@ -183,6 +191,10 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
         ryhmat = kayttoOikeusService.listPossibleRyhmasByOrganization("1.2.246.562.10.12345678921");
         assertThat(ryhmat).extracting(KayttoOikeusRyhmaDto::getTunniste)
                 .containsExactlyInAnyOrder("RYHMA-ORGANISAATIONTYYPIN_PERUSTEELLA");
+        ryhmat = kayttoOikeusService.listPossibleRyhmasByOrganization("1.2.246.562.10.12345678920");
+        assertThat(ryhmat).extracting(KayttoOikeusRyhmaDto::getTunniste).isEmpty();
+        ryhmat = kayttoOikeusService.listPossibleRyhmasByOrganization("1.2.246.562.10.123456789211");
+        assertThat(ryhmat).extracting(KayttoOikeusRyhmaDto::getTunniste).isEmpty();
 
         ryhmat = kayttoOikeusService.listPossibleRyhmasByOrganization("1.2.246.562.28.12345678901");
         assertThat(ryhmat).extracting(KayttoOikeusRyhmaDto::getTunniste)
