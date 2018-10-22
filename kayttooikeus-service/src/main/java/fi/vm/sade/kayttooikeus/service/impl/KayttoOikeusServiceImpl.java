@@ -505,7 +505,7 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
     }
 
     private boolean orgTypeMatchesOrOidIsFoundInViites(String organisaatioOid, Set<String> organisaatioTyyppis, OrganisaatioPerustieto opt) {
-        return opt.hasAnyOrganisaatiotyyppiKoodi(organisaatioTyyppis) || opt.getChildren() != null && opt.getChildren().stream()
+        return opt.getOid().equals(organisaatioOid) && opt.hasAnyOrganisaatiotyyppiKoodi(organisaatioTyyppis) || opt.getChildren() != null && opt.getChildren().stream()
                 .anyMatch(child -> {
                     String laitosTyyppi = StringUtils.hasLength(child.getOppilaitostyyppi()) ? child.getOppilaitostyyppi().substring(17, 19) : null;
                     return organisaatioTyyppis.stream()
