@@ -58,7 +58,7 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
             put("suunnitellut", "true");
             put("lakkautetut", "true");
         }};
-        String haeHierarchyUrl = this.urlConfiguration.url("organisaatio-service.organisaatio.v2.hae", queryParamsAktiivisetSuunnitellut);
+        String haeHierarchyUrl = this.urlConfiguration.url("organisaatio-service.organisaatio.v4.hae", queryParamsAktiivisetSuunnitellut);
         // Add organisations to cache (active, incoming and passive)
         List<OrganisaatioPerustieto> organisaatiosWithoutRootOrg =
                 retrying(io(() -> this.restClient.get(haeHierarchyUrl, OrganisaatioHakutulos.class)), 2)

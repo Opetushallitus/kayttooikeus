@@ -19,18 +19,19 @@ import static java.util.stream.Collectors.toList;
 @AllArgsConstructor
 public class OrganisaatioPerustieto {
 
+    @Deprecated // refaktoroi henkilo-ui käyttämään organisaatiotyyppi-koodistoa
     private static final Map<String, String> ORGANISAATIOTYYPIT;
 
     static {
         Map<String, String> tmp = new LinkedHashMap<>();
-        tmp.put("KOULUTUSTOIMIJA", "organisaatiotyyppi_01");
-        tmp.put("OPPILAITOS", "organisaatiotyyppi_02");
-        tmp.put("TOIMIPISTE", "organisaatiotyyppi_03");
-        tmp.put("OPPISOPIMUSTOIMIPISTE", "organisaatiotyyppi_04");
-        tmp.put("MUU_ORGANISAATIO", "organisaatiotyyppi_05");
-        tmp.put("TYOELAMAJARJESTO", "organisaatiotyyppi_06");
-        tmp.put("VARHAISKASVATUKSEN_JARJESTAJA", "organisaatiotyyppi_07");
-        tmp.put("VARHAISKASVATUKSEN_TOIMIPAIKKA", "organisaatiotyyppi_08");
+        tmp.put("organisaatiotyyppi_01", "KOULUTUSTOIMIJA");
+        tmp.put("organisaatiotyyppi_02", "OPPILAITOS");
+        tmp.put("organisaatiotyyppi_03", "TOIMIPISTE");
+        tmp.put("organisaatiotyyppi_04", "OPPISOPIMUSTOIMIPISTE");
+        tmp.put("organisaatiotyyppi_05", "MUU_ORGANISAATIO");
+        tmp.put("organisaatiotyyppi_06", "TYOELAMAJARJESTO");
+        tmp.put("organisaatiotyyppi_07", "VARHAISKASVATUKSEN_JARJESTAJA");
+        tmp.put("organisaatiotyyppi_08", "VARHAISKASVATUKSEN_TOIMIPAIKKA");
         ORGANISAATIOTYYPIT = unmodifiableMap(tmp);
     }
 
@@ -38,14 +39,14 @@ public class OrganisaatioPerustieto {
     private String parentOidPath;
     private String oppilaitostyyppi;
     private Map<String, String> nimi = new HashMap<>();
-    private List<String> organisaatiotyypit = new ArrayList<>();
-    private List<String> tyypit = new ArrayList<>();
+    private List<String> organisaatiotyypit = new ArrayList<>(); // GET /organisaatio/v4/hierarkia/hae palauttaa tämän
+    private List<String> tyypit = new ArrayList<>(); // GET /organisaatio/v4/<oid> palauttaa tämän
     private List<OrganisaatioPerustieto> children = new ArrayList<>();
     @JsonIgnore // avoid recursion if this is returned in JSON
     private OrganisaatioPerustieto parent;
     private OrganisaatioStatus status;
-    
-    public List<String> getTyypit() {
+
+    private List<String> resolveOrganisaatiotyypit() {
         if (this.organisaatiotyypit != null && !this.organisaatiotyypit.isEmpty()) {
             return this.organisaatiotyypit;
         }
@@ -53,22 +54,42 @@ public class OrganisaatioPerustieto {
     }
 
     /**
-     * Palauttaa organisaation tyypit koodiston koodiUri-muodossa.
-     * @return organisaatiotyypit
+     * Palauttaa organisaatiotyypit organisaatiopalvelun v2-muodossa.
+     * @return organisaatiotyypit v2-muodossa
+     * @deprecated refaktoroi henkilo-ui käyttämään organisaatiotyyppi-koodistoa
      */
-    @JsonIgnore // pidetään tämä ainakin toistaiseksi piilossa frontilta ettei eri formaatit sekoita
-    public List<String> getOrganisaatiotyyppiKoodit() {
+    @Deprecated
+    public List<String> getOrganisaatiotyypit() {
         return Optional.ofNullable(organisaatiotyypit)
                 .map(tyypit -> tyypit.stream().map(ORGANISAATIOTYYPIT::get).filter(Objects::nonNull).collect(toList()))
+                .orElse(null);
+    }
+
+    /**
+     * Palauttaa organisaatiotyypit organisaatiopalvelun v2-muodossa.
+     * @return organisaatiotyypit v2-muodossa
+     * @deprecated refaktoroi henkilo-ui käyttämään organisaatiotyyppi-koodistoa
+     */
+    @Deprecated
+    public List<String> getTyypit() {
+        return Optional.ofNullable(resolveOrganisaatiotyypit())
+                .map(tyypit -> tyypit.stream().map(tyyppi -> {
+                    if ("Ryhma".equals(tyyppi)) {
+                        return "Ryhma";
+                    }
+                    return ORGANISAATIOTYYPIT.get(tyyppi);
+                }).filter(Objects::nonNull).collect(toList()))
                 .orElse(emptyList());
     }
 
-    public boolean hasOrganisaatiotyyppiKoodi(String organisaatiotyyppiKoodi) {
-        return hasAnyOrganisaatiotyyppiKoodi(singletonList(organisaatiotyyppiKoodi));
+    public boolean hasOrganisaatiotyyppi(String organisaatiotyyppi) {
+        return hasAnyOrganisaatiotyyppi(singletonList(organisaatiotyyppi));
     }
 
-    public boolean hasAnyOrganisaatiotyyppiKoodi(Collection<String> organisaatiotyyppiKoodit) {
-        return getOrganisaatiotyyppiKoodit().stream().anyMatch(organisaatiotyyppiKoodit::contains);
+    public boolean hasAnyOrganisaatiotyyppi(Collection<String> organisaatiotyypit) {
+        return Optional.ofNullable(resolveOrganisaatiotyypit())
+                .map(tyypit -> tyypit.stream().anyMatch(organisaatiotyypit::contains))
+                .orElse(false);
     }
 
     public Stream<OrganisaatioPerustieto> andChildren() {

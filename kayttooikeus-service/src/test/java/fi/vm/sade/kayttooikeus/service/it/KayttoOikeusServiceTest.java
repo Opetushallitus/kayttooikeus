@@ -153,16 +153,16 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
 
         OrganisaatioPerustieto toimipiste211 = OrganisaatioPerustieto.builder()
                 .oid("1.2.246.562.10.123456789211")
-                .organisaatiotyypit(singletonList("TOIMIPISTE"))
+                .organisaatiotyypit(singletonList("organisaatiotyyppi_03"))
                 .build();
         OrganisaatioPerustieto oppilaitos21 = OrganisaatioPerustieto.builder()
                 .oid("1.2.246.562.10.12345678921")
-                .organisaatiotyypit(singletonList("OPPILAITOS"))
+                .organisaatiotyypit(singletonList("organisaatiotyyppi_02"))
                 .children(singletonList(toimipiste211))
                 .build();
         OrganisaatioPerustieto koulutustoimija2 = OrganisaatioPerustieto.builder()
                 .oid("1.2.246.562.10.12345678920")
-                .organisaatiotyypit(singletonList("KOULUTUSTOIMIJA"))
+                .organisaatiotyypit(singletonList("organisaatiotyyppi_01"))
                 .children(singletonList(oppilaitos21))
                 .build();
         given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(argThat(isOneOf(

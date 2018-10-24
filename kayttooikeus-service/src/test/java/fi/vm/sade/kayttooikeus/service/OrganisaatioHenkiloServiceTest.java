@@ -62,7 +62,7 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
             OrganisaatioPerustieto orgDto = new OrganisaatioPerustieto();
             orgDto.setOid("1.2.3.4.1");
             orgDto.setNimi(new TextGroupMapDto().put("fi", "Suomeksi").put("en", "In English").asMap());
-            orgDto.setOrganisaatiotyypit(asList("Tyyppi1", "Tyyppi2"));
+            orgDto.setOrganisaatiotyypit(asList("organisaatiotyyppi_01", "organisaatiotyyppi_02", "tuntematon_koodi"));
             orgDto.setStatus(OrganisaatioStatus.AKTIIVINEN);
             return Optional.of(orgDto);
         });
@@ -70,7 +70,7 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
             OrganisaatioPerustieto orgDto = new OrganisaatioPerustieto();
             orgDto.setOid("1.2.3.4.2");
             orgDto.setNimi(new TextGroupMapDto().put("en", "Only in English").asMap());
-            orgDto.setOrganisaatiotyypit(singletonList("Tyyppi1"));
+            orgDto.setOrganisaatiotyypit(singletonList("organisaatiotyyppi_01"));
             orgDto.setStatus(OrganisaatioStatus.AKTIIVINEN);
             orgDto.setChildren(Lists.newArrayList(
                     OrganisaatioPerustieto.builder()
@@ -131,7 +131,7 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
         assertThat(result)
                 .extracting(OrganisaatioHenkiloWithOrganisaatioDto::getOrganisaatio)
                 .flatExtracting(OrganisaatioDto::getTyypit)
-                .containsExactlyInAnyOrder("Tyyppi1", "Tyyppi2", "Tyyppi1");
+                .containsExactlyInAnyOrder("KOULUTUSTOIMIJA", "OPPILAITOS", "KOULUTUSTOIMIJA");
         assertThat(result)
                 .extracting(OrganisaatioHenkiloWithOrganisaatioDto::getTehtavanimike)
                 .containsExactlyInAnyOrder("Devaaja", "Opettaja", "Testaaja");
@@ -143,19 +143,6 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
                 .filteredOn(Objects::nonNull)
                 .hasSize(1)
                 .allSatisfy(loppupvm -> assertThat(loppupvm).isGreaterThanOrEqualTo(LocalDate.now()));
-    }
-
-    @Test
-    @WithMockUser(username = "1.2.3.4.5")
-    public void listOrganisaatioPerustiedotForCurrentUserTest() throws Exception {
-        given(this.organisaatioHenkiloRepository.findDistinctOrganisaatiosForHenkiloOid("1.2.3.4.5"))
-                .willReturn(singletonList("2.3.4.5.6"));
-        given(this.organisaatioClient.listActiveOrganisaatioPerustiedotByOidRestrictionList(singletonList("2.3.4.5.6")))
-                .willReturn(singletonList(readJson(jsonResource("classpath:organisaatio/organisaatioPerustiedot.json"), OrganisaatioPerustieto.class)));
-
-        List<OrganisaatioPerustieto> result = organisaatioHenkiloService.listOrganisaatioPerustiedotForCurrentUser();
-        assertEquals(1, result.size());
-        assertEquals("1.2.246.562.10.14175756379", result.get(0).getOid());
     }
 
     @Test

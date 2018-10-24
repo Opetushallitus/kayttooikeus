@@ -1,11 +1,10 @@
 package fi.vm.sade.kayttooikeus.controller;
 
+import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloCreateDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloUpdateDto;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioHenkiloService;
-import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
-import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,21 +24,6 @@ public class OrganisaatioHenkiloController {
         this.organisaatioHenkiloService = organisaatioHenkiloService;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_HENKILONHALLINTA_READ_UPDATE',"
-            + "'ROLE_APP_KAYTTOOIKEUS_READ',"
-            + "'ROLE_APP_KAYTTOOIKEUS_CRUD',"
-            + "'ROLE_APP_HENKILONHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
-    @RequestMapping(value = "/current/organisaatio", method = RequestMethod.GET)
-    @ApiOperation(value = "Hakee kirjautuneen käyttäjän organisaatioiden tiedot.",
-            notes = "Tekee Organisaatiopalveluun haun nykyisen kirjautuneen "
-                    + "käyttäjän organisaatioista ja palauttaa näiden organisaatioiden "
-                    + "perustiedot hakuobjektin avulla.")
-    public List<OrganisaatioPerustieto> listOrganisaatiosByCurrentHenkilo() {
-        return organisaatioHenkiloService.listOrganisaatioPerustiedotForCurrentUser();
-    }
-    
     @PreAuthorize("hasAnyRole('ROLE_APP_HENKILONHALLINTA_READ',"
             + "'ROLE_APP_KAYTTOOIKEUS_READ',"
             + "'ROLE_APP_KAYTTOOIKEUS_CRUD',"

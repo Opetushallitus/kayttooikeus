@@ -16,7 +16,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,14 +47,6 @@ public class HenkiloControllerTest extends AbstractControllerTest {
         this.mvc.perform(get("/henkilo/kayttajatunnus=user1").accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk()).andExpect(content().json("{\"oid\":\"oid1\"}"));
         verify(this.henkiloService).getByKayttajatunnus(eq("user1"));
-    }
-
-    @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
-    public void listOrganisaatioPerustiedotForCurrentUserTest() throws Exception {
-        given(this.service.listOrganisaatioPerustiedotForCurrentUser()).willReturn(new ArrayList<>());
-        this.mvc.perform(get("/henkilo/current/organisaatio").accept(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(status().isOk()).andExpect(content().json("[]"));
     }
 
     @Test

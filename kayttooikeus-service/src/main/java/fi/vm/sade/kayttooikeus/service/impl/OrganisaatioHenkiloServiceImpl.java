@@ -96,13 +96,6 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
                 .collect(toList()));
         return dto;
     }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public List<OrganisaatioPerustieto> listOrganisaatioPerustiedotForCurrentUser() {
-        return organisaatioClient.listActiveOrganisaatioPerustiedotByOidRestrictionList(
-                organisaatioHenkiloRepository.findDistinctOrganisaatiosForHenkiloOid(getCurrentUserOid()));
-    }
 
     @Override
     @Transactional(readOnly = true)
