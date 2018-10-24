@@ -42,6 +42,8 @@ public class UserDetailsServiceImplTest extends AbstractServiceIntegrationTest {
         UserDetails userDetails = userDetailsService.loadUserByUsername(kayttajatunnus);
         assertThat(userDetails).extracting(UserDetails::getUsername).containsExactly("oid123");
         assertThat(userDetails.getAuthorities()).isEmpty();
+        assertThat((OphUserDetails) userDetails).extracting(OphUserDetails::getOid).containsExactly("oid123");
     }
+
 
 }

@@ -43,7 +43,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .map(String::toUpperCase)
                 .map(SimpleGrantedAuthority::new)
                 .collect(toSet());
-        return new UserDetailsImpl(oid, roolit);
+        return new OphUserDetails(oid, roolit);
     }
 
     private static Stream<String> getRoolit(OrganisaatioPalveluRooliDto dto) {
@@ -65,29 +65,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         roolit.add(builder.toString());
 
         return roolit.stream();
-    }
-
-    @Getter
-    @AllArgsConstructor
-    private static class UserDetailsImpl implements UserDetails {
-
-        private final String username;
-        private final Collection<? extends GrantedAuthority> authorities;
-        private final boolean accountNonExpired;
-        private final boolean accountNonLocked;
-        private final boolean credentialsNonExpired;
-        private final boolean enabled;
-
-        public UserDetailsImpl(String username, Collection<? extends GrantedAuthority> authorities) {
-            this(username, authorities, true, true, true, true);
-        }
-
-        @Override
-        public String getPassword() {
-            // Instanssia käytetään vain roolien lataamiseen (CasAuthenticationProvider) joten salasanaa ei tarvita
-            return null;
-        }
-
     }
 
 }
