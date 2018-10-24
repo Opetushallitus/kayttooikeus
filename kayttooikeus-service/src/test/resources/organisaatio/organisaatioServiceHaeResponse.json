@@ -37,14 +37,14 @@
           "children": [],
           "aliOrganisaatioMaara": 0,
           "organisaatiotyypit": [
-            "OPPILAITOS"
+            "organisaatiotyyppi_02"
           ],
           "status": "AKTIIVINEN"
         }
       ],
       "aliOrganisaatioMaara": 1,
       "organisaatiotyypit": [
-        "KOULUTUSTOIMIJA"
+        "organisaatiotyyppi_01"
       ]
     },
     {
@@ -66,7 +66,7 @@
       "status": "PASSIIVINEN",
       "aliOrganisaatioMaara": 0,
       "organisaatiotyypit": [
-        "OPPILAITOS"
+        "organisaatiotyyppi_02"
       ]
     },
     {
@@ -88,7 +88,7 @@
       "status": "AKTIIVINEN",
       "aliOrganisaatioMaara": 0,
       "organisaatiotyypit": [
-        "OPPILAITOS"
+        "organisaatiotyyppi_02"
       ]
     }
   ]

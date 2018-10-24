@@ -564,7 +564,7 @@ public class PermissionCheckerTest {
                 -> singletonList(OrganisaatioPerustieto.builder()
                 .oid(invocation.getArgument(0))
                 .children(emptyList())
-                .organisaatiotyypit(asList("KOULUTUSTOIMIJA", "OPPILAITOS"))
+                .organisaatiotyypit(asList("organisaatiotyyppi_01", "organisaatiotyyppi_02"))
                 .build()));
         OrganisaatioViite organisaatioViite = OrganisaatioViite.builder().organisaatioTyyppi("organisaatiotyyppi_01").build();
         boolean hasPermission = this.permissionChecker
@@ -578,7 +578,7 @@ public class PermissionCheckerTest {
                 -> singletonList(OrganisaatioPerustieto.builder()
                 .oid(invocation.getArgument(0))
                 .children(emptyList())
-                .organisaatiotyypit(asList("KOULUTUSTOIMIJA", "OPPILAITOS"))
+                .organisaatiotyypit(asList("organisaatiotyyppi_01", "organisaatiotyyppi_02"))
                 .build()));
         OrganisaatioViite organisaatioViite = OrganisaatioViite.builder().organisaatioTyyppi("organisaatiotyyppi_03").build();
         boolean hasPermission = this.permissionChecker
@@ -591,7 +591,7 @@ public class PermissionCheckerTest {
         OrganisaatioPerustieto aliorganisaatio = OrganisaatioPerustieto.builder()
                 .oid("1.2.3.4.6")
                 .children(emptyList())
-                .organisaatiotyypit(asList("KOULUTUSTOIMIJA", "OPPILAITOS"))
+                .organisaatiotyypit(asList("organisaatiotyyppi_01", "organisaatiotyyppi_02"))
                 .build();
         when(organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(any())).thenAnswer(invocation
                 -> asList(OrganisaatioPerustieto.builder()
@@ -609,7 +609,7 @@ public class PermissionCheckerTest {
         OrganisaatioPerustieto ylaorganisaatio = OrganisaatioPerustieto.builder()
                 .oid("1.2.3.4.6")
                 .children(emptyList())
-                .organisaatiotyypit(asList("KOULUTUSTOIMIJA", "OPPILAITOS"))
+                .organisaatiotyypit(asList("organisaatiotyyppi_01", "organisaatiotyyppi_02"))
                 .build();
         when(organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(any())).thenAnswer(invocation
                 -> asList(OrganisaatioPerustieto.builder()
