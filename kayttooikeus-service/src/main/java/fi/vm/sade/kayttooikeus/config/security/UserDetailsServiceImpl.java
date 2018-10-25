@@ -71,6 +71,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @AllArgsConstructor
     private static class UserDetailsImpl implements UserDetails {
 
+        private final String oid;
         private final String username;
         private final Collection<? extends GrantedAuthority> authorities;
         private final boolean accountNonExpired;
@@ -79,7 +80,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         private final boolean enabled;
 
         public UserDetailsImpl(String username, Collection<? extends GrantedAuthority> authorities) {
-            this(username, authorities, true, true, true, true);
+            this(username, username, authorities, true, true, true, true);
         }
 
         @Override
