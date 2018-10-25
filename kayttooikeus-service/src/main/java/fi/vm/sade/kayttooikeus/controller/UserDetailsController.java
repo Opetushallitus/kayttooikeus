@@ -1,6 +1,5 @@
 package fi.vm.sade.kayttooikeus.controller;
 
-import fi.vm.sade.kayttooikeus.config.security.OphUserDetails;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,9 +19,9 @@ public class UserDetailsController {
 
     // Palomuurilla rajoitettu pääsy vain verkon sisältä
     @GetMapping("/{username}")
-    public OphUserDetails getUserDetails(@PathVariable String username) {
+    public UserDetails getUserDetails(@PathVariable String username) {
         try {
-            return (OphUserDetails) userDetailsService.loadUserByUsername(username);
+            return userDetailsService.loadUserByUsername(username);
         } catch (UsernameNotFoundException e) {
             throw new NotFoundException(e);
         }
