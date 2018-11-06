@@ -501,16 +501,13 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
         }
 
         return oidIsFoundInViites(organisaatioOid, tyyppis) || hakuTulos.stream()
-                .anyMatch(perustieto -> orgTypeMatchesOrOidIsFoundInViites(organisaatioOid, tyyppis, perustieto));
+                .anyMatch(perustieto -> orgTypeMatchesIsFoundInViites(organisaatioOid, tyyppis, perustieto));
     }
 
-    private boolean orgTypeMatchesOrOidIsFoundInViites(String organisaatioOid, Set<String> organisaatioTyyppis, OrganisaatioPerustieto opt) {
-        return opt.getOid().equals(organisaatioOid) && opt.hasAnyOrganisaatiotyyppi(organisaatioTyyppis) || opt.getChildren() != null && opt.getChildren().stream()
-                .anyMatch(child -> {
-                    String laitosTyyppi = StringUtils.hasLength(child.getOppilaitostyyppi()) ? child.getOppilaitostyyppi().substring(17, 19) : null;
-                    return organisaatioTyyppis.stream()
-                            .anyMatch(s -> s.equals(laitosTyyppi) || s.equals(organisaatioOid));
-                });
+    private boolean orgTypeMatchesIsFoundInViites(String organisaatioOid, Set<String> organisaatioTyyppis, OrganisaatioPerustieto opt) {
+        String oppilaitostyyppikoodi = StringUtils.hasLength(opt.getOppilaitostyyppi()) ? opt.getOppilaitostyyppi().substring(17, 19) : null;
+        return opt.getOid().equals(organisaatioOid) && opt.hasAnyOrganisaatiotyyppi(organisaatioTyyppis)
+                || oppilaitostyyppikoodi != null && organisaatioTyyppis.stream().anyMatch(oppilaitostyyppikoodi::equals);
     }
 
     private boolean oidIsFoundInViites(String organisaatioOid, Set<String> organisaatioTyyppis) {

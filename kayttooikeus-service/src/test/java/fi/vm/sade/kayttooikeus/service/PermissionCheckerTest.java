@@ -38,6 +38,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.*;
 import static java.util.Arrays.asList;
@@ -463,9 +465,9 @@ public class PermissionCheckerTest {
 
     @Test
     public void organisaatioLimitationCheckOrganisaatioWithChildrenViiteMatchesChildTyyppi() {
+        OrganisaatioPerustieto organisaatioPerustietoWithChild = CreateUtil.createOrganisaatioPerustietoWithChild("1.2.3.4.5", "1.2.3.4.6", "oppilaitostyyppi_11#1");
         given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(eq("1.2.3.4.5")))
-                .willReturn(asList(CreateUtil.createOrganisaatioPerustietoWithChild("1.2.3.4.5", "1.2.3.4.6",
-                        "oppilaitostyyppi_11#1")));
+                .willReturn(Stream.concat(Stream.of(organisaatioPerustietoWithChild), organisaatioPerustietoWithChild.getChildren().stream()).collect(Collectors.toList()));
         OrganisaatioViite organisaatioViite = OrganisaatioViite.builder().organisaatioTyyppi("11").build();
         boolean hasPermission = this.permissionChecker
                 .organisaatioLimitationCheck("1.2.3.4.5", Sets.newHashSet(organisaatioViite));
