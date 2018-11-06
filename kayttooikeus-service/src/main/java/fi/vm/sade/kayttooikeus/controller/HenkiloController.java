@@ -252,4 +252,6 @@ public class HenkiloController {
         this.henkiloService.updateAnomusilmoitus(oid, anomusilmoitus);
     }
 
+
+
 }

@@ -31,6 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import static fi.vm.sade.kayttooikeus.model.Identification.STRONG_AUTHENTICATION_IDP;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -65,7 +67,8 @@ public class VahvaTunnistusServiceImpl implements VahvaTunnistusService {
                 .filter(StringUtils::hasLength)
                 .ifPresent(salasana -> kayttajatiedotService.changePasswordAsAdmin(henkiloOid, salasana, LdapSynchronizationService.LdapSynchronizationType.NOW));
 
-        String authToken = identificationService.consumeLoginToken(tunnistusToken.getLoginToken());
+        String authToken = identificationService.consumeLoginToken(tunnistusToken.getLoginToken(), STRONG_AUTHENTICATION_IDP);
+        henkiloByLoginToken.setVahvastiTunnistettu(true);
 
         return VahvaTunnistusResponseDto.builder()
                 .authToken(authToken)

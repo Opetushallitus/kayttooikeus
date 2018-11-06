@@ -2,9 +2,12 @@ package fi.vm.sade.kayttooikeus.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fi.vm.sade.kayttooikeus.dto.*;
+import fi.vm.sade.kayttooikeus.dto.enumeration.LogInRedirectType;
 import fi.vm.sade.kayttooikeus.enumeration.OrderByHenkilohaku;
 import fi.vm.sade.kayttooikeus.repositories.dto.HenkilohakuResultDto;
 import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
 
 import java.util.Collection;
 import java.util.List;
@@ -52,6 +55,8 @@ public interface HenkiloService {
 
     boolean isVahvastiTunnistettuByUsername(String username);
 
+    LogInRedirectType logInRedirect(String username);
+
     void updateHenkiloToLdap(String oid, LdapSynchronizationService.LdapSynchronizationType ldapSynchronization);
 
     /**
@@ -83,4 +88,14 @@ public interface HenkiloService {
      */
     @Deprecated
     MeDto getMe() throws JsonProcessingException;
+
+    /*
+     * Päivittää henkilon tiedot. Tarkoitettu sähköpostin varmennukseen
+     */
+    String emailVerification(HenkiloUpdateDto henkiloUpdate, String loginToken);
+
+    /*
+     * Hakee henkilön tiedot loginTokenin perusteella. Tarkoitettu sähköpostinvarmennus-näkymän populointiin
+     */
+    HenkiloDto getHenkiloByLoginToken(String loginToken);
 }

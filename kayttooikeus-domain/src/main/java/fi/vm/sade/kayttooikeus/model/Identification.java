@@ -18,6 +18,7 @@ public class Identification extends IdentifiableAndVersionedEntity {
     public static final String WEAK_AUTHENTICATION_IDP = "email";
     public static final String STRONG_AUTHENTICATION_IDP = "vetuma";
     public static final String HAKA_AUTHENTICATION_IDP = "haka";
+    public static final String CAS_AUTHENTICATION_IDP = "cas";
 
     public Identification() {
     }

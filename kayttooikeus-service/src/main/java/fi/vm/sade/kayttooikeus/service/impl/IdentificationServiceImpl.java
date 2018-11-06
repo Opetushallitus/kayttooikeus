@@ -231,16 +231,13 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
 
     @Override
     @Transactional
-    public String consumeLoginToken(String loginToken) {
+    public String consumeLoginToken(String loginToken, String authentication_idp) {
         TunnistusToken tunnistusToken = this.tunnistusTokenDataRepository.findByLoginToken(loginToken)
                 .orElseThrow(() -> new DataInconsistencyException("Login token not found " + loginToken));
         Henkilo henkilo = tunnistusToken.getHenkilo();
-        henkilo.setVahvastiTunnistettu(true);
-
         tunnistusToken.setKaytetty(LocalDateTime.now());
-
         Kayttajatiedot kayttajatiedot = henkilo.getKayttajatiedot();
-        return generateAuthTokenForHenkilo(henkilo, STRONG_AUTHENTICATION_IDP, kayttajatiedot.getUsername());
+        return generateAuthTokenForHenkilo(henkilo, authentication_idp, kayttajatiedot.getUsername());
     }
 
     private List<Identification> findIdentificationsByHenkiloAndIdp(String oid, String idp) {

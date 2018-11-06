@@ -4,6 +4,7 @@ import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -57,6 +58,8 @@ public class Henkilo implements Identifiable {
     private String hetuCached;
 
     private Boolean anomusilmoitus;
+
+    private LocalDateTime sahkopostivarmennusAikaleima;
 
     // Suhteet, joissa henkilö on varmentajana
     @OneToMany(mappedBy = "varmentavaHenkilo", fetch = FetchType.LAZY)

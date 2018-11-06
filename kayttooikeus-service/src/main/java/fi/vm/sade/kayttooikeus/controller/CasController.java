@@ -5,10 +5,14 @@ import fi.vm.sade.kayttooikeus.dto.IdentifiedHenkiloTypeDto;
 import fi.vm.sade.kayttooikeus.dto.MeDto;
 import fi.vm.sade.kayttooikeus.dto.VahvaTunnistusRequestDto;
 import fi.vm.sade.kayttooikeus.dto.VahvaTunnistusResponseDto;
+import fi.vm.sade.kayttooikeus.dto.enumeration.LogInRedirectType;
+import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.VahvaTunnistusService;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
 import fi.vm.sade.properties.OphProperties;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -80,6 +85,13 @@ public class CasController {
     @RequestMapping(value = "/auth/henkilo/username/{username}/vahvastiTunnistettu", method = RequestMethod.GET)
     public boolean isVahvastiTunnistettuByUsername(@PathVariable String username) {
         return this.henkiloService.isVahvastiTunnistettuByUsername(username);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @ApiOperation("Palauttaa uri:n johon käyttäjä tulee ohjata kirjautumisen yhteydessä, tai null jos uudelleenohjausta ei tarvita")
+    @RequestMapping(value = "/auth/henkilo/username/{username}/logInRedirect")
+    public LogInRedirectType logInRedirect(@PathVariable String username) {
+        return this.henkiloService.logInRedirect(username);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
@@ -184,6 +196,22 @@ public class CasController {
     @RequestMapping(value = "/myroles", method = RequestMethod.GET)
     public List<String> getMyroles() {
         return this.henkiloService.getMyRoles();
+    }
+
+
+    @PutMapping(value = "/emailverification/{loginToken}")
+    @ApiOperation("Asettaa käyttäjän sähköpostiosoitteet vahvistetuksi")
+    public void emailVerification(HttpServletResponse response,
+                                  @RequestBody @Validated HenkiloUpdateDto henkiloUpdate,
+                                  @PathVariable("loginToken") String loginToken) throws IOException {
+        String redirectUrl = this.henkiloService.emailVerification(henkiloUpdate, loginToken);
+        response.sendRedirect(redirectUrl);
+    }
+
+    @GetMapping(value = "/henkilo/loginToken/{loginToken}")
+    @ApiOperation("Hakee käyttäjän tiedot loginTokenin perusteella")
+    public HenkiloDto getUserByLoginToken(@PathVariable("loginToken") String loginToken) {
+        return this.henkiloService.getHenkiloByLoginToken(loginToken);
     }
 
 }

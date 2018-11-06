@@ -35,6 +35,6 @@ public interface IdentificationService {
 
     TunnistusToken getByValidLoginToken(String loginToken);
 
-    String consumeLoginToken(String loginToken);
+    String consumeLoginToken(String loginToken, String identification_idp);
 
 }

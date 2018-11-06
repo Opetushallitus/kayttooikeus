@@ -5,6 +5,7 @@ import fi.vm.sade.kayttooikeus.dto.KayttajatiedotReadDto;
 import fi.vm.sade.kayttooikeus.dto.KayttajatiedotUpdateDto;
 import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
+import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
 import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService.LdapSynchronizationType;
 import fi.vm.sade.kayttooikeus.service.exception.UnauthorizedException;
@@ -27,6 +28,9 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
 
     @Autowired
     private KayttajatiedotService kayttajatiedotService;
+
+    @Autowired
+    private HenkiloService henkiloService;
 
     @Autowired
     private KayttajatiedotRepository kayttajatiedotRepository;
@@ -129,5 +133,10 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
                 .isInstanceOf(UnauthorizedException.class);
         KayttajatiedotReadDto readDto = kayttajatiedotService.getByUsernameAndPassword("USER2", "IFuRzDC5+aYLSSqE");
         assertThat(readDto).extracting(KayttajatiedotReadDto::getUsername).containsExactly("user2");
+
+        // käyttäjä on passivoitu
+        henkiloService.passivoi("oid2", "oid1");
+        assertThatThrownBy(() -> kayttajatiedotService.getByUsernameAndPassword("USER2", "IFuRzDC5+aYLSSqE"))
+                .isInstanceOf(UnauthorizedException.class);
     }
 }
