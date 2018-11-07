@@ -200,9 +200,21 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
 
     @Override
     @Transactional(readOnly = true)
-    public LogInRedirectType logInRedirect(String username) {
+    public LogInRedirectType logInRedirectByOidhenkilo(String oidHenkilo) {
+        Henkilo henkilo = this.henkiloDataRepository.findByOidHenkilo(oidHenkilo)
+                .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oidHenkilo));
+        return this.getLoginRedirectType(henkilo);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LogInRedirectType logInRedirectByUsername(String username) {
         Henkilo henkilo = this.henkiloDataRepository.findByKayttajatiedotUsername(username)
                 .orElseThrow(() -> new NotFoundException("Henkilo not found with username " + username));
+        return this.getLoginRedirectType(henkilo);
+    }
+
+    protected LogInRedirectType getLoginRedirectType(Henkilo henkilo) {
         boolean isVahvastiTunnistettu = this.isVahvastiTunnistettu(henkilo);
         if(Boolean.FALSE.equals(isVahvastiTunnistettu)) {
             return LogInRedirectType.STRONG_IDENTIFICATION;

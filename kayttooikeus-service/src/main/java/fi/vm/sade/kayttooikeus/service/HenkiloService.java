@@ -55,7 +55,9 @@ public interface HenkiloService {
 
     boolean isVahvastiTunnistettuByUsername(String username);
 
-    LogInRedirectType logInRedirect(String username);
+    LogInRedirectType logInRedirectByOidhenkilo(String oidHenkilo);
+
+    LogInRedirectType logInRedirectByUsername(String username);
 
     void updateHenkiloToLdap(String oid, LdapSynchronizationService.LdapSynchronizationType ldapSynchronization);
 
