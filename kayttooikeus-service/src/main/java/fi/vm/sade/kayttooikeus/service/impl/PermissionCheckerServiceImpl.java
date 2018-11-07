@@ -559,23 +559,27 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     // Check that wanted KOR can be added to the wanted organisation
     @Override
     public boolean organisaatioLimitationCheck(String organisaatioOid, Set<OrganisaatioViite> viiteSet) {
-        // Group organizations have to match only as a general set since they're not separated by type or by individual groups
-        if (organisaatioOid.startsWith(this.commonProperties.getOrganisaatioRyhmaPrefix())) {
-            return viiteSet.stream().map(OrganisaatioViite::getOrganisaatioTyyppi).collect(Collectors.toList())
-                    .contains(this.commonProperties.getOrganisaatioRyhmaPrefix());
-        }
         List<OrganisaatioPerustieto> organisaatiot = this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(organisaatioOid);
-        return organisaatiot.stream().anyMatch(organisaatio -> organisaatioLimitationCheck(organisaatioOid, viiteSet, organisaatio));
+        return organisaatioLimitationCheck(organisaatioOid, organisaatiot, viiteSet.stream().map(OrganisaatioViite::getOrganisaatioTyyppi).collect(Collectors.toSet()));
     }
 
-    private static boolean organisaatioLimitationCheck(String organisaatioOid, Set<OrganisaatioViite> viiteSet, OrganisaatioPerustieto childOrganisation) {
+    @Override
+    public boolean organisaatioLimitationCheck(String organisaatioOid, List<OrganisaatioPerustieto> organisaatiot, Set<String> viiteSet) {
+        // Group organizations have to match only as a general set since they're not separated by type or by individual groups
+        if (organisaatioOid.startsWith(this.commonProperties.getOrganisaatioRyhmaPrefix())) {
+            return viiteSet.contains(this.commonProperties.getOrganisaatioRyhmaPrefix());
+        }
+        return viiteSet.stream().anyMatch(organisaatioOid::equals)
+                || organisaatiot.stream().anyMatch(organisaatio -> organisaatioLimitationCheck(organisaatioOid, viiteSet, organisaatio));
+    }
+
+    private static boolean organisaatioLimitationCheck(String organisaatioOid, Set<String> viiteSet, OrganisaatioPerustieto childOrganisation) {
         return viiteSet.stream().anyMatch(organisaatioViite ->
-                                    organisaatioViite.getOrganisaatioTyyppi()
+                                    organisaatioViite
                                             .equals(!org.springframework.util.StringUtils.isEmpty(childOrganisation.getOppilaitostyyppi())
                                                     // Format: getOppilaitostyyppi() = "oppilaitostyyppi_11#1"
                                                     ? childOrganisation.getOppilaitostyyppi().substring(17, 19)
                                                     : null)
-                                            || organisaatioOid.equals(childOrganisation.getOid()) && childOrganisation.hasOrganisaatiotyyppi(organisaatioViite.getOrganisaatioTyyppi())
-                                            || organisaatioViite.getOrganisaatioTyyppi().equals(organisaatioOid));
+                                            || organisaatioOid.equals(childOrganisation.getOid()) && childOrganisation.hasOrganisaatiotyyppi(organisaatioViite));
     }
 }
