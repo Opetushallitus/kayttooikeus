@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -495,26 +494,7 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
 
     private boolean checkOrganizationLimitations(String organisaatioOid, List<OrganisaatioPerustieto> hakuTulos, KayttoOikeusRyhmaDto kayttoOikeusRyhma) {
         Set<String> tyyppis = kayttoOikeusRyhma.getOrganisaatioViite().stream().map(OrganisaatioViiteDto::getOrganisaatioTyyppi).collect(toSet());
-
-        if (organisaatioOid.startsWith(this.commonProperties.getGroupOrganizationId())) {
-            return oidIsFoundInViites(this.commonProperties.getGroupOrganizationId(), tyyppis);
-        }
-
-        return oidIsFoundInViites(organisaatioOid, tyyppis) || hakuTulos.stream()
-                .anyMatch(perustieto -> orgTypeMatchesOrOidIsFoundInViites(organisaatioOid, tyyppis, perustieto));
-    }
-
-    private boolean orgTypeMatchesOrOidIsFoundInViites(String organisaatioOid, Set<String> organisaatioTyyppis, OrganisaatioPerustieto opt) {
-        return opt.getOid().equals(organisaatioOid) && opt.hasAnyOrganisaatiotyyppi(organisaatioTyyppis) || opt.getChildren() != null && opt.getChildren().stream()
-                .anyMatch(child -> {
-                    String laitosTyyppi = StringUtils.hasLength(child.getOppilaitostyyppi()) ? child.getOppilaitostyyppi().substring(17, 19) : null;
-                    return organisaatioTyyppis.stream()
-                            .anyMatch(s -> s.equals(laitosTyyppi) || s.equals(organisaatioOid));
-                });
-    }
-
-    private boolean oidIsFoundInViites(String organisaatioOid, Set<String> organisaatioTyyppis) {
-        return organisaatioTyyppis.stream().anyMatch(tyyppi -> tyyppi.equals(organisaatioOid));
+        return permissionCheckerService.organisaatioLimitationCheck(organisaatioOid, hakuTulos, tyyppis);
     }
 
 }

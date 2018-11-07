@@ -7,32 +7,19 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fi.vm.sade.generic.rest.CachingRestClient;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
-import fi.vm.sade.kayttooikeus.dto.AnomusDto;
-import fi.vm.sade.kayttooikeus.dto.HaettuKayttooikeusryhmaDto;
-import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
-import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloCreateDto;
-import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloUpdateDto;
+import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.permissioncheck.ExternalPermissionService;
 import fi.vm.sade.kayttooikeus.dto.permissioncheck.PermissionCheckDto;
 import fi.vm.sade.kayttooikeus.dto.permissioncheck.PermissionCheckRequestDto;
 import fi.vm.sade.kayttooikeus.dto.permissioncheck.PermissionCheckResponseDto;
-import fi.vm.sade.kayttooikeus.model.Henkilo;
-import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhma;
-import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
-import fi.vm.sade.kayttooikeus.model.OrganisaatioHenkilo;
-import fi.vm.sade.kayttooikeus.model.OrganisaatioViite;
-import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
-import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaMyontoViiteRepository;
-import fi.vm.sade.kayttooikeus.repositories.KayttooikeusryhmaDataRepository;
-import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
-import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloRepository;
+import fi.vm.sade.kayttooikeus.model.*;
+import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
-import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import fi.vm.sade.properties.OphProperties;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -47,14 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -579,26 +559,27 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     // Check that wanted KOR can be added to the wanted organisation
     @Override
     public boolean organisaatioLimitationCheck(String organisaatioOid, Set<OrganisaatioViite> viiteSet) {
-        // Group organizations have to match only as a general set since they're not separated by type or by individual groups
-        if (organisaatioOid.startsWith(this.commonProperties.getOrganisaatioRyhmaPrefix())) {
-            return viiteSet.stream().map(OrganisaatioViite::getOrganisaatioTyyppi).collect(Collectors.toList())
-                    .contains(this.commonProperties.getOrganisaatioRyhmaPrefix());
-        }
         List<OrganisaatioPerustieto> organisaatiot = this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(organisaatioOid);
-        return organisaatiot.stream().anyMatch(organisaatio -> organisaatioLimitationCheck(organisaatioOid, viiteSet, organisaatio)
-                || organisaatio.getChildren().stream()
-                        .filter(childOrganisation -> OrganisaatioStatus.AKTIIVINEN.equals(childOrganisation.getStatus()))
-                        .anyMatch(childOrganisation -> organisaatioLimitationCheck(organisaatioOid, viiteSet, childOrganisation)));
+        return organisaatioLimitationCheck(organisaatioOid, organisaatiot, viiteSet.stream().map(OrganisaatioViite::getOrganisaatioTyyppi).collect(Collectors.toSet()));
     }
 
-    private static boolean organisaatioLimitationCheck(String organisaatioOid, Set<OrganisaatioViite> viiteSet, OrganisaatioPerustieto childOrganisation) {
+    @Override
+    public boolean organisaatioLimitationCheck(String organisaatioOid, List<OrganisaatioPerustieto> organisaatiot, Set<String> viiteSet) {
+        // Group organizations have to match only as a general set since they're not separated by type or by individual groups
+        if (organisaatioOid.startsWith(this.commonProperties.getOrganisaatioRyhmaPrefix())) {
+            return viiteSet.contains(this.commonProperties.getOrganisaatioRyhmaPrefix());
+        }
+        return viiteSet.stream().anyMatch(organisaatioOid::equals)
+                || organisaatiot.stream().anyMatch(organisaatio -> organisaatioLimitationCheck(organisaatioOid, viiteSet, organisaatio));
+    }
+
+    private static boolean organisaatioLimitationCheck(String organisaatioOid, Set<String> viiteSet, OrganisaatioPerustieto childOrganisation) {
         return viiteSet.stream().anyMatch(organisaatioViite ->
-                                    organisaatioViite.getOrganisaatioTyyppi()
+                                    organisaatioViite
                                             .equals(!org.springframework.util.StringUtils.isEmpty(childOrganisation.getOppilaitostyyppi())
                                                     // Format: getOppilaitostyyppi() = "oppilaitostyyppi_11#1"
                                                     ? childOrganisation.getOppilaitostyyppi().substring(17, 19)
                                                     : null)
-                                            || organisaatioOid.equals(childOrganisation.getOid()) && childOrganisation.hasOrganisaatiotyyppi(organisaatioViite.getOrganisaatioTyyppi())
-                                            || organisaatioViite.getOrganisaatioTyyppi().equals(organisaatioOid));
+                                            || organisaatioOid.equals(childOrganisation.getOid()) && childOrganisation.hasOrganisaatiotyyppi(organisaatioViite));
     }
 }

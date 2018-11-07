@@ -101,4 +101,6 @@ public interface PermissionCheckerService {
     boolean kayttooikeusMyontoviiteLimitationCheck(Long kayttooikeusryhmaId);
 
     boolean organisaatioLimitationCheck(String organisaatioOid, Set<OrganisaatioViite> viiteSet);
+
+    boolean organisaatioLimitationCheck(String organisaatioOid, List<OrganisaatioPerustieto> organisaatiot, Set<String> organisaatiorajoitteet);
 }

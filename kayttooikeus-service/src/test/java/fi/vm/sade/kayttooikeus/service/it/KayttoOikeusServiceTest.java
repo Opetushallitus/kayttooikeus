@@ -150,6 +150,12 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
         given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(argThat(isOneOf(
                 "1.2.246.562.10.12345678910", "1.2.246.562.10.12345678911", "1.2.246.562.10.12345678912"))))
                 .willReturn(asList(koulutustoimija1, oppilaitos11, oppilaitos12));
+        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(argThat(isOneOf(
+                "1.2.246.562.10.12345678911"))))
+                .willReturn(asList(koulutustoimija1, oppilaitos11));
+        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(argThat(isOneOf(
+                "1.2.246.562.10.12345678912"))))
+                .willReturn(asList(koulutustoimija1, oppilaitos12));
 
         OrganisaatioPerustieto toimipiste211 = OrganisaatioPerustieto.builder()
                 .oid("1.2.246.562.10.123456789211")
@@ -187,6 +193,8 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
         ryhmat = kayttoOikeusService.listPossibleRyhmasByOrganization("1.2.246.562.10.12345678910");
         assertThat(ryhmat).extracting(KayttoOikeusRyhmaDto::getTunniste)
                 .containsExactlyInAnyOrder("RYHMA-OPPILAITOKSEN_PERUSTEELLA");
+        ryhmat = kayttoOikeusService.listPossibleRyhmasByOrganization("1.2.246.562.10.12345678911");
+        assertThat(ryhmat).extracting(KayttoOikeusRyhmaDto::getTunniste).isEmpty();
 
         ryhmat = kayttoOikeusService.listPossibleRyhmasByOrganization("1.2.246.562.10.12345678921");
         assertThat(ryhmat).extracting(KayttoOikeusRyhmaDto::getTunniste)
