@@ -34,6 +34,7 @@ public class SecurityConfigDev extends WebSecurityConfigurerAdapter {
                 .disable()
                 .authorizeRequests()
                 .antMatchers("/buildversion.txt").permitAll()
+                .antMatchers("/actuator/*").permitAll()
                 .antMatchers("/swagger-ui.html").permitAll()
                 .antMatchers("/cas/auth/token/*").permitAll()
                 .antMatchers("/cas/henkilo/*").permitAll()
