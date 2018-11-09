@@ -2,6 +2,7 @@ package fi.vm.sade.kayttooikeus.service.impl;
 
 import com.google.common.collect.Sets;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
+import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto.OrganisaatioDto;
 import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
@@ -57,6 +58,8 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
     private final OrikaBeanMapper mapper;
 
     private final OrganisaatioClient organisaatioClient;
+
+    private final CommonProperties commonProperties;
 
     @Override
     public List<OrganisaatioHenkiloWithOrganisaatioDto> listOrganisaatioHenkilos(String henkiloOid, String compareByLang) {
@@ -114,6 +117,12 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
 
     @Override
     public Collection<String> listOrganisaatioOidBy(OrganisaatioHenkiloCriteria criteria) {
+        String kayttajaOid = permissionCheckerService.getCurrentUserOid();
+        List<String> organisaatioOids = organisaatioHenkiloRepository.findUsersOrganisaatioHenkilosByPalveluRoolis(
+                kayttajaOid, PalveluRooliGroup.KAYTTAJAHAKU);
+        if (!organisaatioOids.contains(commonProperties.getRootOrganizationOid())) {
+            criteria.setOrRetainOrganisaatioOids(organisaatioOids);
+        }
         return organisaatioHenkiloRepository.findOrganisaatioOidBy(criteria);
     }
 

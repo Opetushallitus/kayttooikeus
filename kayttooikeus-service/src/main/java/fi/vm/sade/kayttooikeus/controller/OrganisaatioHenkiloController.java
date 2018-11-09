@@ -40,7 +40,9 @@ public class OrganisaatioHenkiloController {
         return organisaatioHenkiloService.listPossibleHenkiloTypesAccessibleForCurrentUser();
     }
 
-    @PreAuthorize("hasRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_READ'," +
+            "'ROLE_APP_KAYTTOOIKEUS_CRUD'," +
+            "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @GetMapping("/organisaatioOid")
     @ApiOperation("Listaa henkilöiden organisaatio OID:t annettujen hakukriteerien mukaisesti")
     public Collection<String> listOrganisaatioOidBy(OrganisaatioHenkiloCriteria criteria) {
