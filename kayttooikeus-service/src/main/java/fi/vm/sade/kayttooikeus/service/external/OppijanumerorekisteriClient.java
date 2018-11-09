@@ -40,8 +40,6 @@ public interface OppijanumerorekisteriClient {
 
     Optional<HenkiloDto> getHenkiloByHetu(String hetu);
 
-    Set<String> listOidByYhteystieto(String arvo);
-
     Collection<HenkiloYhteystiedotDto> listYhteystiedot(HenkiloHakuCriteria criteria);
 
     Optional<String> createHenkiloForKutsu(HenkiloCreateDto henkiloCreateDto);

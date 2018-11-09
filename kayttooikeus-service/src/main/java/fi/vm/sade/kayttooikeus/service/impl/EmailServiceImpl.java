@@ -6,7 +6,6 @@ import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.config.properties.EmailInvitationProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.model.Anomus;
-import fi.vm.sade.kayttooikeus.model.HaettuKayttoOikeusRyhma;
 import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhma;
 import fi.vm.sade.kayttooikeus.model.Kutsu;
 import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaRepository;
@@ -18,8 +17,8 @@ import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.RyhmasahkopostiClient;
 import fi.vm.sade.kayttooikeus.service.impl.email.SahkopostiHenkiloDto;
 import fi.vm.sade.kayttooikeus.util.LocalisationUtils;
-import fi.vm.sade.kayttooikeus.util.YhteystietoUtil;
 import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
+import fi.vm.sade.kayttooikeus.util.YhteystietoUtil;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloPerustietoDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoTyyppi;
@@ -43,7 +42,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.sql.Date;
 import java.text.DateFormat;
-import java.time.Duration;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -52,10 +50,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Comparator.comparing;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
-import org.apache.commons.codec.binary.Base64;
+import static java.util.stream.Collectors.*;
 
 @Service
 public class EmailServiceImpl implements EmailService {
@@ -69,10 +64,6 @@ public class EmailServiceImpl implements EmailService {
     private static final String ANOMUS_KASITELTY_EMAIL_REPLACEMENT_VASTAANOTTAJA = "vastaanottaja";
     private static final String ANOMUS_KASITELTY_EMAIL_REPLACEMENT_ROOLI = "rooli";
     private static final String ANOMUS_KASITELTY_EMAIL_REPLACEMENT_LINKKI = "linkki";
-    private static final String UNOHTUNUT_SALASANA_EMAIL_TEMPLATE_NAME = "salasanareset_v2_email";
-    private static final String UNOHTUNUT_SALASANA_EMAIL_REPLACEMENT_VASTAANOTTAJA = "vastaanottaja";
-    private static final String UNOHTUNUT_SALASANA_EMAIL_REPLACEMENT_LINKKI = "linkki";
-    private static final String UNOHTUNUT_SALASANA_EMAIL_REPLACEMENT_VOIMASSA_TUNTEINA = "voimassa_tunteina";
     private static final String KAYTTOOIKEUSANOMUSILMOITUS_EMAIL_REPLACEMENT_LINKKI = "linkki";
     private static final String CALLING_PROCESS = "kayttooikeus";
 
@@ -331,30 +322,6 @@ public class EmailServiceImpl implements EmailService {
     public static class OranizationReplacement {
         private String name;
         private List<String> permissions;
-    }
-
-    @Override
-    public void sendEmailReset(HenkiloDto henkilo, String sahkoposti, String poletti, Duration voimassa) {
-        String kieliKoodi = UserDetailsUtil.getLanguageCode(henkilo, "fi", "sv");
-        String linkki = urlProperties.url("henkilo-ui.password.reset", kieliKoodi, encode(poletti));
-
-        EmailRecipient recipient = new EmailRecipient(henkilo.getOidHenkilo(), sahkoposti);
-        recipient.setRecipientReplacements(Arrays.asList(new ReportedRecipientReplacementDTO(UNOHTUNUT_SALASANA_EMAIL_REPLACEMENT_VASTAANOTTAJA, mapper.map(henkilo, SahkopostiHenkiloDto.class)),
-                new ReportedRecipientReplacementDTO(UNOHTUNUT_SALASANA_EMAIL_REPLACEMENT_LINKKI, linkki),
-                new ReportedRecipientReplacementDTO(UNOHTUNUT_SALASANA_EMAIL_REPLACEMENT_VOIMASSA_TUNTEINA, voimassa.toHours())
-        ));
-
-        EmailMessage emailMessage = generateEmailMessage(UNOHTUNUT_SALASANA_EMAIL_TEMPLATE_NAME, kieliKoodi);
-
-        EmailData emailData = new EmailData();
-        emailData.setEmail(emailMessage);
-        emailData.setRecipient(singletonList(recipient));
-        ryhmasahkopostiClient.sendRyhmasahkoposti(emailData);
-    }
-
-    private static String encode(String value) {
-        Base64 base64 = new Base64(true);
-        return new String(base64.encode(value.getBytes())).replaceAll("(?:\\r\\n|\\n\\r|\\n|\\r)", "");
     }
 
 }
