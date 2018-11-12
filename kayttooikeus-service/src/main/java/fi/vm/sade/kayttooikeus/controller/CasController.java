@@ -204,7 +204,6 @@ public class CasController {
         return this.henkiloService.getMyRoles();
     }
 
-
     @PutMapping(value = "/emailverification/{loginToken}")
     @ApiOperation("Asettaa käyttäjän sähköpostiosoitteet vahvistetuksi")
     public void emailVerification(HttpServletResponse response,

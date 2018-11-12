@@ -69,6 +69,7 @@ public class HenkiloServiceImplTest {
     private KayttoOikeusService kayttoOikeusService;
     @Mock
     private ObjectMapper objectMapper;
+    @Mock
     private TunnistusTokenDataRepository tunnistusTokenDataRepositoryMock;
     @Mock
     private OppijanumerorekisteriClient oppijanumerorekisteriClientMock;

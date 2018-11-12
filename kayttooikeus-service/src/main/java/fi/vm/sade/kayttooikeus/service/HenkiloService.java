@@ -100,4 +100,5 @@ public interface HenkiloService {
      * Hakee henkilön tiedot loginTokenin perusteella. Tarkoitettu sähköpostinvarmennus-näkymän populointiin
      */
     HenkiloDto getHenkiloByLoginToken(String loginToken);
+
 }
