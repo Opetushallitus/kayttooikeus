@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public interface OrganisaatioClient {
     List<String> getChildOids(String organisaatioOid);
@@ -41,6 +42,13 @@ public interface OrganisaatioClient {
      * @return Haetun organisaation ja tämän aliorganisaatioiden aktiiviset oidit
      */
     List<String> getActiveChildOids(String organisaatioOid);
+
+    /**
+     * @param organisaatioOid Haettava organisaatio
+     * @param filter Suodatin jonka mukaiset organisaatiot palautetaan
+     * @return Haetun organisaation ja tämän yläorganisaatioiden oidit
+     */
+    Set<String> listWithChildOids(String organisaatioOid, Predicate<OrganisaatioPerustieto> filter);
 
     /**
      * @return kaikkien passiviisten organisaatioiden oidit
