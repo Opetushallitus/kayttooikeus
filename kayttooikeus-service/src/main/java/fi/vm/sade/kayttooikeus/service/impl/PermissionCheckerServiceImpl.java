@@ -20,6 +20,7 @@ import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
+import fi.vm.sade.kayttooikeus.util.OrganisaatioMyontoPredicate;
 import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
 import fi.vm.sade.properties.OphProperties;
 import org.apache.commons.collections4.CollectionUtils;
@@ -562,7 +563,8 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     // Check that wanted KOR can be added to the wanted organisation
     @Override
     public boolean organisaatioLimitationCheck(String organisaatioOid, Set<OrganisaatioViite> viiteSet) {
-        List<OrganisaatioPerustieto> organisaatiot = this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(organisaatioOid);
+        List<OrganisaatioPerustieto> organisaatiot = this.organisaatioClient.listWithParentsAndChildren(organisaatioOid,
+                new OrganisaatioMyontoPredicate());
         return organisaatioLimitationCheck(organisaatioOid, organisaatiot, viiteSet.stream().map(OrganisaatioViite::getOrganisaatioTyyppi).collect(Collectors.toSet()));
     }
 

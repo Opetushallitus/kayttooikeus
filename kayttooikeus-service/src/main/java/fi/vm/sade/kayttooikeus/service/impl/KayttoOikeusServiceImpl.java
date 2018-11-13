@@ -18,6 +18,7 @@ import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
+import fi.vm.sade.kayttooikeus.util.OrganisaatioMyontoPredicate;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloPerustietoDto;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -474,7 +475,8 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
 
     private List<KayttoOikeusRyhmaDto> getRyhmasWithoutOrganizationLimitations(String organisaatioOid, List<KayttoOikeusRyhmaDto> allRyhmas) {
         boolean isOphOrganisation = organisaatioOid.equals(commonProperties.getRootOrganizationOid());
-        List<OrganisaatioPerustieto> hakuTulos = organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(organisaatioOid);
+        List<OrganisaatioPerustieto> hakuTulos = organisaatioClient.listWithParentsAndChildren(organisaatioOid,
+                new OrganisaatioMyontoPredicate());
         return allRyhmas.stream()
                 .filter(kayttoOikeusRyhma -> {
 

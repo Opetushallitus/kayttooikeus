@@ -365,14 +365,14 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         org1.setNimi(new TextGroupMapDto().put("FI", "Kutsuttu organisaatio").asMap());
         given(this.organisaatioClient.getOrganisaatioPerustiedotCached(eq("1.2.3.4.1")))
                 .willReturn(Optional.of(org1));
-        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(eq("1.2.3.4.1")))
+        given(this.organisaatioClient.listWithParentsAndChildren(eq("1.2.3.4.1"), any()))
                 .willReturn(asList(org1));
         OrganisaatioPerustieto org2 = new OrganisaatioPerustieto();
         org1.setOid("1.2.3.4.5");
         org1.setNimi(new TextGroupMapDto().put("FI", "Käyttäjän organisaatio").asMap());
         given(this.organisaatioClient.getOrganisaatioPerustiedotCached(eq("1.2.3.4.5")))
                 .willReturn(Optional.of(org2));
-        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(eq("1.2.3.4.5")))
+        given(this.organisaatioClient.listWithParentsAndChildren(eq("1.2.3.4.5"), any()))
                 .willReturn(asList(org2));
 
         MyonnettyKayttoOikeusRyhmaTapahtuma tapahtuma = populate(myonnettyKayttoOikeus(

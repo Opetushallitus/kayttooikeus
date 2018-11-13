@@ -41,6 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.hamcrest.Matchers.isOneOf;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
@@ -147,14 +148,14 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
         OrganisaatioPerustieto koulutustoimija1 = new OrganisaatioPerustieto();
         koulutustoimija1.setOid("1.2.246.562.10.12345678910");
         koulutustoimija1.setChildren(asList(oppilaitos11, oppilaitos12));
-        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(argThat(isOneOf(
-                "1.2.246.562.10.12345678910", "1.2.246.562.10.12345678911", "1.2.246.562.10.12345678912"))))
+        given(this.organisaatioClient.listWithParentsAndChildren(argThat(isOneOf(
+                "1.2.246.562.10.12345678910", "1.2.246.562.10.12345678911", "1.2.246.562.10.12345678912")), any()))
                 .willReturn(asList(koulutustoimija1, oppilaitos11, oppilaitos12));
-        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(argThat(isOneOf(
-                "1.2.246.562.10.12345678911"))))
+        given(this.organisaatioClient.listWithParentsAndChildren(argThat(isOneOf(
+                "1.2.246.562.10.12345678911")), any()))
                 .willReturn(asList(koulutustoimija1, oppilaitos11));
-        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(argThat(isOneOf(
-                "1.2.246.562.10.12345678912"))))
+        given(this.organisaatioClient.listWithParentsAndChildren(argThat(isOneOf(
+                "1.2.246.562.10.12345678912")), any()))
                 .willReturn(asList(koulutustoimija1, oppilaitos12));
 
         OrganisaatioPerustieto toimipiste211 = OrganisaatioPerustieto.builder()
@@ -171,8 +172,8 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
                 .organisaatiotyypit(singletonList("organisaatiotyyppi_01"))
                 .children(singletonList(oppilaitos21))
                 .build();
-        given(this.organisaatioClient.listActiveOganisaatioPerustiedotRecursiveCached(argThat(isOneOf(
-                "1.2.246.562.10.12345678920", "1.2.246.562.10.12345678921", "1.2.246.562.10.123456789211"))))
+        given(this.organisaatioClient.listWithParentsAndChildren(argThat(isOneOf(
+                "1.2.246.562.10.12345678920", "1.2.246.562.10.12345678921", "1.2.246.562.10.123456789211")), any()))
                 .willReturn(asList(koulutustoimija2, oppilaitos21, toimipiste211));
 
         populate(viite(kayttoOikeusRyhma("RYHMA-ORGANISAATIOLLE"), "1.2.246.562.10.12345678901"));
