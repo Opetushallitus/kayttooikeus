@@ -87,10 +87,9 @@ public class OrganisaatioClientTest extends AbstractClientTest {
         Optional<OrganisaatioPerustieto> organisaatio = client.getOrganisaatioPerustiedotCached("1.2.246.562.10.00000000001");
 
         assertThat(organisaatio).hasValueSatisfying(org -> {
-            assertThat(org).extracting(OrganisaatioPerustieto::getOrganisaatiotyypit)
-                    .containsExactly(singletonList("MUU_ORGANISAATIO"));
-            assertThat(org).extracting(OrganisaatioPerustieto::getTyypit)
-                    .containsExactly(singletonList("MUU_ORGANISAATIO"));
+            assertThat(org)
+                    .returns(singletonList("MUU_ORGANISAATIO"), OrganisaatioPerustieto::getOrganisaatiotyypit)
+                    .returns(singletonList("MUU_ORGANISAATIO"), OrganisaatioPerustieto::getTyypit);
         });
     }
 
@@ -113,10 +112,9 @@ public class OrganisaatioClientTest extends AbstractClientTest {
         Optional<OrganisaatioPerustieto> organisaatio = client.getOrganisaatioPerustiedotCached("1.2.246.562.10.14175756379");
 
         assertThat(organisaatio).hasValueSatisfying(org -> {
-            assertThat(org).extracting(OrganisaatioPerustieto::getOrganisaatiotyypit)
-                    .containsExactly(singletonList("KOULUTUSTOIMIJA"));
-            assertThat(org).extracting(OrganisaatioPerustieto::getTyypit)
-                    .containsExactly(singletonList("KOULUTUSTOIMIJA"));
+            assertThat(org)
+                    .returns(singletonList("KOULUTUSTOIMIJA"), OrganisaatioPerustieto::getOrganisaatiotyypit)
+                    .returns(singletonList("KOULUTUSTOIMIJA"), OrganisaatioPerustieto::getTyypit);
         });
     }
 

@@ -387,8 +387,8 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
 
         KutsuCreateDto.KayttoOikeusRyhmaDto kutsuKayttoOikeusRyhma = new KutsuCreateDto.KayttoOikeusRyhmaDto();
         kutsuKayttoOikeusRyhma.setId(organisaatioViite.getKayttoOikeusRyhma().getId());
-        given(this.organisaatioClient.getActiveChildOids("1.2.3.4.5"))
-                .willReturn(Lists.newArrayList("1.2.3.4.5", "1.2.3.4.1"));
+        given(this.organisaatioClient.listWithChildOids(eq("1.2.3.4.5"), any()))
+                .willReturn(Stream.of("1.2.3.4.5", "1.2.3.4.1").collect(toSet()));
 
         KutsuCreateDto kutsu = new KutsuCreateDto();
         kutsu.setEtunimi("Etu");

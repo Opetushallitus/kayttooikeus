@@ -7,8 +7,8 @@ import lombok.*;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toList;
 
@@ -82,13 +82,10 @@ public class OrganisaatioPerustieto {
                 .orElse(emptyList());
     }
 
-    public boolean hasOrganisaatiotyyppi(String organisaatiotyyppi) {
-        return hasAnyOrganisaatiotyyppi(singletonList(organisaatiotyyppi));
-    }
-
-    public boolean hasAnyOrganisaatiotyyppi(Collection<String> organisaatiotyypit) {
+    public boolean hasAnyOrganisaatiotyyppi(String... organisaatiotyypit) {
+        List<String> organisaatiotyypitList = asList(organisaatiotyypit);
         return Optional.ofNullable(resolveOrganisaatiotyypit())
-                .map(tyypit -> tyypit.stream().anyMatch(organisaatiotyypit::contains))
+                .map(tyypit -> tyypit.stream().anyMatch(organisaatiotyypitList::contains))
                 .orElse(false);
     }
 
