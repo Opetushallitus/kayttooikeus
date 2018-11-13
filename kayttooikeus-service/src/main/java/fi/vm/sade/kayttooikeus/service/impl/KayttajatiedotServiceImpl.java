@@ -16,6 +16,7 @@ import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService.LdapSynchroniz
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.UnauthorizedException;
 import fi.vm.sade.kayttooikeus.service.exception.UsernameAlreadyExistsException;
+import fi.vm.sade.kayttooikeus.service.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -130,6 +131,7 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
     }
 
     @Override
+    @Transactional
     public void changePasswordAsAdmin(String oid, String newPassword) {
         changePasswordAsAdmin(oid, newPassword, LdapSynchronizationType.ASAP);
     }
@@ -172,14 +174,8 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
     }
 
     private void setPasswordForHenkilo(String oidHenkilo, String password) {
-        Kayttajatiedot kayttajatiedot = this.kayttajatiedotRepository.findByHenkiloOidHenkilo(oidHenkilo).orElseGet(() -> {
-            Kayttajatiedot newKayttajatiedot = new Kayttajatiedot();
-            Henkilo henkilo = this.henkiloDataRepository.findByOidHenkilo(oidHenkilo)
-                    .orElseThrow(() -> new NotFoundException("Henkilo not found by oid " + oidHenkilo + " when creating kayttajatiedot"));
-            henkilo.setKayttajatiedot(newKayttajatiedot);
-            newKayttajatiedot.setHenkilo(henkilo);
-            return newKayttajatiedot;
-        });
+        Kayttajatiedot kayttajatiedot = this.kayttajatiedotRepository.findByHenkiloOidHenkilo(oidHenkilo)
+                .orElseThrow(() -> new ValidationException("Käyttäjätunnus on asetettava ennen salasanaa"));
         String salt = this.cryptoService.generateSalt();
         String hash = this.cryptoService.getSaltedHash(password, salt);
         kayttajatiedot.setSalt(salt);
