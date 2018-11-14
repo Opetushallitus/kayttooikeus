@@ -23,10 +23,7 @@ import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.util.HenkilohakuBuilder;
 import fi.vm.sade.kayttooikeus.service.*;
-import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
-import fi.vm.sade.kayttooikeus.service.exception.ForbiddenException;
-import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
-import fi.vm.sade.kayttooikeus.service.exception.ValidationException;
+import fi.vm.sade.kayttooikeus.service.exception.*;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.util.HenkilohakuBuilder;
@@ -34,9 +31,6 @@ import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloOmattiedotDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
 import fi.vm.sade.properties.OphProperties;
-import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
-import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
-import fi.vm.sade.kayttooikeus.util.HenkilohakuBuilder;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloOmattiedotDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -284,6 +278,15 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
                 .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oid));
     }
 
+
+
+    private Map<String, Object> redirectMapping(String authToken, String service) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("authToken", authToken);
+        map.put("service", service);
+        return map;
+    }
+
     @Override
     @Transactional(readOnly = true)
     public List<String> getMyRoles() {
@@ -319,6 +322,10 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
             throw new ValidationException(String.format("Login token %s doesn't match henkilo oid %s", loginToken, henkiloUpdateDto.getOidHenkilo()));
         }
 
+        if(tunnistusToken.getKaytetty() != null) {
+            throw new LoginTokenException(String.format("Login token has been used", loginToken));
+        }
+
         oppijanumerorekisteriClient.updateHenkilo(henkiloUpdateDto);
         henkilo.setSahkopostivarmennusAikaleima(LocalDateTime.now());
 
@@ -326,13 +333,6 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
         Map<String, Object> redirectMapping = this.redirectMapping(authToken, ophProperties.url("virkailijan-tyopoyta"));
         return ophProperties.url("cas.login", redirectMapping);
 
-    }
-
-    private Map<String, Object> redirectMapping(String authToken, String service) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("authToken", authToken);
-        map.put("service", service);
-        return map;
     }
 
     @Override
@@ -365,6 +365,9 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
     public HenkiloDto getHenkiloByLoginToken(String loginToken) {
         TunnistusToken tunnistusToken = tunnistusTokenDataRepository.findByLoginToken(loginToken)
                 .orElseThrow(() -> new NotFoundException(String.format("Login tokenia %s ei löytynyt", loginToken)));
+        if(tunnistusToken.getKaytetty() != null) {
+            throw new LoginTokenException(String.format("Login token has been used", loginToken));
+        }
         String oid = tunnistusToken.getHenkilo().getOidHenkilo();
         return this.oppijanumerorekisteriClient.getHenkiloByOid(oid);
     }

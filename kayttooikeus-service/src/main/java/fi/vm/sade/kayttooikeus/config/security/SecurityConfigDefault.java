@@ -127,6 +127,8 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
                 .antMatchers("/kutsu/token/*").permitAll()
                 .antMatchers("/cas/tunnistus").permitAll()
                 .antMatchers("/cas/uudelleenrekisterointi").permitAll()
+                .antMatchers("/cas/henkilo/loginToken/*").permitAll()
+                .antMatchers("/cas/emailverification/*").permitAll()
                 .antMatchers("/userDetails", "/userDetails/*").permitAll()
                 .antMatchers("/swagger-ui.html").permitAll()
                 .antMatchers("/swagger-resources/**").permitAll()
