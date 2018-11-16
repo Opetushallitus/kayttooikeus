@@ -78,6 +78,7 @@ public class HenkiloServiceImplTest {
     @Mock
     private OphProperties ophPropertiesMock;
 
+
     @Before
     public void setup() {
         henkiloServiceImpl = new HenkiloServiceImpl(
@@ -91,10 +92,7 @@ public class HenkiloServiceImplTest {
                 henkiloDataRepositoryMock,
                 kayttajatiedotRepositoryMock,
                 commonPropertiesMock,
-                tunnistusTokenDataRepositoryMock,
                 oppijanumerorekisteriClientMock,
-                identificationServiceMock,
-                ophPropertiesMock,
                 mapper,
                 organisaatioClientMock,
                 objectMapper

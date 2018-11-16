@@ -1,11 +1,10 @@
 package fi.vm.sade.kayttooikeus.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import fi.vm.sade.kayttooikeus.dto.IdentifiedHenkiloTypeDto;
-import fi.vm.sade.kayttooikeus.dto.MeDto;
-import fi.vm.sade.kayttooikeus.dto.VahvaTunnistusRequestDto;
-import fi.vm.sade.kayttooikeus.dto.VahvaTunnistusResponseDto;
+import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.enumeration.LogInRedirectType;
+import fi.vm.sade.kayttooikeus.dto.enumeration.LoginTokenValidationCode;
+import fi.vm.sade.kayttooikeus.service.EmailVerificationService;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.VahvaTunnistusService;
@@ -40,7 +39,7 @@ public class CasController {
     private final IdentificationService identificationService;
     private final HenkiloService henkiloService;
     private final VahvaTunnistusService vahvaTunnistusService;
-
+    private final EmailVerificationService emailVerificationService;
     private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
 
     private final OphProperties ophProperties;
@@ -183,6 +182,32 @@ public class CasController {
         return new ResponseEntity<>("ok", HttpStatus.OK);
     }
 
+    @PostMapping(value = "/emailverification/{loginToken}")
+    @ApiOperation("Asettaa käyttäjän sähköpostiosoitteet vahvistetuksi")
+    public EmailVerificationResponseDto emailVerification(@RequestBody @Validated HenkiloUpdateDto henkiloUpdate,
+                                                          @PathVariable String loginToken) {
+        return this.emailVerificationService.emailVerification(henkiloUpdate, loginToken);
+    }
+
+    @GetMapping(value = "/emailverification/loginTokenValidation/{loginToken}")
+    @ApiOperation(value = "Palauttaa validatointikoodin loginTokenille",
+            notes = "Validointikoodista käyttöliittymässä tiedetään täytyykö käyttäjälle näyttää virhesivu")
+    public LoginTokenValidationCode getLoginTokenValidationCode(@PathVariable String loginToken) {
+        return this.emailVerificationService.getLoginTokenValidationCode(loginToken);
+    }
+
+    @GetMapping(value = "emailverification/redirectByLoginToken/{loginToken}")
+    @ApiOperation("Palauttaa uudelleenohjausurlin loginTokenin perusteella.")
+    public EmailVerificationResponseDto getFrontPageRedirectByLoginToken(@PathVariable String loginToken) {
+        return this.emailVerificationService.redirectUrlByLoginToken(loginToken);
+    }
+
+    @GetMapping(value = "/henkilo/loginToken/{loginToken}")
+    @ApiOperation("Hakee käyttäjän tiedot loginTokenin perusteella")
+    public HenkiloDto getUserByLoginToken(@PathVariable("loginToken") String loginToken) {
+        return this.emailVerificationService.getHenkiloByLoginToken(loginToken);
+    }
+
     @ApiOperation(value = "Deprekoitu CAS palvelusta siirretty rajapinta",
             notes = "Deprekoitu. Käytä /henkilo/current/omattiedot ja oppijanumerorekisterin /henkilo/current/omattiedot" +
                     "rajapintoja.",
@@ -202,21 +227,6 @@ public class CasController {
     @RequestMapping(value = "/myroles", method = RequestMethod.GET)
     public List<String> getMyroles() {
         return this.henkiloService.getMyRoles();
-    }
-
-    @PutMapping(value = "/emailverification/{loginToken}")
-    @ApiOperation("Asettaa käyttäjän sähköpostiosoitteet vahvistetuksi")
-    public void emailVerification(HttpServletResponse response,
-                                  @RequestBody @Validated HenkiloUpdateDto henkiloUpdate,
-                                  @PathVariable("loginToken") String loginToken) throws IOException {
-        String redirectUrl = this.henkiloService.emailVerification(henkiloUpdate, loginToken);
-        response.sendRedirect(redirectUrl);
-    }
-
-    @GetMapping(value = "/henkilo/loginToken/{loginToken}")
-    @ApiOperation("Hakee käyttäjän tiedot loginTokenin perusteella")
-    public HenkiloDto getUserByLoginToken(@PathVariable("loginToken") String loginToken) {
-        return this.henkiloService.getHenkiloByLoginToken(loginToken);
     }
 
 }

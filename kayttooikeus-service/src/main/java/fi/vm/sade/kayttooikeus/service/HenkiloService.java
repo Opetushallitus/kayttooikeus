@@ -91,14 +91,4 @@ public interface HenkiloService {
     @Deprecated
     MeDto getMe() throws JsonProcessingException;
 
-    /*
-     * Päivittää henkilon tiedot. Tarkoitettu sähköpostin varmennukseen
-     */
-    String emailVerification(HenkiloUpdateDto henkiloUpdate, String loginToken);
-
-    /*
-     * Hakee henkilön tiedot loginTokenin perusteella. Tarkoitettu sähköpostinvarmennus-näkymän populointiin
-     */
-    HenkiloDto getHenkiloByLoginToken(String loginToken);
-
 }

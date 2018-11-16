@@ -45,7 +45,6 @@ import java.util.stream.Stream;
 
 import static fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi.VIRKAILIJA;
 
-import static fi.vm.sade.kayttooikeus.model.Identification.CAS_AUTHENTICATION_IDP;
 
 @Service
 @RequiredArgsConstructor
@@ -64,10 +63,7 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
     private final HenkiloDataRepository henkiloDataRepository;
     private final KayttajatiedotRepository kayttajatiedotRepository;
     private final CommonProperties commonProperties;
-    private final TunnistusTokenDataRepository tunnistusTokenDataRepository;
     private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
-    private final IdentificationService identificationService;
-    private final OphProperties ophProperties;
 
     private final OrikaBeanMapper mapper;
 
@@ -278,15 +274,6 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
                 .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oid));
     }
 
-
-
-    private Map<String, Object> redirectMapping(String authToken, String service) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("authToken", authToken);
-        map.put("service", service);
-        return map;
-    }
-
     @Override
     @Transactional(readOnly = true)
     public List<String> getMyRoles() {
@@ -312,30 +299,6 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
     }
 
     @Override
-    @Transactional
-    public String emailVerification(HenkiloUpdateDto henkiloUpdateDto, String loginToken) {
-        TunnistusToken tunnistusToken = tunnistusTokenDataRepository.findByLoginToken(loginToken)
-                .orElseThrow(() -> new NotFoundException(String.format("Login tokenia %s ei löytynyt", loginToken)));
-        Henkilo henkilo = tunnistusToken.getHenkilo();
-
-        if(!henkilo.getOidHenkilo().equals(henkiloUpdateDto.getOidHenkilo())) {
-            throw new ValidationException(String.format("Login token %s doesn't match henkilo oid %s", loginToken, henkiloUpdateDto.getOidHenkilo()));
-        }
-
-        if(tunnistusToken.getKaytetty() != null) {
-            throw new LoginTokenException(String.format("Login token has been used", loginToken));
-        }
-
-        oppijanumerorekisteriClient.updateHenkilo(henkiloUpdateDto);
-        henkilo.setSahkopostivarmennusAikaleima(LocalDateTime.now());
-
-        String authToken = identificationService.consumeLoginToken(tunnistusToken.getLoginToken(), CAS_AUTHENTICATION_IDP);
-        Map<String, Object> redirectMapping = this.redirectMapping(authToken, ophProperties.url("virkailijan-tyopoyta"));
-        return ophProperties.url("cas.login", redirectMapping);
-
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public MeDto getMe() throws JsonProcessingException {
         String oid = this.permissionCheckerService.getCurrentUserOid();
@@ -358,18 +321,6 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
         meDto.setRoles(this.objectMapper.writeValueAsString(roles));
         meDto.setGroups(getAppRolesSorted(langRole, kayttajatyyppiRole).toArray(String[]::new));
         return meDto;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public HenkiloDto getHenkiloByLoginToken(String loginToken) {
-        TunnistusToken tunnistusToken = tunnistusTokenDataRepository.findByLoginToken(loginToken)
-                .orElseThrow(() -> new NotFoundException(String.format("Login tokenia %s ei löytynyt", loginToken)));
-        if(tunnistusToken.getKaytetty() != null) {
-            throw new LoginTokenException(String.format("Login token has been used", loginToken));
-        }
-        String oid = tunnistusToken.getHenkilo().getOidHenkilo();
-        return this.oppijanumerorekisteriClient.getHenkiloByOid(oid);
     }
 
 }
