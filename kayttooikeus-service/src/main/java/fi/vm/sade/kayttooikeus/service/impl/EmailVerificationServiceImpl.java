@@ -83,12 +83,17 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     @Override
     @Transactional(readOnly = true)
     public LoginTokenValidationCode getLoginTokenValidationCode(String loginToken) {
-        TunnistusToken tunnistusToken = tunnistusTokenDataRepository.findByValidLoginToken(loginToken)
+        TunnistusToken tunnistusToken = tunnistusTokenDataRepository.findByLoginToken(loginToken)
                 .orElse(null);
 
         if(tunnistusToken == null) {
-            log.error(String.format("Logintoken %s on vanhentunut tai sitä ei löydy", loginToken));
-            return LoginTokenValidationCode.TOKEN_VANHENTUNUT_TAI_EI_LOYDY;
+            log.error(String.format("Logintokenia %s ei löydy", loginToken));
+            return LoginTokenValidationCode.TOKEN_EI_LOYDY;
+        }
+
+        if(tunnistusToken.getAikaleima().isBefore(LocalDateTime.now().minusMinutes(20))) {
+            log.error(String.format("Logintoken %s on vanhentunut", loginToken));
+            return LoginTokenValidationCode.TOKEN_VANHENTUNUT;
         }
 
         if(tunnistusToken.getKaytetty() != null) {
