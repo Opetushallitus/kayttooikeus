@@ -45,12 +45,6 @@ public interface OrganisaatioClient {
 
     /**
      * @param organisaatioOid Haettava organisaatio
-     * @return Haetun organisaation ja tämän aliorganisaatioiden aktiiviset oidit
-     */
-    List<String> getActiveChildOids(String organisaatioOid);
-
-    /**
-     * @param organisaatioOid Haettava organisaatio
      * @param filter Suodatin jonka mukaiset organisaatiot palautetaan
      * @return Haetun organisaation ja tämän aliorganisaatioiden oidit
      */

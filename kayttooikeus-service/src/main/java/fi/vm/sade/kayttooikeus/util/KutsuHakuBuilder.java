@@ -19,16 +19,14 @@ import org.apache.commons.lang.BooleanUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.CollectionUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_HENKILONHALLINTA;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.ROLE_CRUD;
+import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.*;
 import static java.util.Collections.singletonList;
-import java.util.HashMap;
-import java.util.Map;
 
 @RequiredArgsConstructor
 public class KutsuHakuBuilder {
@@ -91,7 +89,8 @@ public class KutsuHakuBuilder {
         }
         if (BooleanUtils.isTrue(this.kutsuCriteria.getSubOrganisations())) {
             organisaatioOidLimit = organisaatioOidLimit.stream()
-                    .flatMap(organisaatioOid -> this.organisaatioClient.getActiveChildOids(organisaatioOid).stream())
+                    .flatMap(organisaatioOid -> this.organisaatioClient.listWithChildOids(organisaatioOid,
+                            new OrganisaatioMyontoPredicate()).stream())
                     .collect(Collectors.toSet());
         }
         this.kutsuCriteria.setOrganisaatioOids(organisaatioOidLimit);

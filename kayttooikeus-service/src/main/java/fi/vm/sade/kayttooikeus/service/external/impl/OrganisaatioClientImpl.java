@@ -148,14 +148,6 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
     }
 
     @Override
-    public List<String> getActiveChildOids(String organisaatioOid) {
-        return this.cache.flatWithChildrenByOid(organisaatioOid)
-                .filter(organisaatioPerustieto -> OrganisaatioStatus.AKTIIVINEN.equals(organisaatioPerustieto.getStatus()))
-                .map(OrganisaatioPerustieto::getOid)
-                .collect(toList());
-    }
-
-    @Override
     public Set<String> listWithChildOids(String organisaatioOid, Predicate<OrganisaatioPerustieto> filter) {
         return this.cache.flatWithChildrenByOid(organisaatioOid)
                 .filter(filter)

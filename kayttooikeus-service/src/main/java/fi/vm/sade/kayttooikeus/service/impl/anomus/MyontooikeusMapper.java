@@ -4,11 +4,13 @@ import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria;
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria.Myontooikeus;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
+import fi.vm.sade.kayttooikeus.util.OrganisaatioMyontoPredicate;
+import lombok.RequiredArgsConstructor;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class MyontooikeusMapper implements Function<Map.Entry<String, Set<Long>>, Myontooikeus> {
@@ -26,7 +28,8 @@ public class MyontooikeusMapper implements Function<Map.Entry<String, Set<Long>>
         Set<String> organisaatioOids = new HashSet<>();
         organisaatioOids.add(organisaatioOid);
         if (!rootOrganisaatio) {
-            organisaatioOids.addAll(organisaatioClient.getActiveChildOids(organisaatioOid));
+            organisaatioOids.addAll(organisaatioClient.listWithChildOids(organisaatioOid,
+                    new OrganisaatioMyontoPredicate()));
         }
 
         if (criteria.getOrganisaatioOids() != null) {

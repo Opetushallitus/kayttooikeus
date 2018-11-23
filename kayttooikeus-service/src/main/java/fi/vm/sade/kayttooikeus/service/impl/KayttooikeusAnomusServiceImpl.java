@@ -20,6 +20,7 @@ import fi.vm.sade.kayttooikeus.service.exception.UnprocessableEntityException;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.impl.anomus.MyontooikeusMapper;
 import fi.vm.sade.kayttooikeus.service.validators.HaettuKayttooikeusryhmaValidator;
+import fi.vm.sade.kayttooikeus.util.OrganisaatioMyontoPredicate;
 import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -535,7 +536,7 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         if (!permissionCheckerService.isCurrentUserAdmin()) {
             // lisätään myöntöoikeudet aliorganisaatioihin
             myontooikeudet.entrySet().stream()
-                    .flatMap(entry -> organisaatioClient.getActiveChildOids(entry.getKey()).stream()
+                    .flatMap(entry -> organisaatioClient.listWithChildOids(entry.getKey(), new OrganisaatioMyontoPredicate()).stream()
                             .map(aliorganisaatioOid -> new SimpleEntry<>(aliorganisaatioOid, entry.getValue())))
                     .collect(toMap(Entry::getKey, Entry::getValue, appending()))
                     .forEach((organisaatioOid, kayttooikeusryhmaIds) -> myontooikeudet.merge(organisaatioOid, kayttooikeusryhmaIds, appending()));
