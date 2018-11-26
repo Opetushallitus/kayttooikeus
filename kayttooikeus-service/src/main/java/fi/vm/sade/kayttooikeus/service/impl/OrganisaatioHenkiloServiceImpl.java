@@ -5,7 +5,6 @@ import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto.OrganisaatioDto;
-import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria;
@@ -96,7 +95,7 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
         dto.setTyypit(perustiedot.getTyypit());
         dto.setStatus(perustiedot.getStatus());
         dto.setChildren(perustiedot.getChildren().stream()
-               .filter(organisaatioPerustieto -> OrganisaatioStatus.AKTIIVINEN.equals(organisaatioPerustieto.getStatus()) || OrganisaatioStatus.SUUNNITELTU.equals(organisaatioPerustieto.getStatus()))
+               .filter(new OrganisaatioMyontoPredicate())
                 .map(child -> mapOrganisaatioDtoRecursive(child, compareByLang))
                 .sorted(Comparator.comparing(OrganisaatioDto::getNimi, comparingPrimarlyBy(ofNullable(compareByLang).orElse(FALLBACK_LANGUAGE))))
                 .collect(toList()));
