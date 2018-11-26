@@ -6,6 +6,7 @@ import fi.vm.sade.kayttooikeus.config.mapper.CachedDateTimeConverter;
 import fi.vm.sade.kayttooikeus.config.mapper.LocalDateConverter;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
+import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import fi.vm.sade.kayttooikeus.dto.types.AnomusTyyppi;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
@@ -13,6 +14,7 @@ import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria;
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria.Myontooikeus;
 import fi.vm.sade.kayttooikeus.service.exception.ForbiddenException;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
+import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.kayttooikeus.service.impl.KayttooikeusAnomusServiceImpl;
 import fi.vm.sade.kayttooikeus.service.validators.HaettuKayttooikeusryhmaValidator;
 import org.junit.Before;
@@ -22,7 +24,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -196,7 +197,7 @@ public class KayttooikeusAnomusServiceTest {
     @Test
     public void listHaetutKayttoOikeusRyhmatForVirkailijaWithNoCriteriaOrganisaatios() {
         List<String> userOrganisaatioOids = Arrays.asList("1.2.3.4.5", "2.3.4.5.6");
-        List<String> userOrganisaatioChildOids = Arrays.asList("1.2.3.4.5", "2.3.4.5.6");
+        Set<String> userOrganisaatioChildOids = Stream.of("1.2.3.4.5", "2.3.4.5.6").collect(toSet());
         Set<Long> kayttooikeusRyhmas = Stream.of(12345L, 23456L, 34567L).collect(toSet());
         Map<String, Set<Long>> myontooikeudet = userOrganisaatioOids.stream()
                 .map(oid -> new AbstractMap.SimpleEntry<>(oid, kayttooikeusRyhmas))
@@ -205,7 +206,7 @@ public class KayttooikeusAnomusServiceTest {
         given(this.permissionCheckerService.isCurrentUserAdmin()).willReturn(false);
         given(this.permissionCheckerService.isCurrentUserMiniAdmin()).willReturn(false);
         given(kayttoOikeusRyhmaMyontoViiteRepository.getSlaveIdsByMasterHenkiloOid(any(), any())).willReturn(myontooikeudet);
-        given(this.organisaatioClient.getActiveChildOids(any())).willReturn(userOrganisaatioChildOids);
+        given(this.organisaatioClient.listWithChildOids(any(), any())).willReturn(userOrganisaatioChildOids);
 
         AnomusCriteria criteria = AnomusCriteria.builder().build();
         this.kayttooikeusAnomusService.listHaetutKayttoOikeusRyhmat(criteria, null, null, null);
@@ -223,7 +224,7 @@ public class KayttooikeusAnomusServiceTest {
     @Test
     public void listHaetutKayttoOikeusRyhmatForVirkailijaCantSeeOwnAnomus() {
         List<String> userOrganisaatioOids = Arrays.asList("1.2.3.4.5", "2.3.4.5.6");
-        List<String> userOrganisaatioChildOids = Arrays.asList("1.2.3.4.5", "2.3.4.5.6");
+        Set<String> userOrganisaatioChildOids = Stream.of("1.2.3.4.5", "2.3.4.5.6").collect(toSet());
         Set<Long> kayttooikeusRyhmas = Stream.of(12345L, 23456L, 34567L).collect(toSet());
         Map<String, Set<Long>> myontooikeudet = userOrganisaatioOids.stream()
                 .map(oid -> new AbstractMap.SimpleEntry<>(oid, kayttooikeusRyhmas))
@@ -232,7 +233,7 @@ public class KayttooikeusAnomusServiceTest {
         given(this.permissionCheckerService.isCurrentUserAdmin()).willReturn(false);
         given(this.permissionCheckerService.isCurrentUserMiniAdmin()).willReturn(false);
         given(kayttoOikeusRyhmaMyontoViiteRepository.getSlaveIdsByMasterHenkiloOid(any(), any())).willReturn(myontooikeudet);
-        given(this.organisaatioClient.getActiveChildOids(any())).willReturn(userOrganisaatioChildOids);
+        given(this.organisaatioClient.listWithChildOids(any(), any())).willReturn(userOrganisaatioChildOids);
         given(this.permissionCheckerService.getCurrentUserOid()).willReturn("1.2.3");
         AnomusCriteria criteria = AnomusCriteria.builder().build();
         this.kayttooikeusAnomusService.listHaetutKayttoOikeusRyhmat(criteria, null, null, null);
@@ -252,7 +253,7 @@ public class KayttooikeusAnomusServiceTest {
     @Test
     public void listHaetutKayttoOikeusRyhmatForVirkailijaWithCriteriaOrganisaatios() {
         List<String> userOrganisaatioOids = Arrays.asList("1.2.3.4.5", "2.3.4.5.6");
-        List<String> userOrganisaatioChildOids = Arrays.asList("1.2.3", "2.3.4", "2.3.4.5.6");
+        Set<String> userOrganisaatioChildOids = Stream.of("1.2.3", "2.3.4", "2.3.4.5.6").collect(toSet());
         Set<Long> kayttooikeusRyhmas = Stream.of(12345L, 23456L, 34567L).collect(toSet());
         Map<String, Set<Long>> myontooikeudet = userOrganisaatioOids.stream()
                 .map(oid -> new AbstractMap.SimpleEntry<>(oid, kayttooikeusRyhmas))
@@ -260,7 +261,7 @@ public class KayttooikeusAnomusServiceTest {
         Set<String> criteriaOrganisaatioOids = Stream.of("2.3.4.5.6", "2.3.4").collect(toSet());
 
         given(this.permissionCheckerService.isCurrentUserAdmin()).willReturn(false);
-        given(this.organisaatioClient.getActiveChildOids(any())).willReturn(userOrganisaatioChildOids);
+        given(this.organisaatioClient.listWithChildOids(any(), any())).willReturn(userOrganisaatioChildOids);
         given(this.kayttoOikeusRyhmaMyontoViiteRepository.getSlaveIdsByMasterHenkiloOid(any(), any())).willReturn(myontooikeudet);
 
         AnomusCriteria criteria = AnomusCriteria.builder().organisaatioOids(criteriaOrganisaatioOids).build();
@@ -301,7 +302,7 @@ public class KayttooikeusAnomusServiceTest {
     @Test
     public void listHaetutKayttoOikeusRyhmatForVirkailijaWithCriteriaOrganisaatiosToChildOrganisation() {
         List<String> userOrganisaatioOids = Lists.newArrayList("1.2.3.4.5.0");
-        List<String> userOrganisaatioChildOids = Lists.newArrayList("1.2.3.4.5.0", "1.2.3.4.5.1");
+        Set<String> userOrganisaatioChildOids = Stream.of("1.2.3.4.5.0", "1.2.3.4.5.1").collect(toSet());
         Set<Long> kayttooikeusRyhmas = Stream.of(12345L, 23456L, 34567L).collect(toSet());
         Map<String, Set<Long>> myontooikeudet = userOrganisaatioOids.stream()
                 .map(oid -> new AbstractMap.SimpleEntry<>(oid, kayttooikeusRyhmas))
@@ -309,7 +310,7 @@ public class KayttooikeusAnomusServiceTest {
         Set<String> criteriaOrganisaatioOids = singleton("1.2.3.4.5.1");
 
         given(this.permissionCheckerService.isCurrentUserAdmin()).willReturn(false);
-        given(this.organisaatioClient.getActiveChildOids(any())).willReturn(userOrganisaatioChildOids);
+        given(this.organisaatioClient.listWithChildOids(any(), any())).willReturn(userOrganisaatioChildOids);
         given(this.kayttoOikeusRyhmaMyontoViiteRepository.getSlaveIdsByMasterHenkiloOid(any(), any())).willReturn(myontooikeudet);
 
         AnomusCriteria criteria = AnomusCriteria.builder().organisaatioOids(criteriaOrganisaatioOids).build();
@@ -340,7 +341,8 @@ public class KayttooikeusAnomusServiceTest {
         given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findMyonnettyTapahtuma(2001L,
                 "1.2.0.0.1", "1.2.3.4.5"))
                 .willReturn(Optional.empty());
-        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any())).willReturn(Optional.of(organisaatio));
 
         GrantKayttooikeusryhmaDto grantKayttooikeusryhmaDto = createGrantKayttooikeusryhmaDto(2001L,
                 LocalDate.now().plusYears(1));
@@ -429,7 +431,8 @@ public class KayttooikeusAnomusServiceTest {
         given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findMyonnettyTapahtuma(2001L,
                 "1.2.0.0.1", "1.2.3.4.5"))
                 .willReturn(Optional.of(myonnettyKayttoOikeusRyhmaTapahtuma));
-        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any())).willReturn(Optional.of(organisaatio));
 
         GrantKayttooikeusryhmaDto grantKayttooikeusryhmaDto = createGrantKayttooikeusryhmaDto(2001L,
                 LocalDate.now().plusYears(1));
@@ -467,7 +470,8 @@ public class KayttooikeusAnomusServiceTest {
         given(this.organisaatioHenkiloRepository.findByHenkiloOidHenkilo("1.2.3.4.1"))
                 .willReturn(Lists.newArrayList(OrganisaatioHenkilo.builder().organisaatioOid("1.2.0.0.1").build()));
         given(this.permissionCheckerService.kayttooikeusMyontoviiteLimitationCheck(2001L)).willReturn(true);
-        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any())).willReturn(Optional.of(organisaatio));
         MyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma = createMyonnettyKayttoOikeusRyhmaTapahtuma(3001L, 2001L);
         given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findMyonnettyTapahtuma(2001L,
                 "1.2.0.0.1", "1.2.3.4.5"))
@@ -519,7 +523,8 @@ public class KayttooikeusAnomusServiceTest {
         given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findMyonnettyTapahtuma(2001L,
                 "1.2.0.0.1", "1.2.3.4.5"))
                 .willReturn(Optional.of(createMyonnettyKayttoOikeusRyhmaTapahtuma(3001L, 2001L)));
-        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any())).willReturn(Optional.of(organisaatio));
 
         UpdateHaettuKayttooikeusryhmaDto updateHaettuKayttooikeusryhmaDto = createUpdateHaettuKayttooikeusryhmaDto(1L,
                 "MYONNETTY", LocalDate.now().plusYears(1));

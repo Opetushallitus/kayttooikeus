@@ -1,11 +1,11 @@
 package fi.vm.sade.kayttooikeus.service.it;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fi.vm.sade.kayttooikeus.aspects.HenkiloHelper;
 import fi.vm.sade.kayttooikeus.controller.KutsuPopulator;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.enumeration.KutsuView;
+import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import fi.vm.sade.kayttooikeus.enumeration.KutsuOrganisaatioOrder;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.IdentificationRepository;
@@ -57,6 +57,7 @@ import static fi.vm.sade.kayttooikeus.repositories.populate.TextGroupPopulator.t
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_HENKILONHALLINTA;
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.ROLE_CRUD;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
@@ -107,8 +108,8 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 kayttoOikeusRyhma("RYHMA1").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_CRUD))));
         populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.4", "1.2.3.4.6"),
                 kayttoOikeusRyhma("RYHMA1").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_CRUD))));
-        given(this.organisaatioClient.getActiveChildOids("1.2.3.4.5")).willReturn(Lists.newArrayList("1.2.3.4.5"));
-        given(this.organisaatioClient.getActiveChildOids("1.2.3.4.6")).willReturn(Lists.newArrayList("1.2.3.4.6"));
+        given(this.organisaatioClient.listWithChildOids(eq("1.2.3.4.5"), any())).willReturn(singleton("1.2.3.4.5"));
+        given(this.organisaatioClient.listWithChildOids(eq("1.2.3.4.6"), any())).willReturn(singleton("1.2.3.4.6"));
         populate(kutsu("Essi", "Esimerkki", "a@eaxmple.com")
                 .kutsuja("1.2.3").aikaleima(LocalDateTime.of(2016,1,1,0,0,0, 0))
                 .organisaatio(kutsuOrganisaatio("1.2.3.4.5")
@@ -165,7 +166,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 .kutsuja("1.2.3").aikaleima(LocalDateTime.of(2016, 1, 1, 0, 0, 0, 0))
                 .organisaatio(kutsuOrganisaatio("1.2.246.562.10.00000000001")
                         .ryhma(kayttoOikeusRyhma("RYHMA1").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_CRUD)))));
-        given(this.organisaatioClient.getActiveChildOids("1.2.246.562.10.00000000001")).willReturn(Lists.newArrayList("1.2.246.562.10.00000000001"));
+        given(this.organisaatioClient.listWithChildOids(eq("1.2.246.562.10.00000000001"), any())).willReturn(singleton("1.2.246.562.10.00000000001"));
         OrganisaatioPerustieto org1 = new OrganisaatioPerustieto();
         org1.setOid("1.2.246.562.10.00000000001");
         org1.setNimi(new TextGroupMapDto().put("fi", "Nimi2").asMap());
@@ -199,7 +200,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         org1.setNimi(new TextGroupMapDto().put("fi", "Nimi2").asMap());
         given(this.organisaatioClient.getOrganisaatioPerustiedotCached(eq("1.2.3.4.5")))
                 .willReturn(Optional.of(org1));
-        given(this.organisaatioClient.getActiveChildOids("1.2.3.4.5")).willReturn(Lists.newArrayList("1.2.3.4.5"));
+        given(this.organisaatioClient.listWithChildOids(eq("1.2.3.4.5"), any())).willReturn(singleton("1.2.3.4.5"));
 
         List<KutsuReadDto> kutsuList = this.kutsuService.listKutsus(KutsuOrganisaatioOrder.AIKALEIMA,
                 Sort.Direction.ASC,
@@ -228,8 +229,8 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 .kutsuja("1.2.3").aikaleima(LocalDateTime.of(2016, 1, 1, 0, 0, 0, 0))
                 .organisaatio(kutsuOrganisaatio("1.2.246.562.10.00000000001")
                         .ryhma(kayttoOikeusRyhma("RYHMA1").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_CRUD)))));
-        given(this.organisaatioClient.getActiveChildOids("1.2.246.562.10.00000000001")).willReturn(Lists.newArrayList("1.2.246.562.10.00000000001"));
-        given(this.organisaatioClient.getActiveChildOids("1.2.3.4.5")).willReturn(Lists.newArrayList("1.2.3.4.5"));
+        given(this.organisaatioClient.listWithChildOids(eq("1.2.246.562.10.00000000001"), any())).willReturn(singleton("1.2.246.562.10.00000000001"));
+        given(this.organisaatioClient.listWithChildOids(eq("1.2.3.4.5"), any())).willReturn(singleton("1.2.3.4.5"));
         OrganisaatioPerustieto org = new OrganisaatioPerustieto();
         org.setOid("1.2.3.4.5");
         org.setNimi(new TextGroupMapDto().put("fi", "Nimi2").asMap());
@@ -263,7 +264,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 .kutsuja("kutsujaOid").aikaleima(LocalDateTime.of(2016, 1, 1, 0, 0, 0, 0))
                 .organisaatio(kutsuOrganisaatio("1.2.246.562.10.00000000001")
                         .ryhma(kayttoOikeusRyhma("RYHMA1").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_CRUD)))));
-        given(this.organisaatioClient.getActiveChildOids("1.2.3.4.5")).willReturn(Lists.newArrayList("1.2.3.4.5"));
+        given(this.organisaatioClient.listWithChildOids(eq("1.2.3.4.5"), any())).willReturn(singleton("1.2.3.4.5"));
         OrganisaatioPerustieto org = new OrganisaatioPerustieto();
         org.setOid("1.2.3.4.5");
         org.setNimi(new TextGroupMapDto().put("fi", "Nimi2").asMap());
@@ -508,7 +509,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                         .ryhma(kayttoOikeusRyhma("RYHMA2")))
         );
         populate(organisaatioHenkilo("1.2.4", "1.2.3.4.5"));
-        given(this.organisaatioClient.getActiveChildOids("1.2.3.4.5")).willReturn(Lists.newArrayList("1.2.3.4.5"));
+        given(this.organisaatioClient.listWithChildOids(eq("1.2.3.4.5"), any())).willReturn(singleton("1.2.3.4.5"));
         this.kutsuService.deleteKutsu(kutsu.getId());
         this.em.flush();
         assertEquals(KutsunTila.POISTETTU, kutsu.getTila());
@@ -558,7 +559,8 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), "arpauser", "stronkPassword1!");
 
-        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any())).willReturn(Optional.of(organisaatio));
         this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.3.4.5");
         assertThat(henkilo.getKayttajatiedot().getUsername()).isEqualTo("arpauser");
@@ -637,7 +639,8 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), "arpauser", "stronkPassword1!");
         given(this.oppijanumerorekisteriClient.getHenkiloByOid(any())).willReturn(new HenkiloDto());
-        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any())).willReturn(Optional.of(organisaatio));
 
         this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.0.0.2");
@@ -680,7 +683,8 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), null, null);
 
-        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any())).willReturn(Optional.of(organisaatio));
         this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.3.4.5");
         assertThat(henkilo.getKayttajatiedot().getUsername()).matches("hakaIdentifier1[\\d]{3,3}");
@@ -730,7 +734,8 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), null, null);
 
-        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any())).willReturn(Optional.of(organisaatio));
         this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.3.4.5");
         assertThat(henkilo.getKayttajatiedot().getUsername()).matches("hakaIdentifier1[\\d]{3,3}");
@@ -784,7 +789,8 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), null, null);
 
-        given(this.organisaatioClient.existsByOidAndStatus(any(), any())).willReturn(true);
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any())).willReturn(Optional.of(organisaatio));
         this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);
         assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.3.4.5");
         assertThat(henkilo.getKayttajatiedot().getUsername()).matches("hakaIdentifier1[\\d]{3,3}");

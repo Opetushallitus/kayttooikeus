@@ -3,6 +3,7 @@ package fi.vm.sade.kayttooikeus.service.it;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloCreateDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloUpdateDto;
+import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioHenkiloService;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
@@ -43,8 +44,8 @@ public class OrganisaatioHenkiloTest extends AbstractServiceIntegrationTest {
     @Test
     @WithMockUser(username = "user1")
     public void addOrganisaatioHenkilotShouldOnlyAddNewOrganisaatio() {
-        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(anyString()))
-                .willReturn(Optional.of(new OrganisaatioPerustieto()));
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(anyString())).willReturn(Optional.of(organisaatio));
         populate(organisaatioHenkilo(henkilo("henkilo1"), "organisaatio1").tehtavanimike("tehtävä1"));
         populate(organisaatioHenkilo(henkilo("henkilo1"), "organisaatio3").tehtavanimike("tehtävä3"));
         List<OrganisaatioHenkiloCreateDto> organisaatioHenkilot = new ArrayList<>();
@@ -70,8 +71,8 @@ public class OrganisaatioHenkiloTest extends AbstractServiceIntegrationTest {
     @Test
     @WithMockUser("henkilo1")
     public void CreateOrUpdateOrganisaatioHenkilos() {
-        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(anyString()))
-                .willReturn(Optional.of(new OrganisaatioPerustieto()));
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(anyString())).willReturn(Optional.of(organisaatio));
         populate(organisaatioHenkilo(henkilo("henkilo1"), "organisaatio1").tehtavanimike("tehtävä1"));
         populate(organisaatioHenkilo(henkilo("henkilo1"), "organisaatio3").tehtavanimike("tehtävä3"));
 

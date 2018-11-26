@@ -11,6 +11,7 @@ import fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila;
 import fi.vm.sade.kayttooikeus.enumeration.KayttooikeusRooli;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
+import fi.vm.sade.kayttooikeus.util.OrganisaatioMyontoPredicate;
 import lombok.*;
 import org.apache.commons.lang.BooleanUtils;
 import org.jetbrains.annotations.Nullable;
@@ -113,7 +114,8 @@ public class AnomusCriteria {
         List<Predicate> predicates = null;
         if(!CollectionUtils.isEmpty(this.organisaatioOids)) {
             predicates = this.organisaatioOids.stream()
-                    .map(oid -> qAnomus.organisaatioOid.in(organisaatioClient.getActiveChildOids(oid)))
+                    .map(oid -> qAnomus.organisaatioOid.in(organisaatioClient.listWithChildOids(oid,
+                            new OrganisaatioMyontoPredicate())))
                     .collect(Collectors.toList());
         }
         return predicates;
