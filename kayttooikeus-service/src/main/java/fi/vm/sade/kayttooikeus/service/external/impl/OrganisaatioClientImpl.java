@@ -102,13 +102,6 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
     }
 
     @Override
-    public boolean existsByOidAndStatus(String organisaatioOid, Set<OrganisaatioStatus> statuses) {
-        return this.getOrganisaatioPerustiedotCached(organisaatioOid)
-                .filter(organisaatioPerustieto -> statuses.contains(organisaatioPerustieto.getStatus()))
-                .isPresent();
-    }
-
-    @Override
     public List<OrganisaatioPerustieto> listWithParentsAndChildren(String organisaatioOid, Predicate<OrganisaatioPerustieto> filter) {
         return this.cache.flatWithParentsAndChildren(organisaatioOid)
                 // the resource never returns the root

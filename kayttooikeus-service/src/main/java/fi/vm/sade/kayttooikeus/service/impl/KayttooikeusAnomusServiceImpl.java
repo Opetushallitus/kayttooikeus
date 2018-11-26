@@ -5,7 +5,6 @@ import com.google.common.collect.Sets;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
-import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import fi.vm.sade.kayttooikeus.dto.types.AnomusTyyppi;
 import fi.vm.sade.kayttooikeus.enumeration.OrderByAnomus;
 import fi.vm.sade.kayttooikeus.model.*;
@@ -239,10 +238,9 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
     private OrganisaatioHenkilo findOrCreateHaettuOrganisaatioHenkilo(String organisaatioOid, Henkilo anoja, String tehtavanimike) {
         Henkilo savedAnoja = this.henkiloDataRepository.save(anoja);
 
-        HashSet<OrganisaatioStatus> organisaatioStatuses = Sets.newHashSet(OrganisaatioStatus.AKTIIVINEN, OrganisaatioStatus.SUUNNITELTU);
-        if(!this.organisaatioClient.existsByOidAndStatus(organisaatioOid, organisaatioStatuses)) {
-            throw new ValidationException("Active or suunniteltu organisation not found with oid " + organisaatioOid);
-        }
+        organisaatioClient.getOrganisaatioPerustiedotCached(organisaatioOid)
+                .filter(new OrganisaatioMyontoPredicate())
+                .orElseThrow(() -> new ValidationException("Active or suunniteltu organisation not found with oid " + organisaatioOid));
 
         OrganisaatioHenkilo foundOrCreatedOrganisaatioHenkilo = organisaatioHenkiloRepository.findByHenkilo(savedAnoja).stream()
                 .filter(organisaatioHenkilo ->

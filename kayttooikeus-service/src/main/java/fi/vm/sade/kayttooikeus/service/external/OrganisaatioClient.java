@@ -1,7 +1,5 @@
 package fi.vm.sade.kayttooikeus.service.external;
 
-import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -11,8 +9,6 @@ public interface OrganisaatioClient {
     List<String> getChildOids(String organisaatioOid);
 
     boolean activeExists(String organisaatioOid);
-
-    boolean existsByOidAndStatus(String organisaatioOid, Set<OrganisaatioStatus> statuses);
 
     /**
      * @param organisaatioOid Haettava organisaatio
