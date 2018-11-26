@@ -2,7 +2,6 @@ package fi.vm.sade.kayttooikeus.service.external;
 
 import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -28,8 +27,6 @@ public interface OrganisaatioClient {
     Long getCacheOrganisationCount();
 
     Optional<OrganisaatioPerustieto> getOrganisaatioPerustiedotCached(String organisaatioOid);
-
-    List<OrganisaatioPerustieto> listActiveOrganisaatioPerustiedotByOidRestrictionList(Collection<String> organisaatioOids);
 
     /**
      * @param organisaatioOid Haettava organisaatio

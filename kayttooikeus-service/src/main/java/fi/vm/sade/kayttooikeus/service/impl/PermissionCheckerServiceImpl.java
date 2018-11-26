@@ -1,7 +1,6 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -41,8 +40,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
+import static java.util.Collections.*;
 
 @Service
 public class PermissionCheckerServiceImpl implements PermissionCheckerService {
@@ -171,15 +169,14 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
             return false;
         }
 
-        List<OrganisaatioPerustieto> orgs = this.listActiveOrganisaatiosByHenkiloOid(callingUserOid);
-        Set<String> flattedOrgs = Sets.newHashSet();
-
-        if (!orgs.isEmpty()) {
-            for (OrganisaatioPerustieto org : orgs) {
-                flattedOrgs.addAll(getOidsRecursive(org));
-            }
-        }
-
+        Set<String> flattedOrgs = this.henkiloDataRepository.findByOidHenkilo(callingUserOid).map(henkilo ->
+                henkilo.getOrganisaatioHenkilos().stream()
+                        .filter(OrganisaatioHenkilo::isAktiivinen)
+                        .map(OrganisaatioHenkilo::getOrganisaatioOid)
+                        .flatMap(organisaatioOid -> organisaatioClient
+                                .listWithChildOids(organisaatioOid, new OrganisaatioMyontoPredicate()).stream())
+                        .collect(Collectors.toSet()))
+                .orElse(emptySet());
         if (flattedOrgs.isEmpty()) {
             LOG.error("No organisations found for logged in user with oid: " + callingUserOid);
             return false;
@@ -352,35 +349,8 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
         }
     }
 
-    private static Set<String> getOidsRecursive(OrganisaatioPerustieto org) {
-        Preconditions.checkArgument(!StringUtils.isBlank(org.getOid()), "Organisation oid cannot be blank!");
-
-        Set<String> oids = Sets.newHashSet(org.getOid());
-
-        for (OrganisaatioPerustieto child : org.getChildren()) {
-            oids.addAll(getOidsRecursive(child));
-        }
-
-        return oids;
-    }
-
     private static Set<String> getPrefixedRoles(final String prefix, final List<String> rolesWithoutPrefix) {
         return rolesWithoutPrefix.stream().map(prefix::concat).collect(Collectors.toSet());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<OrganisaatioPerustieto> listActiveOrganisaatiosByHenkiloOid(String oid) {
-        List<OrganisaatioPerustieto> organisaatios = new ArrayList<>();
-        this.henkiloDataRepository.findByOidHenkilo(oid).ifPresent(henkilo -> {
-            Set<OrganisaatioHenkilo> orgHenkilos = henkilo.getOrganisaatioHenkilos();
-            List<String> organisaatioOids = orgHenkilos.stream()
-                    .filter(OrganisaatioHenkilo::isAktiivinen)
-                    .map(OrganisaatioHenkilo::getOrganisaatioOid)
-                    .collect(Collectors.toList());
-            organisaatios.addAll(organisaatioClient.listActiveOrganisaatioPerustiedotByOidRestrictionList(organisaatioOids));
-        });
-        return organisaatios;
     }
 
     @Override

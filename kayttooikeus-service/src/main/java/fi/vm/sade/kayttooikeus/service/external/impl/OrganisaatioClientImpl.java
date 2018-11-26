@@ -118,16 +118,6 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
     }
 
     @Override
-    public List<OrganisaatioPerustieto> listActiveOrganisaatioPerustiedotByOidRestrictionList(Collection<String> organisaatioOids) {
-        return organisaatioOids.stream()
-                .map(this.cache::getByOid)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .filter(organisaatioPerustieto -> OrganisaatioStatus.AKTIIVINEN.equals(organisaatioPerustieto.getStatus()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public List<String> getParentOids(String organisaatioOid) {
         return this.cache.flatWithParentsByOid(organisaatioOid).map(OrganisaatioPerustieto::getOid).collect(toList());
     }
