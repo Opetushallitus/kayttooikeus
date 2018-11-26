@@ -8,8 +8,6 @@ import java.util.function.Predicate;
 public interface OrganisaatioClient {
     List<String> getChildOids(String organisaatioOid);
 
-    boolean activeExists(String organisaatioOid);
-
     /**
      * @param organisaatioOid Haettava organisaatio
      * @param filter  Suodatin jonka mukaiset organisaatiot palautetaan

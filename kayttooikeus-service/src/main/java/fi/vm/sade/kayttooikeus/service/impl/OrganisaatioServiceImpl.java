@@ -8,8 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.ValidationException;
-
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -29,13 +27,6 @@ public class OrganisaatioServiceImpl implements OrganisaatioService {
     @Override
     public Long getClientCacheState() {
         return this.organisaatioClient.getCacheOrganisationCount();
-    }
-
-    @Override
-    public void throwIfActiveNotFound(String organisaatioOid) {
-        if(!this.organisaatioClient.activeExists(organisaatioOid)) {
-            throw new ValidationException("Active organisation not found with oid " + organisaatioOid);
-        }
     }
 
 }

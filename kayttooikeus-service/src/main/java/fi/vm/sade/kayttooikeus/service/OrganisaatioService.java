@@ -6,5 +6,4 @@ public interface OrganisaatioService {
 
     Long getClientCacheState();
 
-    void throwIfActiveNotFound(String organisaatioOid);
 }
