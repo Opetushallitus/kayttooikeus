@@ -63,11 +63,6 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
     private final CommonProperties commonProperties;
 
     @Override
-    public List<OrganisaatioHenkiloWithOrganisaatioDto> listOrganisaatioHenkilos(String henkiloOid, String compareByLang) {
-        return listOrganisaatioHenkilos(henkiloOid, compareByLang, null);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<OrganisaatioHenkiloWithOrganisaatioDto> listOrganisaatioHenkilos(String henkiloOid, String compareByLang, PalveluRooliGroup requiredRoles) {
         return organisaatioHenkiloRepository.findActiveOrganisaatioHenkiloListDtos(henkiloOid, requiredRoles)
@@ -82,12 +77,12 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
                                             LOGGER.warn("Henkilön {} organisaatiota {} ei löytynyt", henkiloOid, organisaatioOid);
                                             return UserDetailsUtil.createUnknownOrganisation(organisaatioOid);
                                         }),
-                                compareByLang))
+                                compareByLang, permissionCheckerService.isCurrentUserAdmin()))
                 ).sorted(Comparator.comparing(dto -> dto.getOrganisaatio().getNimi(),
                         comparingPrimarlyBy(ofNullable(compareByLang).orElse(FALLBACK_LANGUAGE)))).collect(toList());
     }
 
-    private OrganisaatioDto mapOrganisaatioDtoRecursive(OrganisaatioPerustieto perustiedot, String compareByLang) {
+    private OrganisaatioDto mapOrganisaatioDtoRecursive(OrganisaatioPerustieto perustiedot, String compareByLang, boolean passiiviset) {
         OrganisaatioDto dto = new OrganisaatioDto();
         dto.setOid(perustiedot.getOid());
         dto.setNimi(new TextGroupMapDto(null, perustiedot.getNimi()));
@@ -95,8 +90,8 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
         dto.setTyypit(perustiedot.getTyypit());
         dto.setStatus(perustiedot.getStatus());
         dto.setChildren(perustiedot.getChildren().stream()
-               .filter(new OrganisaatioMyontoPredicate())
-                .map(child -> mapOrganisaatioDtoRecursive(child, compareByLang))
+               .filter(new OrganisaatioMyontoPredicate(passiiviset))
+                .map(child -> mapOrganisaatioDtoRecursive(child, compareByLang, passiiviset))
                 .sorted(Comparator.comparing(OrganisaatioDto::getNimi, comparingPrimarlyBy(ofNullable(compareByLang).orElse(FALLBACK_LANGUAGE))))
                 .collect(toList()));
         return dto;
@@ -288,7 +283,7 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
 
     private void validateOrganisaatioOid(String organisaatioOid) {
         organisaatioClient.getOrganisaatioPerustiedotCached(organisaatioOid)
-                .filter(new OrganisaatioMyontoPredicate())
+                .filter(new OrganisaatioMyontoPredicate(permissionCheckerService.isCurrentUserAdmin()))
                 .orElseThrow(() -> new ValidationException("Active organisation not found with oid " + organisaatioOid));
     }
 

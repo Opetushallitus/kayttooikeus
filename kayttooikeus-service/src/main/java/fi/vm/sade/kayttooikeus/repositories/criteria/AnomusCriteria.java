@@ -115,7 +115,7 @@ public class AnomusCriteria {
         if(!CollectionUtils.isEmpty(this.organisaatioOids)) {
             predicates = this.organisaatioOids.stream()
                     .map(oid -> qAnomus.organisaatioOid.in(organisaatioClient.listWithChildOids(oid,
-                            new OrganisaatioMyontoPredicate())))
+                            new OrganisaatioMyontoPredicate(false))))
                     .collect(Collectors.toList());
         }
         return predicates;

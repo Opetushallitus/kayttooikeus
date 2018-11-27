@@ -16,9 +16,16 @@ public class OrganisaatioMyontoPredicate implements Predicate<OrganisaatioPerust
             OrganisaatioStatus.AKTIIVINEN,
             OrganisaatioStatus.SUUNNITELTU);
 
+    private final boolean passiiviset;
+
+    public OrganisaatioMyontoPredicate(boolean passiiviset) {
+        this.passiiviset = passiiviset;
+    }
+
     @Override
     public boolean test(OrganisaatioPerustieto organisaatio) {
-        return SALLITUT_TILAT.contains(organisaatio.getStatus());
+        return SALLITUT_TILAT.contains(organisaatio.getStatus())
+                || passiiviset && OrganisaatioStatus.PASSIIVINEN.equals(organisaatio.getStatus());
     }
 
 }
