@@ -50,6 +50,7 @@ import static org.mockito.Mockito.*;
 
 
 @RunWith(SpringRunner.class)
+@WithMockUser
 public class PermissionCheckerTest {
 
     private PermissionCheckerService permissionChecker;

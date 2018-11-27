@@ -476,7 +476,7 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
     private List<KayttoOikeusRyhmaDto> getRyhmasWithoutOrganizationLimitations(String organisaatioOid, List<KayttoOikeusRyhmaDto> allRyhmas) {
         boolean isOphOrganisation = organisaatioOid.equals(commonProperties.getRootOrganizationOid());
         List<OrganisaatioPerustieto> hakuTulos = organisaatioClient.listWithParentsAndChildren(organisaatioOid,
-                new OrganisaatioMyontoPredicate());
+                new OrganisaatioMyontoPredicate(permissionCheckerService.isCurrentUserAdmin()));
         return allRyhmas.stream()
                 .filter(kayttoOikeusRyhma -> {
 

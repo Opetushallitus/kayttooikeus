@@ -90,7 +90,7 @@ public class KutsuHakuBuilder {
         if (BooleanUtils.isTrue(this.kutsuCriteria.getSubOrganisations())) {
             organisaatioOidLimit = organisaatioOidLimit.stream()
                     .flatMap(organisaatioOid -> this.organisaatioClient.listWithChildOids(organisaatioOid,
-                            new OrganisaatioMyontoPredicate()).stream())
+                            new OrganisaatioMyontoPredicate(false)).stream())
                     .collect(Collectors.toSet());
         }
         this.kutsuCriteria.setOrganisaatioOids(organisaatioOidLimit);

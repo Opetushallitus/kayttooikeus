@@ -8,8 +8,6 @@ import java.util.List;
 
 public interface OrganisaatioHenkiloService {
 
-    List<OrganisaatioHenkiloWithOrganisaatioDto> listOrganisaatioHenkilos(String henkiloOid, String compareByLang);
-
     List<OrganisaatioHenkiloWithOrganisaatioDto> listOrganisaatioHenkilos(String henkiloOid, String compareByLang, PalveluRooliGroup requiredRoles);
 
     List<KayttajaTyyppi> listPossibleHenkiloTypesAccessibleForCurrentUser();

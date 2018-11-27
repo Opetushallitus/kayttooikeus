@@ -239,7 +239,7 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         Henkilo savedAnoja = this.henkiloDataRepository.save(anoja);
 
         organisaatioClient.getOrganisaatioPerustiedotCached(organisaatioOid)
-                .filter(new OrganisaatioMyontoPredicate())
+                .filter(new OrganisaatioMyontoPredicate(permissionCheckerService.isCurrentUserAdmin()))
                 .orElseThrow(() -> new ValidationException("Active or suunniteltu organisation not found with oid " + organisaatioOid));
 
         OrganisaatioHenkilo foundOrCreatedOrganisaatioHenkilo = organisaatioHenkiloRepository.findByHenkilo(savedAnoja).stream()
@@ -534,7 +534,7 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         if (!permissionCheckerService.isCurrentUserAdmin()) {
             // lisätään myöntöoikeudet aliorganisaatioihin
             myontooikeudet.entrySet().stream()
-                    .flatMap(entry -> organisaatioClient.listWithChildOids(entry.getKey(), new OrganisaatioMyontoPredicate()).stream()
+                    .flatMap(entry -> organisaatioClient.listWithChildOids(entry.getKey(), new OrganisaatioMyontoPredicate(false)).stream()
                             .map(aliorganisaatioOid -> new SimpleEntry<>(aliorganisaatioOid, entry.getValue())))
                     .collect(toMap(Entry::getKey, Entry::getValue, appending()))
                     .forEach((organisaatioOid, kayttooikeusryhmaIds) -> myontooikeudet.merge(organisaatioOid, kayttooikeusryhmaIds, appending()));

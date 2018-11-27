@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.ValidationException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.StreamSupport;
 
 import static fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi.PALVELU;
 import static fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi.VIRKAILIJA;
@@ -43,12 +44,14 @@ import static java.util.stream.Collectors.toSet;
 public class OrganisaatioHenkiloServiceImpl extends AbstractService implements OrganisaatioHenkiloService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrganisaatioHenkiloServiceImpl.class);
+    private static final int LAKKAUTUS_BATCH_SIZE = 50;
 
     private final String FALLBACK_LANGUAGE = "fi";
 
     private final OrganisaatioHenkiloRepository organisaatioHenkiloRepository;
     private final KayttoOikeusRepository kayttoOikeusRepository;
     private final HenkiloDataRepository henkiloDataRepository;
+    private final LakkautettuOrganisaatioRepository lakkautettuOrganisaatioRepository;
     private final MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
     private final KayttoOikeusRyhmaTapahtumaHistoriaDataRepository kayttoOikeusRyhmaTapahtumaHistoriaDataRepository;
     private final HaettuKayttooikeusRyhmaRepository haettuKayttooikeusRyhmaRepository;
@@ -61,11 +64,6 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
     private final OrganisaatioClient organisaatioClient;
 
     private final CommonProperties commonProperties;
-
-    @Override
-    public List<OrganisaatioHenkiloWithOrganisaatioDto> listOrganisaatioHenkilos(String henkiloOid, String compareByLang) {
-        return listOrganisaatioHenkilos(henkiloOid, compareByLang, null);
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -82,12 +80,12 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
                                             LOGGER.warn("Henkilön {} organisaatiota {} ei löytynyt", henkiloOid, organisaatioOid);
                                             return UserDetailsUtil.createUnknownOrganisation(organisaatioOid);
                                         }),
-                                compareByLang))
+                                compareByLang, permissionCheckerService.isCurrentUserAdmin()))
                 ).sorted(Comparator.comparing(dto -> dto.getOrganisaatio().getNimi(),
                         comparingPrimarlyBy(ofNullable(compareByLang).orElse(FALLBACK_LANGUAGE)))).collect(toList());
     }
 
-    private OrganisaatioDto mapOrganisaatioDtoRecursive(OrganisaatioPerustieto perustiedot, String compareByLang) {
+    private OrganisaatioDto mapOrganisaatioDtoRecursive(OrganisaatioPerustieto perustiedot, String compareByLang, boolean passiiviset) {
         OrganisaatioDto dto = new OrganisaatioDto();
         dto.setOid(perustiedot.getOid());
         dto.setNimi(new TextGroupMapDto(null, perustiedot.getNimi()));
@@ -95,8 +93,8 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
         dto.setTyypit(perustiedot.getTyypit());
         dto.setStatus(perustiedot.getStatus());
         dto.setChildren(perustiedot.getChildren().stream()
-               .filter(new OrganisaatioMyontoPredicate())
-                .map(child -> mapOrganisaatioDtoRecursive(child, compareByLang))
+               .filter(new OrganisaatioMyontoPredicate(passiiviset))
+                .map(child -> mapOrganisaatioDtoRecursive(child, compareByLang, passiiviset))
                 .sorted(Comparator.comparing(OrganisaatioDto::getNimi, comparingPrimarlyBy(ofNullable(compareByLang).orElse(FALLBACK_LANGUAGE))))
                 .collect(toList()));
         return dto;
@@ -260,6 +258,10 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
         Henkilo kasittelija = this.henkiloDataRepository.findByOidHenkilo(kasittelijaOid)
                 .orElseThrow(() -> new NotFoundException("Could not find henkilo with oid " + kasittelijaOid));
         Set<String> passiivisetOids = organisaatioClient.getLakkautetutOids();
+        Set<String> kasiteltyOids = StreamSupport.stream(lakkautettuOrganisaatioRepository.findAll().spliterator(), false)
+                .map(LakkautettuOrganisaatio::getOid)
+                .collect(toSet());
+        passiivisetOids.removeAll(kasiteltyOids);
         List<OrganisaatioHenkilo> aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios = this.organisaatioHenkiloRepository.findByOrganisaatioOidIn(passiivisetOids)
                 .stream().filter(oh -> oh.isAktiivinen()).collect(toList());
         LOGGER.info("Passivoidaan {} aktiivista organisaatiohenkilöä ja näiden voimassa olevat käyttöoikeudet.", aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios.size());
@@ -267,6 +269,8 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
 
         AnomusCriteria anomusCriteria = AnomusCriteria.builder().organisaatioOids(passiivisetOids).onlyActive(true).build();
         this.poistaAnomuksetOrganisaatioista(anomusCriteria);
+
+        lakkautettuOrganisaatioRepository.persistInBatch(passiivisetOids, LAKKAUTUS_BATCH_SIZE);
         LOGGER.info("Lopetetaan passivoitujen organisaatioiden organisaatiohenkilöiden passivointi sekä käyttöoikeuksien ja anomusten poisto");
     }
 
@@ -290,7 +294,7 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
 
     private void validateOrganisaatioOid(String organisaatioOid) {
         organisaatioClient.getOrganisaatioPerustiedotCached(organisaatioOid)
-                .filter(new OrganisaatioMyontoPredicate())
+                .filter(new OrganisaatioMyontoPredicate(permissionCheckerService.isCurrentUserAdmin()))
                 .orElseThrow(() -> new ValidationException("Active organisation not found with oid " + organisaatioOid));
     }
 

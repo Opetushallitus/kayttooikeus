@@ -174,7 +174,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
                         .filter(OrganisaatioHenkilo::isAktiivinen)
                         .map(OrganisaatioHenkilo::getOrganisaatioOid)
                         .flatMap(organisaatioOid -> organisaatioClient
-                                .listWithChildOids(organisaatioOid, new OrganisaatioMyontoPredicate()).stream())
+                                .listWithChildOids(organisaatioOid, new OrganisaatioMyontoPredicate(false)).stream())
                         .collect(Collectors.toSet()))
                 .orElse(emptySet());
         if (flattedOrgs.isEmpty()) {
@@ -475,7 +475,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
                 .findDistinctOrganisaatiosForHenkiloOid(this.getCurrentUserOid());
         return requiredOrganiaatioOids.stream().filter(requiredOrganiaatioOid -> currentUserOrgnisaatios.stream()
                 .anyMatch(organisaatioOid -> this.organisaatioClient.listWithChildOids(organisaatioOid,
-                        new OrganisaatioMyontoPredicate()).stream().anyMatch(requiredOrganiaatioOid::equals)))
+                        new OrganisaatioMyontoPredicate(isCurrentUserAdmin())).stream().anyMatch(requiredOrganiaatioOid::equals)))
                 .collect(Collectors.toSet());
     }
 
@@ -531,7 +531,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     @Override
     public boolean organisaatioLimitationCheck(String organisaatioOid, Set<OrganisaatioViite> viiteSet) {
         List<OrganisaatioPerustieto> organisaatiot = this.organisaatioClient.listWithParentsAndChildren(organisaatioOid,
-                new OrganisaatioMyontoPredicate());
+                new OrganisaatioMyontoPredicate(isCurrentUserAdmin()));
         return organisaatioLimitationCheck(organisaatioOid, organisaatiot, viiteSet.stream().map(OrganisaatioViite::getOrganisaatioTyyppi).collect(Collectors.toSet()));
     }
 

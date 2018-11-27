@@ -29,7 +29,7 @@ public class MyontooikeusMapper implements Function<Map.Entry<String, Set<Long>>
         organisaatioOids.add(organisaatioOid);
         if (!rootOrganisaatio) {
             organisaatioOids.addAll(organisaatioClient.listWithChildOids(organisaatioOid,
-                    new OrganisaatioMyontoPredicate()));
+                    new OrganisaatioMyontoPredicate(false)));
         }
 
         if (criteria.getOrganisaatioOids() != null) {
