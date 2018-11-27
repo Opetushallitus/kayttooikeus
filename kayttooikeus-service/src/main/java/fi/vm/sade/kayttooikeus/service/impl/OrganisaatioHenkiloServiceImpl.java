@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.ValidationException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.StreamSupport;
 
 import static fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi.PALVELU;
 import static fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi.VIRKAILIJA;
@@ -43,12 +44,14 @@ import static java.util.stream.Collectors.toSet;
 public class OrganisaatioHenkiloServiceImpl extends AbstractService implements OrganisaatioHenkiloService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrganisaatioHenkiloServiceImpl.class);
+    private static final int LAKKAUTUS_BATCH_SIZE = 50;
 
     private final String FALLBACK_LANGUAGE = "fi";
 
     private final OrganisaatioHenkiloRepository organisaatioHenkiloRepository;
     private final KayttoOikeusRepository kayttoOikeusRepository;
     private final HenkiloDataRepository henkiloDataRepository;
+    private final LakkautettuOrganisaatioRepository lakkautettuOrganisaatioRepository;
     private final MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
     private final KayttoOikeusRyhmaTapahtumaHistoriaDataRepository kayttoOikeusRyhmaTapahtumaHistoriaDataRepository;
     private final HaettuKayttooikeusRyhmaRepository haettuKayttooikeusRyhmaRepository;
@@ -253,6 +256,10 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
         Henkilo kasittelija = this.henkiloDataRepository.findByOidHenkilo(kasittelijaOid)
                 .orElseThrow(() -> new NotFoundException("Could not find henkilo with oid " + kasittelijaOid));
         Set<String> passiivisetOids = organisaatioClient.getLakkautetutOids();
+        Set<String> kasiteltyOids = StreamSupport.stream(lakkautettuOrganisaatioRepository.findAll().spliterator(), false)
+                .map(LakkautettuOrganisaatio::getOid)
+                .collect(toSet());
+        passiivisetOids.removeAll(kasiteltyOids);
         List<OrganisaatioHenkilo> aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios = this.organisaatioHenkiloRepository.findByOrganisaatioOidIn(passiivisetOids)
                 .stream().filter(oh -> oh.isAktiivinen()).collect(toList());
         LOGGER.info("Passivoidaan {} aktiivista organisaatiohenkilöä ja näiden voimassa olevat käyttöoikeudet.", aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios.size());
@@ -260,6 +267,8 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
 
         AnomusCriteria anomusCriteria = AnomusCriteria.builder().organisaatioOids(passiivisetOids).onlyActive(true).build();
         this.poistaAnomuksetOrganisaatioista(anomusCriteria);
+
+        lakkautettuOrganisaatioRepository.persistInBatch(passiivisetOids, LAKKAUTUS_BATCH_SIZE);
         LOGGER.info("Lopetetaan passivoitujen organisaatioiden organisaatiohenkilöiden passivointi sekä käyttöoikeuksien ja anomusten poisto");
     }
 
