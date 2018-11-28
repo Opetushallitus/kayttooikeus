@@ -196,7 +196,7 @@ public class CasController {
         return this.emailVerificationService.getLoginTokenValidationCode(loginToken);
     }
 
-    @GetMapping(value = "emailverification/redirectByLoginToken/{loginToken}")
+    @GetMapping(value = "/emailverification/redirectByLoginToken/{loginToken}")
     @ApiOperation("Palauttaa uudelleenohjausurlin loginTokenin perusteella.")
     public EmailVerificationResponseDto getFrontPageRedirectByLoginToken(@PathVariable String loginToken) {
         return this.emailVerificationService.redirectUrlByLoginToken(loginToken);

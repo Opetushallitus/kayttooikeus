@@ -268,48 +268,6 @@ public class HenkiloServiceImplTest {
         assertThat(henkiloCriteria.getNoOrganisation()).isTrue();
     }
 
-    @Test
-    public void loginRedirectTypeVahvastiTunnistautuneelleJaSahkopostitarkistusSuoritettu() {
-        Henkilo henkilo = createHenkilo("123");
-        henkilo.setVahvastiTunnistettu(true);
-        henkilo.setSahkopostivarmennusAikaleima(LocalDateTime.now());
-        LogInRedirectType loginRedirectType = henkiloServiceImpl.getLoginRedirectType(henkilo);
-        assertThat(loginRedirectType).isNull();
-    }
-
-    @Test
-    public void loginRedirectTypeEiVahvastiTunnistautuneelle() {
-        Henkilo henkilo = createHenkilo("123");
-        henkilo.setVahvastiTunnistettu(false);
-        LogInRedirectType loginRedirectType = henkiloServiceImpl.getLoginRedirectType(henkilo);
-        assertThat(loginRedirectType).isEqualTo(LogInRedirectType.STRONG_IDENTIFICATION);
-    }
-
-    @Test
-    public void loginRedirectTypeKunHenkiloEiOleTehnySahkopostiTarkistusta() {
-        Henkilo henkilo = createHenkilo("123");
-        henkilo.setVahvastiTunnistettu(true);
-        LogInRedirectType loginRedirectType = henkiloServiceImpl.getLoginRedirectType(henkilo);
-        assertThat(loginRedirectType).isEqualTo(LogInRedirectType.EMAIL_VERIFICATION);
-    }
-
-    @Test
-    public void loginRedirectTypeSahkopostinVarmistusUudestaan() {
-        Henkilo henkilo = createHenkilo("123");
-        henkilo.setVahvastiTunnistettu(true);
-        henkilo.setSahkopostivarmennusAikaleima(LocalDateTime.now().minusMonths(7));
-        LogInRedirectType loginRedirectType = henkiloServiceImpl.getLoginRedirectType(henkilo);
-        assertThat(loginRedirectType).isEqualTo(LogInRedirectType.EMAIL_VERIFICATION);
-    }
-
-    @Test
-    public void loginRedirectTypeSahkopostinVarmistustaEiVielaTehda() {
-        Henkilo henkilo = createHenkilo("123");
-        henkilo.setVahvastiTunnistettu(true);
-        henkilo.setSahkopostivarmennusAikaleima(LocalDateTime.now().minusMonths(5));
-        LogInRedirectType loginRedirectType = henkiloServiceImpl.getLoginRedirectType(henkilo);
-        assertThat(loginRedirectType).isNull();
-    }
 
 
 }
