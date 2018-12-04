@@ -265,8 +265,10 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
         LOGGER.info("Passivoidaan {} aktiivista organisaatiohenkilöä ja näiden voimassa olevat käyttöoikeudet.", aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios.size());
         aktiivisetOrganisaatioHenkilosInLakkautetutOrganisaatios.forEach(organisaatioHenkilo -> this.passivoiOrganisaatioHenkiloJaPoistaKayttooikeudet(organisaatioHenkilo, kasittelija, "Passivoidun organisaation organisaatiohenkilön passivointi ja käyttöoikeuksien poisto"));
 
-        AnomusCriteria anomusCriteria = AnomusCriteria.builder().organisaatioOids(passiivisetOids).onlyActive(true).build();
-        this.poistaAnomuksetOrganisaatioista(anomusCriteria);
+        if (!passiivisetOids.isEmpty()) { // anomushaku palauttaa tyhjällä organisaatioOids-listalla kaikki anomukset
+            AnomusCriteria anomusCriteria = AnomusCriteria.builder().organisaatioOids(passiivisetOids).onlyActive(true).build();
+            this.poistaAnomuksetOrganisaatioista(anomusCriteria);
+        }
 
         lakkautettuOrganisaatioRepository.persistInBatch(passiivisetOids, LAKKAUTUS_BATCH_SIZE);
         LOGGER.info("Lopetetaan passivoitujen organisaatioiden organisaatiohenkilöiden passivointi sekä käyttöoikeuksien ja anomusten poisto");
