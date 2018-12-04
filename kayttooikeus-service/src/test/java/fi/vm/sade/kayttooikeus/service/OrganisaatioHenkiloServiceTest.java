@@ -1,14 +1,10 @@
 package fi.vm.sade.kayttooikeus.service;
 
-import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
-import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloDto;
-import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto;
+import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto.OrganisaatioDto;
-import fi.vm.sade.kayttooikeus.dto.TextGroupMapDto;
 import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
-import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhma;
-import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
-import fi.vm.sade.kayttooikeus.model.OrganisaatioHenkilo;
+import fi.vm.sade.kayttooikeus.model.*;
+import fi.vm.sade.kayttooikeus.repositories.AnomusRepository;
 import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRepository;
 import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloRepository;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
@@ -25,32 +21,41 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila.SULJETTU;
+import static fi.vm.sade.kayttooikeus.repositories.populate.AnomusPopulator.anomus;
+import static fi.vm.sade.kayttooikeus.repositories.populate.HaettuKayttoOikeusRyhmaPopulator.haettuKayttooikeusryhma;
 import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.henkilo;
+import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusPopulator.oikeus;
 import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma;
 import static fi.vm.sade.kayttooikeus.repositories.populate.MyonnettyKayttooikeusRyhmaTapahtumaPopulator.kayttooikeusTapahtuma;
+import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloKayttoOikeusPopulator.myonnettyKayttoOikeus;
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloPopulator.organisaatioHenkilo;
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.*;
-import static fi.vm.sade.kayttooikeus.util.JsonUtil.readJson;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toSet;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTest {
     @MockBean
     private OrganisaatioClient organisaatioClient;
 
-    @MockBean
+    @Autowired
     private OrganisaatioHenkiloRepository organisaatioHenkiloRepository;
 
-    @MockBean
+    @Autowired
     private KayttoOikeusRepository kayttoOikeusRepository;
+
+    @Autowired
+    private AnomusRepository anomusRepository;
 
     @Autowired
     private OrganisaatioHenkiloService organisaatioHenkiloService;
@@ -85,29 +90,15 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
                             .build()));
             return Optional.of(orgDto);
         });
-        given(this.organisaatioHenkiloRepository.findActiveOrganisaatioHenkiloListDtos("1.2.3.4.5", null)).willReturn(
-                asList(OrganisaatioHenkiloWithOrganisaatioDto.organisaatioBuilder()
-                                .id(1L)
-                                .passivoitu(false)
-                                .voimassaAlkuPvm(LocalDate.now())
-                                .voimassaLoppuPvm(LocalDate.now().plusYears(1))
-                                .tehtavanimike("Devaaja")
-                                .organisaatio(OrganisaatioDto.builder().oid("1.2.3.4.1").build()).build(),
-                        OrganisaatioHenkiloWithOrganisaatioDto.organisaatioBuilder()
-                                .id(2L)
-                                .voimassaAlkuPvm(LocalDate.now().minusYears(1))
-                                .passivoitu(false)
-                                .tehtavanimike("Opettaja")
-                                .organisaatio(OrganisaatioDto.builder().oid("1.2.3.4.2").build())
-                                .build(),
-                        // Unknown organisation (not found in cache so defaulted)
-                        OrganisaatioHenkiloWithOrganisaatioDto.organisaatioBuilder()
-                                .id(3L)
-                                .voimassaAlkuPvm(LocalDate.now().minusYears(1))
-                                .passivoitu(false)
-                                .tehtavanimike("Testaaja")
-                                .organisaatio(OrganisaatioDto.builder().oid("1.2.3.4.3").build()).build()
-                ));
+        populate(organisaatioHenkilo("1.2.3.4.5", "1.2.3.4.1")
+                .voimassaAlkaen(LocalDate.now()).voimassaAsti(LocalDate.now().plusYears(1))
+                .tehtavanimike("Devaaja"));
+        populate(organisaatioHenkilo("1.2.3.4.5", "1.2.3.4.2")
+                .voimassaAlkaen(LocalDate.now().minusYears(1))
+                .tehtavanimike("Opettaja"));
+        populate(organisaatioHenkilo("1.2.3.4.5", "1.2.3.4.3")
+                .voimassaAlkaen(LocalDate.now().minusYears(1))
+                .tehtavanimike("Testaaja"));
 
         List<OrganisaatioHenkiloWithOrganisaatioDto> result = organisaatioHenkiloService.listOrganisaatioHenkilos("1.2.3.4.5", "fi", null);
         assertThat(result)
@@ -119,9 +110,6 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
                 .flatExtracting(OrganisaatioDto::getChildren)
                 .extracting(OrganisaatioDto::getOid)
                 .containsExactlyInAnyOrder("1.2.3.4.2.2");
-        assertThat(result)
-                .extracting(OrganisaatioHenkiloWithOrganisaatioDto::getId)
-                .containsExactlyInAnyOrder(1L, 2L, 3L);
         assertThat(result)
                 .extracting(OrganisaatioHenkiloWithOrganisaatioDto::getOrganisaatio)
                 .extracting(OrganisaatioDto::getNimi)
@@ -148,9 +136,8 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
     @Test
     @WithMockUser(username = "1.2.3.4.5")
     public void listPossibleHenkiloTypesAccessibleForCurrentUserRekisterinpitajaTest() {
-        given(this.kayttoOikeusRepository
-                .isHenkiloMyonnettyKayttoOikeusToPalveluInRole("1.2.3.4.5", PALVELU_HENKILONHALLINTA, ROLE_ADMIN))
-                .willReturn(true);
+        populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3.4.5", "6.7.8.9.0"),
+                kayttoOikeusRyhma("kayttooikeusryhma1").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_ADMIN))));
 
         List<KayttajaTyyppi> list = organisaatioHenkiloService.listPossibleHenkiloTypesAccessibleForCurrentUser();
         assertEquals(new HashSet<>(asList(KayttajaTyyppi.VIRKAILIJA, KayttajaTyyppi.PALVELU)), new HashSet<>(list));
@@ -159,12 +146,8 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
     @Test
     @WithMockUser(username = "1.2.3.4.5")
     public void listPossibleHenkiloTypesAccessibleForCurrentUserCrudTest() {
-        given(this.kayttoOikeusRepository
-                .isHenkiloMyonnettyKayttoOikeusToPalveluInRole("1.2.3.4.5", PALVELU_HENKILONHALLINTA, ROLE_ADMIN))
-                .willReturn(false);
-        given(this.kayttoOikeusRepository
-                .isHenkiloMyonnettyKayttoOikeusToPalveluInRole("1.2.3.4.5", PALVELU_HENKILONHALLINTA, ROLE_CRUD))
-                .willReturn(true);
+        populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3.4.5", "6.7.8.9.0"),
+                kayttoOikeusRyhma("kayttooikeusryhma1").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_CRUD))));
 
         List<KayttajaTyyppi> list = organisaatioHenkiloService.listPossibleHenkiloTypesAccessibleForCurrentUser();
         assertEquals(new HashSet<>(asList(KayttajaTyyppi.VIRKAILIJA)), new HashSet<>(list));
@@ -173,30 +156,22 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
     @Test
     @WithMockUser(username = "1.2.3.4.5")
     public void findOrganisaatioHenkiloByHenkiloAndOrganisaatioTest() {
-        given(this.organisaatioHenkiloRepository.findByHenkiloOidAndOrganisaatioOid("1.2.3.4.5", "5.6.7.8.9"))
-                .willReturn(Optional.of(OrganisaatioHenkiloDto.builder()
-                        .id(33L).organisaatioOid("5.6.7.8.9").build()));
+        populate(organisaatioHenkilo("1.2.3.4.5", "5.6.7.8.9"));
 
         OrganisaatioHenkiloDto organisaatioHenkilo = organisaatioHenkiloService.findOrganisaatioHenkiloByHenkiloAndOrganisaatio("1.2.3.4.5", "5.6.7.8.9");
-        assertNotNull(organisaatioHenkilo);
-        assertEquals(33L, organisaatioHenkilo.getId());
-        assertEquals("5.6.7.8.9", organisaatioHenkilo.getOrganisaatioOid());
+        assertThat(organisaatioHenkilo).returns("5.6.7.8.9", OrganisaatioHenkiloDto::getOrganisaatioOid);
     }
 
     @Test(expected = NotFoundException.class)
     @WithMockUser(username = "1.2.3.4.5")
     public void findOrganisaatioHenkiloByHenkiloAndOrganisaatioErrorTest() {
-        given(this.organisaatioHenkiloRepository.findByHenkiloOidAndOrganisaatioOid("1.2.3.4.5", "1.1.1.1.1")).willReturn(Optional.empty());
         organisaatioHenkiloService.findOrganisaatioHenkiloByHenkiloAndOrganisaatio("1.2.3.4.5", "1.1.1.1.1");
     }
 
     @Test
     @WithMockUser(username = "1.2.3.4.5")
     public void passivoiHenkiloOrganisation() {
-        OrganisaatioHenkilo organisaatioHenkilo = populate(organisaatioHenkilo(henkilo("henkilo1"), "1.1.1.1.1"));
-        populate(henkilo("1.2.3.4.5"));
-        given(this.organisaatioHenkiloRepository.findByHenkiloOidHenkiloAndOrganisaatioOid("1.2.3.4.5", "1.1.1.1.1"))
-                .willReturn(Optional.of(organisaatioHenkilo));
+        OrganisaatioHenkilo organisaatioHenkilo = populate(organisaatioHenkilo(henkilo("1.2.3.4.5"), "1.1.1.1.1"));
         KayttoOikeusRyhma kayttoOikeusRyhma = populate(kayttoOikeusRyhma("käyttöoikeusryhmä"));
         MyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma = populate(kayttooikeusTapahtuma(organisaatioHenkilo, kayttoOikeusRyhma));
 
@@ -209,10 +184,61 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
     @Test(expected = NotFoundException.class)
     @WithMockUser(username = "1.2.3.4.5")
     public void passivoiHenkiloOrganisationNotFound() {
-        given(this.organisaatioHenkiloRepository.findByHenkiloOidHenkiloAndOrganisaatioOid("1.2.3.4.5", "1.1.1.1.1"))
-                .willReturn(Optional.empty());
         organisaatioHenkiloService.passivoiHenkiloOrganisation("1.2.3.4.5", "1.1.1.1.1");
     }
 
+    @Test
+    public void kasitteleOrganisaatioidenLakkautus() {
+        when(organisaatioClient.getLakkautetutOids()).thenReturn(Stream.of("organisaatio1").collect(toSet()));
+        populate(henkilo(("kayttaja")));
+
+        OrganisaatioHenkilo organisaatioHenkilo1 = populate(organisaatioHenkilo("henkilo1", "organisaatio1"));
+        OrganisaatioHenkilo organisaatioHenkilo2 = populate(organisaatioHenkilo("henkilo2", "organisaatio2"));
+        Anomus anomus1 = populate(anomus("example1@example.com")
+                .organisaatioOid("organisaatio1")
+                .tila(AnomuksenTila.ANOTTU)
+                .withHaettuRyhma(haettuKayttooikeusryhma(KayttoOikeudenTila.ANOTTU)
+                        .withRyhma(kayttoOikeusRyhma("kayttooikeusryhma1"))));
+        Anomus anomus2 = populate(anomus("example2@example.com")
+                .organisaatioOid("organisaatio2")
+                .tila(AnomuksenTila.ANOTTU)
+                .withHaettuRyhma(haettuKayttooikeusryhma(KayttoOikeudenTila.ANOTTU)
+                        .withRyhma(kayttoOikeusRyhma("kayttooikeusryhma2"))));
+
+        organisaatioHenkiloService.kasitteleOrganisaatioidenLakkautus("kayttaja");
+
+        assertThat(organisaatioHenkiloRepository.findAll())
+                .extracting(OrganisaatioHenkilo::getId, OrganisaatioHenkilo::isAktiivinen)
+                .containsExactlyInAnyOrder(
+                        tuple(organisaatioHenkilo1.getId(), false),
+                        tuple(organisaatioHenkilo2.getId(), true));
+        assertThat(anomusRepository.findAll())
+                .extracting(Anomus::getId, Anomus::getAnomuksenTila)
+                .containsExactlyInAnyOrder(
+                        tuple(anomus1.getId(), AnomuksenTila.HYLATTY),
+                        tuple(anomus2.getId(), AnomuksenTila.ANOTTU));
+
+        OrganisaatioHenkilo organisaatioHenkilo3 = populate(organisaatioHenkilo("henkilo3", "organisaatio1"));
+        Anomus anomus3 = populate(anomus("example3@example.com")
+                .organisaatioOid("organisaatio1")
+                .tila(AnomuksenTila.ANOTTU)
+                .withHaettuRyhma(haettuKayttooikeusryhma(KayttoOikeudenTila.ANOTTU)
+                        .withRyhma(kayttoOikeusRyhma("kayttooikeusryhma3"))));
+
+        organisaatioHenkiloService.kasitteleOrganisaatioidenLakkautus("kayttaja");
+
+        assertThat(organisaatioHenkiloRepository.findAll())
+                .extracting(OrganisaatioHenkilo::getId, OrganisaatioHenkilo::isAktiivinen)
+                .containsExactlyInAnyOrder(
+                        tuple(organisaatioHenkilo1.getId(), false),
+                        tuple(organisaatioHenkilo2.getId(), true),
+                        tuple(organisaatioHenkilo3.getId(), true));
+        assertThat(anomusRepository.findAll())
+                .extracting(Anomus::getId, Anomus::getAnomuksenTila)
+                .containsExactlyInAnyOrder(
+                        tuple(anomus1.getId(), AnomuksenTila.HYLATTY),
+                        tuple(anomus2.getId(), AnomuksenTila.ANOTTU),
+                        tuple(anomus3.getId(), AnomuksenTila.ANOTTU));
+    }
 
 }
