@@ -125,24 +125,9 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     @Override
     @Transactional(readOnly = true)
     public boolean isAllowedToAccessPerson(PermissionCheckDto permissionCheckDto) {
-        handleAllowedRoles(permissionCheckDto);
         return isAllowedToAccessPerson(permissionCheckDto.getCallingUserOid(),
                 permissionCheckDto.getUserOid(), permissionCheckDto.getAllowedPalveluRooli(),
                 permissionCheckDto.getExternalPermissionService(), permissionCheckDto.getCallingUserRoles());
-    }
-
-    public static void handleAllowedRoles(PermissionCheckDto permissionCheckDto) {
-        // muutetaan vanha "allowedRoles" uuteen "allowedPalveluRooli"-formaattiin
-        if (permissionCheckDto.getAllowedRoles() != null) {
-            if (permissionCheckDto.getAllowedPalveluRooli() == null) {
-                permissionCheckDto.setAllowedPalveluRooli(new HashMap<>());
-            }
-            permissionCheckDto.getAllowedPalveluRooli().merge(PALVELU_HENKILONHALLINTA, permissionCheckDto.getAllowedRoles(), (vanhaArvo, uusiArvo) -> {
-                vanhaArvo.addAll(uusiArvo);
-                return vanhaArvo;
-            });
-            permissionCheckDto.setAllowedRoles(null);
-        }
     }
 
     /*
