@@ -13,9 +13,6 @@ public class PermissionCheckDto {
 
     String userOid;
 
-    @Deprecated
-    List<String> allowedRoles;
-
     Map<String, List<String>> allowedPalveluRooli;
 
     ExternalPermissionService externalPermissionService;
