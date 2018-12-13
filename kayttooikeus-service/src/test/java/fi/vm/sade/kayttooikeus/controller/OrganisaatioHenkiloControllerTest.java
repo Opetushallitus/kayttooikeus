@@ -30,7 +30,7 @@ public class OrganisaatioHenkiloControllerTest extends AbstractControllerTest {
     }
     
     @Test
-    @WithMockUser(roles = "APP_HENKILONHALLINTA_CRUD")
+    @WithMockUser(roles = "APP_KAYTTOOIKEUS_CRUD")
     public void listPossibleHenkiloTypesByCurrentHenkiloTest() throws Exception {
         given(this.service.listPossibleHenkiloTypesAccessibleForCurrentUser()).willReturn(singletonList(VIRKAILIJA));
         this.mvc.perform(get("/organisaatiohenkilo/current/availablehenkilotype").accept(MediaType.APPLICATION_JSON_UTF8))

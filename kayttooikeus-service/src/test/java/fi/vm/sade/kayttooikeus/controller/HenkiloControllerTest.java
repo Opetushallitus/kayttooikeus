@@ -41,7 +41,7 @@ public class HenkiloControllerTest extends AbstractControllerTest {
     private HenkiloService henkiloService;
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void getByKayttajatunnus() throws Exception {
         given(this.henkiloService.getByKayttajatunnus(any())).willReturn(HenkiloReadDto.builder().oid("oid1").build());
         this.mvc.perform(get("/henkilo/kayttajatunnus=user1").accept(MediaType.APPLICATION_JSON_UTF8))
@@ -50,7 +50,7 @@ public class HenkiloControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void postHenkiloKayttajatiedotShouldReturnOk() throws Exception {
         mvc.perform(post("/henkilo/{henkiloOid}/kayttajatiedot", "1.2.3.4.5")
                 .content("{\"username\": \"user1\"}").contentType(MediaType.APPLICATION_JSON))
@@ -62,7 +62,7 @@ public class HenkiloControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void postHenkiloKayttajatiedotWorkWithLdapSynchronizationQueryParam() throws Exception {
         mvc.perform(post("/henkilo/{henkiloOid}/kayttajatiedot?ldapSynchronization={type}", "1.2.3.4.5", "NOW")
                 .content("{\"username\": \"user1\"}").contentType(MediaType.APPLICATION_JSON))
@@ -74,7 +74,7 @@ public class HenkiloControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void postHenkiloKayttajatiedotShouldReturnValidationError() throws Exception {
         mvc.perform(post("/henkilo/{henkiloOid}/kayttajatiedot", "1.2.3.4.5")
                 .content("{\"username\": \"user.1\"}").contentType(MediaType.APPLICATION_JSON))
@@ -83,7 +83,7 @@ public class HenkiloControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void getHenkiloKayttajatiedotShouldReturnNotFoundError() throws Exception {
         when(kayttajatiedotService.getByHenkiloOid(any()))
                 .thenThrow(NotFoundException.class);
@@ -93,7 +93,7 @@ public class HenkiloControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void listOrganisatioHenkilosTest() throws Exception {
         given(this.service.listOrganisaatioHenkilos("1.2.3.4.5", "fi", null)).willReturn(singletonList(
                 OrganisaatioHenkiloWithOrganisaatioDto.organisaatioBuilder().id(1L)
@@ -116,7 +116,7 @@ public class HenkiloControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void changePassword() throws Exception {
         mvc.perform(post("/henkilo/{henkiloOid}/password", "1.2.3.4.5")
                 .content("\"1.2.3.4.5\"").contentType(MediaType.APPLICATION_JSON))

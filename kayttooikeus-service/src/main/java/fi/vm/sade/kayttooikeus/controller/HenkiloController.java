@@ -130,12 +130,12 @@ public class HenkiloController {
             this.kayttajatiedotService.changePasswordAsAdmin(henkiloOid, password);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @RequestMapping(value = "/{henkiloOid}/passivoi", method = RequestMethod.DELETE)
     @ApiOperation(value = "Passivoi henkilön kaikki organisaatiot ja käyttöoikeudet.",
             notes = "Passivoi henkilön kaikki organisaatiot ja käyttöoikeudet. Kutsutaan oppijanumerorekisterin henkilön" +
                     "passivoinnin yhteydessä automaattisesti.",
-            authorizations = {@Authorization("ROLE_APP_HENKILONHALLINTA_OPHREKISTERI")})
+            authorizations = {@Authorization("ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA")})
     public void passivoi(@ApiParam(value = "Henkilön OID", required = true) @PathVariable(value = "henkiloOid") String henkiloOid,
                          @ApiParam(value = "Jos ei annettu käytetään kirjautunutta")
                          @RequestParam(value = "kasittelijaOid", required = false) String kasittelijaOid) {
@@ -146,9 +146,9 @@ public class HenkiloController {
     @RequestMapping(value = "/{oid}/hakatunnus", method = RequestMethod.GET)
     @ApiOperation(value = "Hakee henkilön Haka-tunnisteet.",
             notes = "Hakee annetun henkilön Haka-tunnisteet.",
-            authorizations = @Authorization("ROLE_APP_HENKILONHALLINTA_CRUD, " +
-                    "ROLE_APP_HENKILONHALLINTA_KKVASTUU, " +
-                    "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI"),
+            authorizations = {@Authorization("ROLE_APP_HENKILONHALLINTA_CRUD"),
+                    @Authorization("ROLE_APP_HENKILONHALLINTA_KKVASTUU"),
+                    @Authorization("ROLE_APP_HENKILONHALLINTA_OPHREKISTERI")},
             response = Set.class)
     public Set<String> getHenkilosHakaTunnisteet(@PathVariable("oid") @ApiParam("Henkilön OID") String oid,
                                                  @RequestHeader(value = "External-Permission-Service", required = false)
@@ -173,14 +173,14 @@ public class HenkiloController {
     }
 
     @GetMapping("/{oid}/kayttooikeudet")
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation("Palauttaa henkilöiden oid:t joiden tietoihin annetulla henkilöllä on oikeutus")
     public KayttooikeudetDto getKayttooikeudet(@PathVariable String oid, OrganisaatioHenkiloCriteria criteria) {
         return henkiloService.getKayttooikeudet(oid, criteria);
     }
 
     @PostMapping("/{oid}/kayttooikeudet")
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation("Palauttaa henkilöiden oid:t joiden tietoihin annetulla henkilöllä on oikeutus")
     public KayttooikeudetDto postKayttooikeudet(@PathVariable String oid, @RequestBody OrganisaatioHenkiloCriteria criteria) {
         return henkiloService.getKayttooikeudet(oid, criteria);
@@ -188,8 +188,7 @@ public class HenkiloController {
 
     @PutMapping("/{oid}/ldap")
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_SCHEDULE',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation("Lisää henkilön LDAP-synkronointijonoon")
     public void updateHenkiloToLdap(@PathVariable String oid,
             @RequestParam(required = false, defaultValue = "NORMAL") LdapSynchronizationType ldapSynchronization) {
@@ -226,8 +225,7 @@ public class HenkiloController {
 
     @PutMapping("/{oid}/anomusilmoitus")
     @ApiOperation("Anomusilmoitus asetuksen muuttaminen")
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     public void updateAnomusilmoitus(@PathVariable String oid, @RequestBody boolean anomusilmoitus) {
         this.henkiloService.updateAnomusilmoitus(oid, anomusilmoitus);
     }

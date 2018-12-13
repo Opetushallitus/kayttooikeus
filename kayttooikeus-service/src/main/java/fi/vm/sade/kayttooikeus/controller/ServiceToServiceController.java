@@ -29,13 +29,13 @@ public class ServiceToServiceController {
     }
 
     @ApiOperation("Palauttaa tiedon, onko käyttäjällä oikeus toiseen käyttäjään")
-    @PreAuthorize("hasAnyRole('APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @RequestMapping(value = "/canUserAccessUser", method = RequestMethod.POST)
     public boolean checkUserPermissionToUser(@RequestBody PermissionCheckDto permissionCheckDto) {
         return permissionCheckerService.isAllowedToAccessPerson(permissionCheckDto);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Lisää henkilölle organisaatiot.",
             notes = "Lisää uudet organisaatiot henkilölle. Ei päivitä tai poista vanhoja organisaatiotietoja. Palauttaa henkilön kaikki nykyiset organisaatiot.")
     @RequestMapping(value = "/henkilo/{oid}/organisaatio/findOrCreate", method = RequestMethod.POST)

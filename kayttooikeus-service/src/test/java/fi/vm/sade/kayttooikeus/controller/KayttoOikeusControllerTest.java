@@ -35,7 +35,7 @@ public class KayttoOikeusControllerTest extends AbstractControllerTest {
     private TaskExecutorService taskExecutorService;
     
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_READ")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_READ")
     public void listKayttoOikeusByPalveluTest() throws Exception {
         given(this.kayttoOikeusService.listKayttoOikeusByPalvelu("HENKILOHALLINTA"))
             .willReturn(singletonList(PalveluKayttoOikeusDto.builder()
@@ -48,7 +48,7 @@ public class KayttoOikeusControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_READ")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_READ")
     public void listKayttoOikeusCurrentUserTest() throws Exception {
         given(this.kayttoOikeusService.listMyonnettyKayttoOikeusHistoriaForCurrentUser())
                 .willReturn(singletonList(KayttoOikeusHistoriaDto.builder()
@@ -85,7 +85,7 @@ public class KayttoOikeusControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA")
     public void getHaettuKayttooikeusRyhmasByOidTest() throws Exception{
         Map<String, List<Integer>> kayttooikeusRyhmasByOrganisaatio
                 = Collections.singletonMap("1.0.0.1.0", Collections.singletonList(12000));
@@ -99,7 +99,7 @@ public class KayttoOikeusControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA")
     public void getHaettuKayttooikeusRyhmasByOidInvalidDataTest() throws Exception{
         given(this.kayttoOikeusService.findKayttooikeusryhmatAndOrganisaatioByHenkiloOid(anyString()))
                 .willThrow(new NullPointerException("null_ryhma_id"));
