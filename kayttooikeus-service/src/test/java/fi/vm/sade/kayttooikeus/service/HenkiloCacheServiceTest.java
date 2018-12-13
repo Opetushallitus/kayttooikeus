@@ -54,7 +54,7 @@ public class HenkiloCacheServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void updateHenkiloCache() throws Exception {
         Henkilo henkilo = Henkilo.builder().oidHenkilo("1.2.3.4.5").build();
         LocalDateTime timestamp = LocalDateTime.now().minusDays(1);

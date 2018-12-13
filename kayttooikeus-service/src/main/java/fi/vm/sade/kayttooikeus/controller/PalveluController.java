@@ -23,13 +23,9 @@ public class PalveluController {
         this.palveluService = palveluService;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_HENKILONHALLINTA_READ',"
-            + "'ROLE_APP_KAYTTOOIKEUS_READ',"
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_READ',"
             + "'ROLE_APP_KAYTTOOIKEUS_CRUD',"
-            + "'ROLE_APP_HENKILONHALLINTA_READ_UPDATE',"
-            + "'ROLE_APP_HENKILONHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Hakee kaikki palvelut.",
             notes = "Listaa kaikki palvelut, jotka löytyvät henkilöhallinnan kannasta.")
     @RequestMapping(method = RequestMethod.GET)

@@ -28,13 +28,13 @@ public class ServiceToServiceControllerTest extends AbstractControllerTest {
     private PermissionCheckerService permissionCheckerService;
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA")
     public void checkUserPermissionToUser() throws Exception {
         String postContent = "{\"callingUserOid\": \"1.2.3.4.5\"," +
                 "\"userOid\": \"1.2.3.1.1\"," +
                 "\"allowedPalveluRooli\": {\"OPPIJANUMEROREKISTERI\": [\"HENKILON_RU\"]}," +
                 "\"externalPermissionService\": \"HAKU_APP\"," +
-                "\"callingUserRoles\": [\"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI\"]}";
+                "\"callingUserRoles\": [\"ROLE_APP_OPPIJANUMEROREKISTERI_REKISTERINPITAJA\"]}";
         given(this.permissionCheckerService.isAllowedToAccessPerson(any(PermissionCheckDto.class))).willReturn(true);
         this.mvc.perform(post("/s2s/canUserAccessUser").content(postContent).contentType(MediaType.APPLICATION_JSON_UTF8).accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk()).andExpect(content().string("true"));
@@ -46,6 +46,6 @@ public class ServiceToServiceControllerTest extends AbstractControllerTest {
         assertThat(dto.getUserOid()).isEqualTo("1.2.3.1.1");
         assertThat(dto.getAllowedPalveluRooli()).extracting("OPPIJANUMEROREKISTERI").containsExactly(Collections.singletonList("HENKILON_RU"));
         assertThat(dto.getExternalPermissionService()).isEqualByComparingTo(ExternalPermissionService.HAKU_APP);
-        assertThat(dto.getCallingUserRoles()).containsExactly("ROLE_APP_HENKILONHALLINTA_OPHREKISTERI");
+        assertThat(dto.getCallingUserRoles()).containsExactly("ROLE_APP_OPPIJANUMEROREKISTERI_REKISTERINPITAJA");
     }
 }

@@ -64,7 +64,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     private OrganisaatioClient organisaatioClient;
 
     @Test
-    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void getByKayttajatunnus() {
         populate(kayttajatiedot(henkilo("oid1"), "user1"));
 
@@ -75,7 +75,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
 
     @Test
     @Transactional
-    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void passivoiHenkilo() {
         // Käsittelijä
         populate(kayttajatiedot(henkilo("1.2.3.4.1"), "Käsittelijä"));
@@ -102,7 +102,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(value = "1.2.3.4.5", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(value = "1.2.3.4.5", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void henkilohakuCountSearch() {
         populate(henkilo("1.2.3.4.2").withNimet("arpa", "kuutio"));
         populate(henkilo("1.2.3.4.3").withNimet("arpa", "kuutio"));
@@ -112,7 +112,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void henkilohakuCountWithUsername() {
         populate(kayttajatiedot(henkilo("1.2.3.4.2").withNimet("arpa", "kuutio"), "noppa"));
         populate(kayttajatiedot(henkilo("1.2.3.4.3").withNimet("toinen", "sukunimi"), "heppa"));
@@ -125,7 +125,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void henkilohakuAsAdminSearchByName() {
         populate(henkilo("1.2.3.4.2").withNimet("arpa", "kuutio").withPassive(false).withDuplikate(true));
         populate(henkilo("1.2.3.4.3").withNimet("arpa", "kuutio").withPassive(true).withDuplikate(false));
@@ -137,7 +137,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void henkilohakuAsAdminSearchByNameBothOppijaAndVirkailija() {
         populate(henkilo("1.2.3.4.2").withNimet("arpa1", "kuutio").withPassive(false).withDuplikate(false));
         // current user
@@ -153,7 +153,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD", "ROLE_APP_HENKILONHALLINTA_CRUD_1.2.246.562.10.00000000001"})
+    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD", "ROLE_APP_KAYTTOOIKEUS_CRUD_1.2.246.562.10.00000000001"})
     public void henkilohakuAsNormalUserCantFindOppija() {
         populate(henkilo("1.2.3.4.2").withNimet("arpa1", "kuutio").withPassive(false).withDuplikate(false));
         // current user
@@ -169,7 +169,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void henkilohakuAsAdminSearchOrganisationRequired() {
         populate(henkilo("1.2.3.4.2").withNimet("arpa", "kuutio").withPassive(false).withDuplikate(true));
         populate(henkilo("1.2.3.4.3").withNimet("arpa", "kuutio").withPassive(true).withDuplikate(false));
@@ -181,7 +181,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void henkilohakuAsAdminByOrganisation() {
         populate(myonnettyKayttoOikeus(
                 organisaatioHenkilo(henkilo("1.2.3.4.1"), commonProperties.getRootOrganizationOid()),
@@ -219,7 +219,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void henkilohakuAsAdminByKayttooikeusryhma() {
         MyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma = populate(myonnettyKayttoOikeus(
                 organisaatioHenkilo(henkilo("1.2.3.4.5"), "3.4.5.6.7"),
@@ -246,7 +246,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void getOmatTiedotAdmin() {
         populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3.4.1", "1.2.3.4.100"),
                 kayttoOikeusRyhma("tunniste").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_ADMIN))));
@@ -268,7 +268,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD", "ROLE_APP_HENKILONHALLINTA_CRUD_1.2.246.562.10.00000000001"})
+    @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD", "ROLE_APP_KAYTTOOIKEUS_CRUD_1.2.246.562.10.00000000001"})
     public void getOmatTiedotOphVirkailija() {
         populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3.4.1", "1.2.3.4.100"),
                 kayttoOikeusRyhma("tunniste").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_CRUD))));

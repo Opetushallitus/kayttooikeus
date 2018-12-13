@@ -13,9 +13,6 @@ import java.util.Set;
 
 public interface PermissionCheckerService {
 
-    @Deprecated
-    boolean isAllowedToAccessPerson(String personOid, List<String> allowedRoles, ExternalPermissionService permissionService);
-
     boolean isAllowedToAccessPerson(String personOid, Map<String, List<String>> allowedRoles, ExternalPermissionService permissionService);
 
     @Deprecated
@@ -36,9 +33,6 @@ public interface PermissionCheckerService {
     boolean hasRoleForOrganisations(List<Object> organisaatioHenkiloDtoList, List<String> allowedRolesWithoutPrefix);
 
     boolean hasRoleForOrganisations(List<Object> organisaatioHenkiloDtoList, Map<String, List<String>> allowedRoles);
-
-    @Deprecated
-    boolean hasRoleForOrganisation(String orgOid, List<String> allowedRolesWithoutPrefix);
 
     boolean hasRoleForOrganisation(String orgOid, Map<String, List<String>> allowedRoles);
 

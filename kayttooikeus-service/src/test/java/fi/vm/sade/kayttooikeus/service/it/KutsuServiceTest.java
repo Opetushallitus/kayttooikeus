@@ -101,7 +101,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.4", authorities = "ROLE_APP_HENKILONHALLINTA_CRUD")
+    @WithMockUser(username = "1.2.4", authorities = "ROLE_APP_KAYTTOOIKEUS_CRUD")
     public void listAvoinKutsus() {
         populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3", "1.2.3.4.5"),
                 kayttoOikeusRyhma("RYHMA1").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_CRUD))));
@@ -159,7 +159,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD", "ROLE_APP_HENKILONHALLINTA_CRUD_1.2.246.562.10.00000000001"})
+    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD", "ROLE_APP_KAYTTOOIKEUS_CRUD_1.2.246.562.10.00000000001"})
     public void listAvoinKutsusWithMiniAdminAndOrganisationIsForcedWithOphView() {
         populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3", "1.2.246.562.10.00000000001"),
                 kayttoOikeusRyhma("RYHMA1").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_CRUD))));
@@ -187,7 +187,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD", "ROLE_APP_HENKILONHALLINTA_CRUD_1.2.3.4.5"})
+    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD", "ROLE_APP_KAYTTOOIKEUS_CRUD_1.2.3.4.5"})
     public void listAvoinKutsusWithMiniAdminAndKayttooikeusryhmaView() {
         MyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma = populate(
                 myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3", "1.2.3.4.5"),
@@ -216,7 +216,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD", "ROLE_APP_HENKILONHALLINTA_CRUD_1.2.3.4.5"})
+    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD", "ROLE_APP_KAYTTOOIKEUS_CRUD_1.2.3.4.5"})
     public void listAvoinKutsusWithNormalUserAndOrganisationIsForced() {
         populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3", "1.2.3.4.5"),
                 kayttoOikeusRyhma("RYHMA1").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_CRUD))));
@@ -250,7 +250,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD", "ROLE_APP_HENKILONHALLINTA_CRUD_1.2.3.4.5"})
+    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD", "ROLE_APP_KAYTTOOIKEUS_CRUD_1.2.3.4.5"})
     public void listAvoinKutsusWithNormalUserByKayttooikeusryhmaId() {
         MyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma
                 = populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.4", "1.2.3.4.5"),
@@ -290,7 +290,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void createKutsuAsAdmin() {
         HttpEntity emailResponseEntity = new StringEntity("12345", Charset.forName("UTF-8"));
         BasicHttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 200, "Ok"));
@@ -348,7 +348,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD", "ROLE_APP_HENKILONHALLINTA_CRUD_1.2.3.4.5"})
+    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD", "ROLE_APP_KAYTTOOIKEUS_CRUD_1.2.3.4.5"})
     public void createKutsuAsNormalUser() {
         HttpEntity emailResponseEntity = new StringEntity("12345", Charset.forName("UTF-8"));
         BasicHttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 200, "Ok"));
@@ -421,7 +421,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test(expected = ForbiddenException.class)
-    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
+    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void createKutsuAsAdminWithNoHetuOrVtjYksiloity() {
         doReturn(HenkiloDto.builder()
                 .kutsumanimi("kutsun")
@@ -502,7 +502,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD", "ROLE_APP_HENKILONHALLINTA_CRUD_1.2.3.4.5"})
+    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD", "ROLE_APP_KAYTTOOIKEUS_CRUD_1.2.3.4.5"})
     public void deleteKutsuTest() {
         Kutsu kutsu = populate(kutsu("Matti", "Mehiläinen", "b@eaxmple.com")
                 .kutsuja("1.2.4")
@@ -519,7 +519,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     }
     
     @Test(expected = ForbiddenException.class)
-    @WithMockUser(username = "1.2.4", authorities = "ROLE_APP_HENKILONHALLINTA_CRUD")
+    @WithMockUser(username = "1.2.4", authorities = "ROLE_APP_KAYTTOOIKEUS_CRUD")
     public void deleteKutsuOtherKutsujaWithoutProperAuthorityFails() {
         Kutsu kutsu = populate(kutsu("Matti", "Mehiläinen", "b@eaxmple.com")
                 .kutsuja("1.2.5")

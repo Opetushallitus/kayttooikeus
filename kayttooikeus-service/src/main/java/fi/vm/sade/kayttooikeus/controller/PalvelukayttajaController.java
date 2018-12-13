@@ -22,16 +22,14 @@ public class PalvelukayttajaController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     public Iterable<PalvelukayttajaReadDto> list(PalvelukayttajaCriteriaDto criteria) {
         return palvelukayttajaService.list(criteria);
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     public PalvelukayttajaReadDto create(@RequestBody @Valid PalvelukayttajaCreateDto dto) {
         return palvelukayttajaService.create(dto);
     }
