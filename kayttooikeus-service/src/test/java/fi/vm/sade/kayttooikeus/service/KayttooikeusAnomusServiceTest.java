@@ -708,7 +708,7 @@ public class KayttooikeusAnomusServiceTest {
     }
 
     @Test
-    @WithMockUser(value = "1.2.3.4.5", roles = "HENKILONHALLINTA_OPHREKISTERI")
+    @WithMockUser(value = "1.2.3.4.5", roles = "APP_KAYTTOOIKEUS_REKISTERINPITAJA")
     public void findCurrentHenkiloCanGrantAsAdmin() {
         given(this.permissionCheckerService.isCurrentUserAdmin()).willReturn(true);
 

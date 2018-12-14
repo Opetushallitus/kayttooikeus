@@ -27,7 +27,6 @@ import static fi.vm.sade.kayttooikeus.repositories.populate.KutsuOrganisaatioPop
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloKayttoOikeusPopulator.myonnettyKayttoOikeus;
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloPopulator.organisaatioHenkilo;
 import static fi.vm.sade.kayttooikeus.repositories.populate.TextGroupPopulator.text;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_HENKILONHALLINTA;
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -88,7 +87,7 @@ public class KutsuRepositoryTest extends AbstractRepositoryTest {
                 .organisaatio(kutsuOrganisaatio("1.2.3.4.5")
                         .ryhma(kayttoOikeusRyhma("RYHMA2")
                                 .withNimi(text("FI", "Kuvaus2"))
-                                .withOikeus(oikeus(PALVELU_HENKILONHALLINTA, "READ")))
+                                .withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, "READ")))
                 )
         );
         List<Kutsu> kutsuList = this.kutsuRepository.listKutsuListDtos(KutsuCriteria.builder().view(KutsuView.ADMIN).build(),

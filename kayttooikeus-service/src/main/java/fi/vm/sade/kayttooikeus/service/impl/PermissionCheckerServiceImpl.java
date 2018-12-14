@@ -49,10 +49,8 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     private static ObjectMapper objectMapper = new ObjectMapper();
     public static final String ROLE_KAYTTOOIKEUS_PREFIX = "ROLE_APP_KAYTTOOIKEUS_";
     public static final String PALVELU_KAYTTOOIKEUS = "KAYTTOOIKEUS";
-    public static final String PALVELU_HENKILONHALLINTA = "HENKILONHALLINTA";
     public static final String PALVELU_ANOMUSTENHALLINTA = "ANOMUSTENHALLINTA";
     public static final String ROLE_REKISTERINPITAJA = "REKISTERINPITAJA";
-    public static final String ROLE_ADMIN = "OPHREKISTERI";
     public static final String ROLE_CRUD = "CRUD";
     public static final String ROLE_PREFIX = "ROLE_APP_";
     private static final String ROLE_PALVELUKAYTTAJA_CRUD = "ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_CRUD";
@@ -104,7 +102,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     @Override
     @Transactional(readOnly = true)
     public boolean isAllowedToAccessPersonOrSelf(String personOid, List<String> allowedRoles, ExternalPermissionService permissionService) {
-        return isAllowedToAccessPersonOrSelf(personOid, singletonMap(PALVELU_HENKILONHALLINTA, allowedRoles), permissionService);
+        return isAllowedToAccessPersonOrSelf(personOid, singletonMap(PALVELU_KAYTTOOIKEUS, allowedRoles), permissionService);
     }
 
     @Override
@@ -410,8 +408,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     // Rekisterinpitäjä
     @Override
     public boolean isUserAdmin(Set<String> userRoles) {
-        return this.isUserMiniAdmin(userRoles, PALVELU_HENKILONHALLINTA, ROLE_ADMIN)
-                || isUserMiniAdmin(userRoles, PALVELU_KAYTTOOIKEUS, ROLE_REKISTERINPITAJA);
+        return this.isUserMiniAdmin(userRoles, PALVELU_KAYTTOOIKEUS, ROLE_REKISTERINPITAJA);
     }
 
     // OPH virkailija

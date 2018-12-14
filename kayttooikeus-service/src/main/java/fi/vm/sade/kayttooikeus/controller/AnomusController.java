@@ -45,7 +45,7 @@ public class AnomusController {
     }
 
     @ApiOperation("Palauttaa henkilön kaikki haetut käyttöoikeusryhmät")
-    @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#oidHenkilo, {'HENKILONHALLINTA': {'READ', 'READ_UPDATE', 'CRUD'}, 'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, #permissionService)")
+    @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#oidHenkilo, {'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, #permissionService)")
     @RequestMapping(value = "/{oidHenkilo}", method = RequestMethod.GET)
     public List<HaettuKayttooikeusryhmaDto> getActiveAnomuksetByHenkilo(
             @ApiParam("Henkilön OID") @PathVariable String oidHenkilo,

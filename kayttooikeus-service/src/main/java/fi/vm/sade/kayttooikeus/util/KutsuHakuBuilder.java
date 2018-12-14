@@ -52,8 +52,7 @@ public class KutsuHakuBuilder {
         if (this.permissionCheckerService.isCurrentUserAdmin()) {
             return this.prepareForAdmin();
         }
-        else if (this.permissionCheckerService.isCurrentUserMiniAdmin(PALVELU_HENKILONHALLINTA, ROLE_CRUD)
-                || permissionCheckerService.isCurrentUserMiniAdmin(PALVELU_KAYTTOOIKEUS, ROLE_CRUD)) {
+        else if (this.permissionCheckerService.isCurrentUserMiniAdmin(PALVELU_KAYTTOOIKEUS, ROLE_CRUD)) {
             return prepareForMiniAdmin();
         }
         return prepareForNormalUser();
@@ -77,7 +76,6 @@ public class KutsuHakuBuilder {
         Set<String> organisaatioOidLimit;
 
         Map<String, List<String>> palveluRoolit = new HashMap<>();
-        palveluRoolit.put(PALVELU_HENKILONHALLINTA, singletonList(ROLE_CRUD));
         palveluRoolit.put(PALVELU_KAYTTOOIKEUS, singletonList(ROLE_CRUD));
 
         if (!CollectionUtils.isEmpty(this.kutsuCriteria.getOrganisaatioOids())) {

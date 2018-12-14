@@ -33,9 +33,7 @@ import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusPopulato
 import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma;
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloKayttoOikeusPopulator.myonnettyKayttoOikeus;
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloPopulator.organisaatioHenkilo;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_HENKILONHALLINTA;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.ROLE_ADMIN;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.ROLE_CRUD;
+import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.*;
 import static fi.vm.sade.kayttooikeus.util.CreateUtil.creaetOrganisaatioPerustietoWithNimi;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -249,7 +247,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void getOmatTiedotAdmin() {
         populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3.4.1", "1.2.3.4.100"),
-                kayttoOikeusRyhma("tunniste").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_ADMIN))));
+                kayttoOikeusRyhma("tunniste").withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_REKISTERINPITAJA))));
         OmatTiedotDto omatTiedotDto = this.henkiloService.getOmatTiedot();
         assertThat(omatTiedotDto.getIsAdmin()).isTrue();
         assertThat(omatTiedotDto.getIsMiniAdmin()).isTrue();
@@ -260,18 +258,18 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
         assertThat(omatTiedotDto.getOrganisaatiot())
                 .flatExtracting(KayttooikeusPerustiedotDto.KayttooikeusOrganisaatiotDto::getKayttooikeudet)
                 .extracting(KayttooikeusPerustiedotDto.KayttooikeusOrganisaatiotDto.KayttooikeusOikeudetDto::getPalvelu)
-                .containsExactly(PALVELU_HENKILONHALLINTA);
+                .containsExactly(PALVELU_KAYTTOOIKEUS);
         assertThat(omatTiedotDto.getOrganisaatiot())
                 .flatExtracting(KayttooikeusPerustiedotDto.KayttooikeusOrganisaatiotDto::getKayttooikeudet)
                 .extracting(KayttooikeusPerustiedotDto.KayttooikeusOrganisaatiotDto.KayttooikeusOikeudetDto::getOikeus)
-                .containsExactly(ROLE_ADMIN);
+                .containsExactly(ROLE_REKISTERINPITAJA);
     }
 
     @Test
     @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD", "ROLE_APP_KAYTTOOIKEUS_CRUD_1.2.246.562.10.00000000001"})
     public void getOmatTiedotOphVirkailija() {
         populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3.4.1", "1.2.3.4.100"),
-                kayttoOikeusRyhma("tunniste").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_CRUD))));
+                kayttoOikeusRyhma("tunniste").withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_CRUD))));
         OmatTiedotDto omatTiedotDto = this.henkiloService.getOmatTiedot();
         assertThat(omatTiedotDto.getIsAdmin()).isFalse();
         assertThat(omatTiedotDto.getIsMiniAdmin()).isTrue();
@@ -282,7 +280,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
         assertThat(omatTiedotDto.getOrganisaatiot())
                 .flatExtracting(KayttooikeusPerustiedotDto.KayttooikeusOrganisaatiotDto::getKayttooikeudet)
                 .extracting(KayttooikeusPerustiedotDto.KayttooikeusOrganisaatiotDto.KayttooikeusOikeudetDto::getPalvelu)
-                .containsExactly(PALVELU_HENKILONHALLINTA);
+                .containsExactly(PALVELU_KAYTTOOIKEUS);
         assertThat(omatTiedotDto.getOrganisaatiot())
                 .flatExtracting(KayttooikeusPerustiedotDto.KayttooikeusOrganisaatiotDto::getKayttooikeudet)
                 .extracting(KayttooikeusPerustiedotDto.KayttooikeusOrganisaatiotDto.KayttooikeusOikeudetDto::getOikeus)

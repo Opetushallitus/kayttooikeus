@@ -38,7 +38,7 @@ public class KayttoOikeusRyhmaController {
     }
 
     @ApiOperation(value = "Hakee henkilön käyttöoikeusryhmät organisaatioittain")
-    @PreAuthorize("hasAnyRole('APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @RequestMapping(value = "ryhmasByOrganisaatio/{oid}", method = RequestMethod.GET)
     public Map<String, List<Integer>> ryhmasByOrganisation(@PathVariable("oid") String henkiloOid) {
         return this.kayttoOikeusService.findKayttooikeusryhmatAndOrganisaatioByHenkiloOid(henkiloOid);
@@ -53,7 +53,7 @@ public class KayttoOikeusRyhmaController {
     }
 
     @RequestMapping(value = "/{oid}/{organisaatioOid}", method = RequestMethod.GET)
-    @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#oid, {'HENKILONHALLINTA': {'READ', 'READ_UPDATE', 'CRUD'}, 'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
+    @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#oid, {'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
     @ApiOperation(value = "Hakee henkilön voimassa olevat käyttöoikeusryhmät.",
             notes = "Listaa kaikki annetun henkilön ja tämän annettuun organisaatioon "
                     + "liittyvät voimassaolevat sekä mahdollisesti myönnettävissä olevat "
@@ -64,7 +64,7 @@ public class KayttoOikeusRyhmaController {
     }
 
     @RequestMapping(value = "/henkilo/{oid}", method = RequestMethod.GET)
-    @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#oid, {'HENKILONHALLINTA': {'READ', 'READ_UPDATE', 'CRUD'}, 'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
+    @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#oid, {'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
     @ApiOperation(value = "Hakee henkilön käyttöoikeusryhmät.",
             notes = "Listaa henkilön kaikki käyttöoikeusryhmät sekä rajaa ne "
                     + "tiettyyn organisaatioon, jos kutsussa on annettu organisaatiorajoite.")

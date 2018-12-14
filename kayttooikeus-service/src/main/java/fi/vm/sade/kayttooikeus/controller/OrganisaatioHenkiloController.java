@@ -45,14 +45,14 @@ public class OrganisaatioHenkiloController {
         return organisaatioHenkiloService.listOrganisaatioOidBy(criteria);
     }
 
-    @PreAuthorize("@permissionCheckerServiceImpl.hasRoleForOrganisations(#organisaatioHenkiloList, {'HENKILONHALLINTA': {'CRUD'}, 'KAYTTOOIKEUS': {'CRUD'}})")
+    @PreAuthorize("@permissionCheckerServiceImpl.hasRoleForOrganisations(#organisaatioHenkiloList, {'KAYTTOOIKEUS': {'CRUD'}})")
     @RequestMapping(value = "/{oid}/findOrCreate", method = RequestMethod.POST)
     public List<OrganisaatioHenkiloDto> findOrCreateOrganisaatioHenkilos(@PathVariable(value = "oid") String oidHenkilo,
                                                                          @RequestBody List<OrganisaatioHenkiloCreateDto> organisaatioHenkiloList) {
         return this.organisaatioHenkiloService.addOrganisaatioHenkilot(oidHenkilo, organisaatioHenkiloList);
     }
 
-    @PreAuthorize("@permissionCheckerServiceImpl.hasRoleForOrganisations(#organisaatioHenkiloList, {'HENKILONHALLINTA': {'CRUD'}, 'KAYTTOOIKEUS': {'CRUD'}})")
+    @PreAuthorize("@permissionCheckerServiceImpl.hasRoleForOrganisations(#organisaatioHenkiloList, {'KAYTTOOIKEUS': {'CRUD'}})")
     @RequestMapping(value = "/{oid}/createOrUpdate", method = RequestMethod.PUT)
     public List<OrganisaatioHenkiloDto> updateOrganisaatioHenkilos(@PathVariable(value = "oid") String oidHenkilo,
                                                                    @RequestBody List<OrganisaatioHenkiloUpdateDto> organisaatioHenkiloList) {
@@ -60,7 +60,7 @@ public class OrganisaatioHenkiloController {
     }
 
     @ApiOperation(value = "Passsivoi henkilön organisaation ja kaikki tähän liittyvät käyttöoikeudet.")
-    @PreAuthorize("@permissionCheckerServiceImpl.checkRoleForOrganisation({#henkiloOrganisationOid}, {'HENKILONHALLINTA': {'CRUD'}, 'KAYTTOOIKEUS': {'CRUD'}})")
+    @PreAuthorize("@permissionCheckerServiceImpl.checkRoleForOrganisation({#henkiloOrganisationOid}, {'KAYTTOOIKEUS': {'CRUD'}})")
     @RequestMapping(value = "/{oid}/{henkiloOrganisationOid}", method = RequestMethod.DELETE)
     public void passivoiHenkiloOrganisation(@PathVariable("oid") String oidHenkilo,
                                             @PathVariable("henkiloOrganisationOid") String henkiloOrganisationOid) {
