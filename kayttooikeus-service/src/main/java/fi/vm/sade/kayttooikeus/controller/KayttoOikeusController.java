@@ -68,8 +68,7 @@ public class KayttoOikeusController {
         return this.kayttoOikeusService.listMyonnettyKayttoOikeusForUser(criteria, limit, offset);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_SCHEDULE',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Lähettää muistutusviestit henkilöille joilla on käyttöoikeus päättymässä.",
             notes = "Tämä on alustavasti vain automaattisen sähköpostimuistutuksen testausta varten.",
             authorizations = @Authorization("ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA"),

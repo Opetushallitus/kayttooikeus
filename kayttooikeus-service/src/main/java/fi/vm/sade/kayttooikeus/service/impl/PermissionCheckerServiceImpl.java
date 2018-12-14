@@ -47,7 +47,8 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     private static final Logger LOG = LoggerFactory.getLogger(PermissionCheckerService.class);
     private static CachingRestClient restClient = new CachingRestClient().setClientSubSystemCode("henkilo.authentication-service");
     private static ObjectMapper objectMapper = new ObjectMapper();
-    public static final String ROLE_KAYTTOOIKEUS_PREFIX = "ROLE_APP_KAYTTOOIKEUS_";
+    public static final String PALVELU_KAYTTOOIKEUS_PREFIX = "ROLE_APP_KAYTTOOIKEUS_";
+    public static final String PALVELU_KOOSTEROOLIENHALLINTA_PREFIX = "ROLE_APP_KOOSTEROOLIENHALLINTA_"; // Käyttöoikeusryhmien katselu ja muokkaus
     public static final String PALVELU_KAYTTOOIKEUS = "KAYTTOOIKEUS";
     public static final String ROLE_REKISTERINPITAJA = "REKISTERINPITAJA";
     public static final String ROLE_CRUD = "CRUD";
