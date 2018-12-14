@@ -36,7 +36,6 @@ import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_ANOMUSTENHALLINTA;
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.appending;
 import static java.util.Arrays.asList;
@@ -194,9 +193,7 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
 
     private void inSameOrParentOrganisation(String organisaatioOid) {
         // User has to be in the same or one of the parent organisations
-        Map<String, List<String>> allowedRoles = new LinkedHashMap<>();
-        allowedRoles.put(PALVELU_ANOMUSTENHALLINTA, asList("READ_UPDATE", "CRUD"));
-        allowedRoles.put(PALVELU_KAYTTOOIKEUS, asList("CRUD"));
+        Map<String, List<String>> allowedRoles = Collections.singletonMap(PALVELU_KAYTTOOIKEUS, asList("CRUD"));
         if (!this.permissionCheckerService.checkRoleForOrganisation(
                 Lists.newArrayList(organisaatioOid),
                 allowedRoles)) {

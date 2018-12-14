@@ -135,8 +135,6 @@ public class OrganisaatioHenkiloRepositoryTest extends AbstractRepositoryTest {
     public void findValidByKayttooikeus() {
         populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3.4.5", "3.4.5.6.7"),
                 kayttoOikeusRyhma("RYHMA1").withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_CRUD))));
-        populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3.4.5", "3.4.5.6.7"),
-                kayttoOikeusRyhma("RYHMA1").withOikeus(oikeus(PALVELU_ANOMUSTENHALLINTA, ROLE_CRUD))));
         Set<String> allowedOrganisaatioOids = this.organisaatioHenkiloRepository
                 .findValidByKayttooikeus("1.2.3.4.5", PALVELU_KAYTTOOIKEUS, ROLE_CRUD);
         assertThat(allowedOrganisaatioOids).containsExactly("3.4.5.6.7");

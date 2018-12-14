@@ -49,7 +49,6 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     private static ObjectMapper objectMapper = new ObjectMapper();
     public static final String ROLE_KAYTTOOIKEUS_PREFIX = "ROLE_APP_KAYTTOOIKEUS_";
     public static final String PALVELU_KAYTTOOIKEUS = "KAYTTOOIKEUS";
-    public static final String PALVELU_ANOMUSTENHALLINTA = "ANOMUSTENHALLINTA";
     public static final String ROLE_REKISTERINPITAJA = "REKISTERINPITAJA";
     public static final String ROLE_CRUD = "CRUD";
     public static final String ROLE_PREFIX = "ROLE_APP_";
