@@ -137,7 +137,7 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
     @WithMockUser(username = "1.2.3.4.5")
     public void listPossibleHenkiloTypesAccessibleForCurrentUserRekisterinpitajaTest() {
         populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3.4.5", "6.7.8.9.0"),
-                kayttoOikeusRyhma("kayttooikeusryhma1").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_ADMIN))));
+                kayttoOikeusRyhma("kayttooikeusryhma1").withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_REKISTERINPITAJA))));
 
         List<KayttajaTyyppi> list = organisaatioHenkiloService.listPossibleHenkiloTypesAccessibleForCurrentUser();
         assertEquals(new HashSet<>(asList(KayttajaTyyppi.VIRKAILIJA, KayttajaTyyppi.PALVELU)), new HashSet<>(list));
@@ -147,7 +147,7 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
     @WithMockUser(username = "1.2.3.4.5")
     public void listPossibleHenkiloTypesAccessibleForCurrentUserCrudTest() {
         populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3.4.5", "6.7.8.9.0"),
-                kayttoOikeusRyhma("kayttooikeusryhma1").withOikeus(oikeus(PALVELU_HENKILONHALLINTA, ROLE_CRUD))));
+                kayttoOikeusRyhma("kayttooikeusryhma1").withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_CRUD))));
 
         List<KayttajaTyyppi> list = organisaatioHenkiloService.listPossibleHenkiloTypesAccessibleForCurrentUser();
         assertEquals(new HashSet<>(asList(KayttajaTyyppi.VIRKAILIJA)), new HashSet<>(list));

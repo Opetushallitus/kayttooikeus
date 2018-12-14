@@ -104,11 +104,11 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
     @Transactional(readOnly = true)
     public List<KayttajaTyyppi> listPossibleHenkiloTypesAccessibleForCurrentUser() {
         if (kayttoOikeusRepository.isHenkiloMyonnettyKayttoOikeusToPalveluInRole(getCurrentUserOid(),
-                PALVELU_HENKILONHALLINTA, ROLE_ADMIN)) {
+                PALVELU_KAYTTOOIKEUS, ROLE_REKISTERINPITAJA)) {
             return asList(VIRKAILIJA, PALVELU);
         }
         if (kayttoOikeusRepository.isHenkiloMyonnettyKayttoOikeusToPalveluInRole(getCurrentUserOid(),
-                PALVELU_HENKILONHALLINTA, ROLE_CRUD)) {
+                PALVELU_KAYTTOOIKEUS, ROLE_CRUD)) {
             return singletonList(VIRKAILIJA);
         }
         return emptyList();
