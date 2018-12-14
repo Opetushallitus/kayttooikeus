@@ -13,7 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.ROLE_KOOSTEROOLIENHALLINTA_PREFIX;
+import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KOOSTEROOLIENHALLINTA_PREFIX;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
@@ -221,7 +221,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = ROLE_KOOSTEROOLIENHALLINTA_PREFIX + "_READ")
+    @WithMockUser(username = "1.2.3.4.5", authorities = PALVELU_KOOSTEROOLIENHALLINTA_PREFIX + "READ")
     public void createKayttoOikeusRyhmaDeniedTest() throws Exception {
         this.mvc.perform(post("/kayttooikeusryhma").contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(jsonResource("classpath:kayttooikeusryhma/createKayttoOikeusRyhma.json"))
@@ -230,7 +230,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = ROLE_KOOSTEROOLIENHALLINTA_PREFIX + "_CRUD")
+    @WithMockUser(username = "1.2.3.4.5", authorities = PALVELU_KOOSTEROOLIENHALLINTA_PREFIX + "CRUD")
     public void createKayttoOikeusRyhmaTest() throws Exception {
         given(this.kayttoOikeusService.createKayttoOikeusRyhma(any(KayttoOikeusRyhmaModifyDto.class)))
                 .willReturn(234L);
@@ -252,7 +252,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = ROLE_KOOSTEROOLIENHALLINTA_PREFIX + "_CRUD")
+    @WithMockUser(username = "1.2.3.4.5", authorities = PALVELU_KOOSTEROOLIENHALLINTA_PREFIX + "CRUD")
     public void createNewKayttoOikeusTest() throws Exception {
         given(this.kayttoOikeusService.createKayttoOikeus(any(KayttoOikeusCreateDto.class)))
                 .willReturn(1L);
@@ -309,7 +309,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = ROLE_KOOSTEROOLIENHALLINTA_PREFIX + "_CRUD")
+    @WithMockUser(username = "1.2.3.4.5", authorities = PALVELU_KOOSTEROOLIENHALLINTA_PREFIX + "CRUD")
     public void updateKayttoOikeusRyhmaTest() throws Exception {
         given(kayttoOikeusService.findKayttoOikeusRyhma(eq(345L)))
                 .willReturn(KayttoOikeusRyhmaDto.builder()
