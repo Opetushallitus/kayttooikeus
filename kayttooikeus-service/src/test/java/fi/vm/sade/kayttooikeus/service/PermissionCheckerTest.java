@@ -131,21 +131,21 @@ public class PermissionCheckerTest {
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = ROLE_KAYTTOOIKEUS_PREFIX + ROLE_REKISTERINPITAJA + "_" + ROOT_ORG)
+    @WithMockUser(value = "callingPerson", authorities = PALVELU_KAYTTOOIKEUS_PREFIX + ROLE_REKISTERINPITAJA + "_" + ROOT_ORG)
     public void testThatSuperuserIsAllowedAccess() {
         assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Collections.singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD")),
                 ExternalPermissionService.HAKU_APP)).isTrue();
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = ROLE_KAYTTOOIKEUS_PREFIX + ROLE_REKISTERINPITAJA + "_" + ROOT_ORG)
+    @WithMockUser(value = "callingPerson", authorities = PALVELU_KAYTTOOIKEUS_PREFIX + ROLE_REKISTERINPITAJA + "_" + ROOT_ORG)
     public void testThatRekisterinpitajaIsAllowedAccess() {
         assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Collections.singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD")),
                 ExternalPermissionService.HAKU_APP)).isTrue();
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = ROLE_KAYTTOOIKEUS_PREFIX + ROLE_REKISTERINPITAJA + "_" + ROOT_ORG)
+    @WithMockUser(value = "callingPerson", authorities = PALVELU_KAYTTOOIKEUS_PREFIX + ROLE_REKISTERINPITAJA + "_" + ROOT_ORG)
     public void isAllowedToAccessPersonShouldReturnTrueWhenSuperUser() {
         assertThat(this.permissionChecker.isAllowedToAccessPerson(
                 "testPerson",
@@ -154,7 +154,7 @@ public class PermissionCheckerTest {
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = ROLE_KAYTTOOIKEUS_PREFIX + ROLE_REKISTERINPITAJA + "_" + ROOT_ORG)
+    @WithMockUser(value = "callingPerson", authorities = PALVELU_KAYTTOOIKEUS_PREFIX + ROLE_REKISTERINPITAJA + "_" + ROOT_ORG)
     public void isAllowedToAccessPersonShouldReturnTrueWhenRekisterinpitaja() {
         assertThat(this.permissionChecker.isAllowedToAccessPerson(
                 "testPerson",
