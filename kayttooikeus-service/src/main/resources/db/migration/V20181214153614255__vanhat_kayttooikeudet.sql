@@ -12,32 +12,33 @@ where id in (
   where p.name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA')
 );
 
--- Poistetaan vanhojen käyttöoikeuksien tekstit
-delete from text
-where textgroup_id in (
-  select distinct k.textgroup_id
-  from kayttooikeus k
-  join palvelu p on k.palvelu_id = p.id
-  where p.name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA')
-);
-
--- Poistetaan vanhojen käyttöoikeuksien tekstirymien roolit
-delete from rooli
-where textgroup_id in (
-  select distinct k.textgroup_id
-  from kayttooikeus k
-  join palvelu p on k.palvelu_id = p.id
-  where p.name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA')
-);
-
--- Poistetaan vanhojen käyttöoikeuksien tekstiryhmät
-delete from text_group
-where id in (
-  select distinct k.textgroup_id
-  from kayttooikeus k
-  join palvelu p on k.palvelu_id = p.id
-  where p.name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA')
-);
+-- Näitä ei ehkä kannata siivota koska vanhat käyttöoikeudet taitavat käyttää toistensa tietoja
+-- -- Poistetaan vanhojen käyttöoikeuksien tekstit
+-- delete from text
+-- where textgroup_id in (
+--   select distinct k.textgroup_id
+--   from kayttooikeus k
+--   join palvelu p on k.palvelu_id = p.id
+--   where p.name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA')
+-- );
+--
+-- -- Poistetaan vanhojen käyttöoikeuksien tekstirymien roolit
+-- delete from rooli
+-- where textgroup_id in (
+--   select distinct k.textgroup_id
+--   from kayttooikeus k
+--   join palvelu p on k.palvelu_id = p.id
+--   where p.name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA')
+-- );
+--
+-- -- Poistetaan vanhojen käyttöoikeuksien tekstiryhmät
+-- delete from text_group
+-- where id in (
+--   select distinct k.textgroup_id
+--   from kayttooikeus k
+--   join palvelu p on k.palvelu_id = p.id
+--   where p.name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA')
+-- );
 
 -- Poistetaan vanhat käyttöoikeudet käyttöoikeusryhmistä
 delete from kayttooikeusryhma_kayttooikeus
