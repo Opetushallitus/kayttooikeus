@@ -108,12 +108,11 @@ public class PermissionCheckerTest {
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD","ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG2,"ROLE_APP_ANOMUSTENHALLINTA_CRUD","ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG2})
+    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD","ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG1,
+            "ROLE_APP_KAYTTOOIKEUS_CRUD_CRUD_" + ORG2,})
     public void testThatPermissionIsDeniedWhenUserIsNotFound() {
         when(this.henkiloDataRepositoryMock.findByOidHenkilo(anyString())).thenReturn(Optional.empty());
-        assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Lists.newArrayList("CRUD"),
+        assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Collections.singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD")),
                 ExternalPermissionService.HAKU_APP)).isFalse();
     }
 
@@ -132,21 +131,21 @@ public class PermissionCheckerTest {
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = ROLE_HENKILONHALLINTA_PREFIX + ROLE_ADMIN + "_" + ROOT_ORG)
+    @WithMockUser(value = "callingPerson", authorities = ROLE_KAYTTOOIKEUS_PREFIX + ROLE_REKISTERINPITAJA + "_" + ROOT_ORG)
     public void testThatSuperuserIsAllowedAccess() {
-        assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Lists.newArrayList("CRUD"),
+        assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Collections.singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD")),
                 ExternalPermissionService.HAKU_APP)).isTrue();
     }
 
     @Test
     @WithMockUser(value = "callingPerson", authorities = ROLE_KAYTTOOIKEUS_PREFIX + ROLE_REKISTERINPITAJA + "_" + ROOT_ORG)
     public void testThatRekisterinpitajaIsAllowedAccess() {
-        assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Lists.newArrayList("CRUD"),
+        assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Collections.singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD")),
                 ExternalPermissionService.HAKU_APP)).isTrue();
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = ROLE_HENKILONHALLINTA_PREFIX + ROLE_ADMIN + "_" + ROOT_ORG)
+    @WithMockUser(value = "callingPerson", authorities = ROLE_KAYTTOOIKEUS_PREFIX + ROLE_REKISTERINPITAJA + "_" + ROOT_ORG)
     public void isAllowedToAccessPersonShouldReturnTrueWhenSuperUser() {
         assertThat(this.permissionChecker.isAllowedToAccessPerson(
                 "testPerson",
@@ -164,16 +163,15 @@ public class PermissionCheckerTest {
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD","ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG2,"ROLE_APP_ANOMUSTENHALLINTA_CRUD","ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG2})
+    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD","ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG1,
+            "ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG2,})
     public void testThatPermissionIsAllowedWhenUserIsNotOppijaAndHasNoOrganization() {
         Optional<Henkilo> henkilo = Optional.of(new Henkilo());
         henkilo.get().setKayttajaTyyppi(KayttajaTyyppi.VIRKAILIJA);
         when(oppijanumerorekisteriClient.getHenkiloByOid(any())).thenReturn(HenkiloDto.builder()
                 .build());
         when(henkiloDataRepositoryMock.findByOidHenkilo("testPerson")).thenReturn(henkilo);
-        assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Lists.newArrayList("CRUD"),
+        assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Collections.singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD")),
                 ExternalPermissionService.HAKU_APP)).isTrue();
     }
 
@@ -196,9 +194,8 @@ public class PermissionCheckerTest {
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD","ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG2,"ROLE_APP_ANOMUSTENHALLINTA_CRUD","ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG2})
+    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD","ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG1,
+            "ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG2,})
     public void testThatPermissionIsAllowedWhenUserBelongsToOrganizationThatLoggedInUserHasAccessTo() {
         Optional<Henkilo> henkilo = Optional.of(new Henkilo(){{
             setOrganisaatioHenkilos(Collections.singleton(new OrganisaatioHenkilo(){{
@@ -207,7 +204,7 @@ public class PermissionCheckerTest {
         }});
         given(this.organisaatioClient.getActiveParentOids(any())).willReturn(Lists.newArrayList(ORG1, ORG2, "org3"));
         Mockito.when(henkiloDataRepositoryMock.findByOidHenkilo("testPerson")).thenReturn(henkilo);
-        assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Lists.newArrayList("CRUD", "READ"),
+        assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Collections.singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD", "READ")),
                 null)).isTrue();
     }
 
@@ -232,9 +229,8 @@ public class PermissionCheckerTest {
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD","ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG2,"ROLE_APP_ANOMUSTENHALLINTA_CRUD","ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG2})
+    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD","ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG1,
+            "ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG2,})
     public void testThatPermissionIsDeniedWhenUserDoesNotBelongToOrganizationThatLoggedInUserHasAccessTo() {
         Optional<Henkilo> henkilo = Optional.of(new Henkilo(){{
             setOrganisaatioHenkilos(Collections.singleton(new OrganisaatioHenkilo(){{
@@ -245,7 +241,7 @@ public class PermissionCheckerTest {
                 .willReturn(Lists.newArrayList("notCommonOrg1", "notCommonOrg2", "notCommonOrg3"));
         Mockito.when(henkiloDataRepositoryMock.findByOidHenkilo("testPerson")).thenReturn(henkilo);
         assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson",
-                Lists.newArrayList("CRUD", "READ"), null)).isFalse();
+                Collections.singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD", "READ")), null)).isFalse();
     }
 
     @Test
@@ -316,9 +312,8 @@ public class PermissionCheckerTest {
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD","ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG2,"ROLE_APP_ANOMUSTENHALLINTA_CRUD","ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG2})
+    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD","ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG1,
+            "ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG2,})
     public void testThatPermissionIsDeniedWhenExternalServiceDeniesAccess() throws IOException {
         Henkilo henkilo = new Henkilo();
         henkilo.setOrganisaatioHenkilos(singleton(new OrganisaatioHenkilo()));
@@ -327,14 +322,13 @@ public class PermissionCheckerTest {
         doReturn(organisaatioOids).when(this.organisaatioClient).listWithChildOids(any(), any());
         this.fakeRestClient.setAllowAccess(false);
         when(this.henkiloDataRepositoryMock.findByOidHenkilo(eq("testPerson"))).thenReturn(Optional.empty());
-        assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Lists.newArrayList("CRUD"),
+        assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Collections.singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD")),
                 ExternalPermissionService.HAKU_APP)).isFalse();
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD","ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG2,"ROLE_APP_ANOMUSTENHALLINTA_CRUD","ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG2})
+    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD","ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG1,
+            "ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG2,})
     public void testThatPermissionIsAllowedWhenExternalServiceAllowsAccess() throws IOException {
         Henkilo henkilo = new Henkilo();
         henkilo.setOrganisaatioHenkilos(singleton(new OrganisaatioHenkilo()));
@@ -345,17 +339,16 @@ public class PermissionCheckerTest {
         when(this.henkiloDataRepositoryMock.findByOidHenkilo(eq("testPerson"))).thenReturn(Optional.empty());
         this.fakeRestClient.setAllowAccess(true);
         assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson",
-                Lists.newArrayList("CRUD"), ExternalPermissionService.HAKU_APP))
+                Collections.singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD")), ExternalPermissionService.HAKU_APP))
                 .isTrue();
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD","ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG2,"ROLE_APP_ANOMUSTENHALLINTA_CRUD","ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG2})
+    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD","ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG1,
+            "ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG2,})
     public void testThatHasRoleForOrganizationReturnsFalseWhenUserNotAssociatedWithOrg() {
         assertThat(permissionChecker.hasRoleForOrganisation("orgThatLoggedInUserIsNotAssociatedWith",
-                Lists.newArrayList("CRUD", "READ")))
+                singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD", "READ"))))
                 .isFalse();
     }
 
@@ -367,18 +360,17 @@ public class PermissionCheckerTest {
     })
     public void hasRoleForOrganisationShouldReturnFalseWhenUserNotAssociatedWithOrg() {
         assertThat(permissionChecker.hasRoleForOrganisation("orgThatLoggedInUserIsNotAssociatedWith",
-                singletonMap("PALVELU1", asList("OIKEUS1"))))
+                singletonMap("PALVELU1", singletonList("OIKEUS1"))))
                 .isFalse();
     }
 
     @Test
-    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD","ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_HENKILONHALLINTA_CRUD_" + ORG2,"ROLE_APP_ANOMUSTENHALLINTA_CRUD","ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG1,
-            "ROLE_APP_ANOMUSTENHALLINTA_CRUD_" + ORG2})
+    @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA","ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_" + ORG1,
+            "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_" + ORG2,})
     public void testThatHasRoleForOrganizationReturnsTrueWhenUserIsAssociatedWithOrg() {
         Mockito.when(organisaatioClient.getActiveParentOids(anyString()))
                 .thenReturn(Lists.newArrayList(ORG2, "parent1", "parent2", "parent3"));
-        assertThat(permissionChecker.hasRoleForOrganisation(ORG1, Lists.newArrayList("CRUD", "READ"))).isTrue();
+        assertThat(permissionChecker.hasRoleForOrganisation(ORG1, singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD", "READ", "REKISTERINPITAJA")))).isTrue();
     }
 
     @Test
@@ -397,10 +389,9 @@ public class PermissionCheckerTest {
     public void getPrefixedRolesByPalveluRooli() {
         Map<String, List<String>> input1 = Maps.newHashMap();
         input1.put("OPPIJANUMEROREKISTERI", Lists.newArrayList("CRUD", "READ"));
-        input1.put("HENKILONHALLINTA", Lists.newArrayList("CRUD"));
 
         Set<String> expectedResult1 = Sets.newHashSet("ROLE_APP_OPPIJANUMEROREKISTERI_CRUD",
-                "ROLE_APP_OPPIJANUMEROREKISTERI_READ", "ROLE_APP_HENKILONHALLINTA_CRUD");
+                "ROLE_APP_OPPIJANUMEROREKISTERI_READ");
         assertThat(PermissionCheckerServiceImpl.getPrefixedRolesByPalveluRooli(input1)).isEqualTo(expectedResult1);
 
         Map<String, List<String>> input2 = Maps.newHashMap();
@@ -630,18 +621,18 @@ public class PermissionCheckerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_APP_HENKILONHALLINTA_READ_UPDATE", "ROLE_APP_HENKILONHALLINTA_READ_UPDATE_" + ROOT_ORG})
+    @WithMockUser(authorities = {"ROLE_APP_KAYTTOOIKEUS_READ_UPDATE", "ROLE_APP_KAYTTOOIKEUS_READ_UPDATE_" + ROOT_ORG})
     public void roleWithUnderscoreIsHandledProperly() {
-        boolean hasReadUpdate = this.permissionChecker.isCurrentUserMiniAdmin(PALVELU_HENKILONHALLINTA, "READ_UPDATE");
-        boolean hasRead = this.permissionChecker.isCurrentUserMiniAdmin(PALVELU_HENKILONHALLINTA, "READ");
+        boolean hasReadUpdate = this.permissionChecker.isCurrentUserMiniAdmin(PALVELU_KAYTTOOIKEUS, "READ_UPDATE");
+        boolean hasRead = this.permissionChecker.isCurrentUserMiniAdmin(PALVELU_KAYTTOOIKEUS, "READ");
         assertThat(hasReadUpdate).isTrue();
         assertThat(hasRead).isFalse();
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_APP_HENKILONHALLINTA_CRUD", "ROLE_APP_HENKILONHALLINTA_CRUD_" + ROOT_ORG})
+    @WithMockUser(authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD", "ROLE_APP_KAYTTOOIKEUS_CRUD_" + ROOT_ORG})
     public void getUserCurrentOrganisationOidsByPalveluAndRole() {
-        Set<String> oids = this.permissionChecker.getCurrentUserOrgnisationsWithPalveluRole(PALVELU_HENKILONHALLINTA, ROLE_CRUD);
+        Set<String> oids = this.permissionChecker.getCurrentUserOrgnisationsWithPalveluRole(PALVELU_KAYTTOOIKEUS, ROLE_CRUD);
         assertThat(oids).containsExactly(ROOT_ORG);
     }
 
@@ -685,12 +676,12 @@ public class PermissionCheckerTest {
                 .willReturn(Lists.newArrayList("1.2.3.4.200"));
         boolean hasInternalAccess = this.permissionChecker.hasInternalAccess("1.2.3.4.5",
                 Lists.newArrayList("READ"),
-                Sets.newHashSet("ROLE_APP_HENKILONHALLINTA_READ", "ROLE_APP_HENKILONHALLINTA_READ_1.2.3.4.100"));
+                Sets.newHashSet("ROLE_APP_KAYTTOOIKEUS_READ", "ROLE_APP_KAYTTOOIKEUS_READ_1.2.3.4.100"));
         assertThat(hasInternalAccess).isTrue();
         verify(this.organisaatioClient, Mockito.times(1)).getActiveParentOids(eq("1.2.3.4.100"));
                 hasInternalAccess = this.permissionChecker.hasInternalAccess("1.2.3.4.5",
                 Lists.newArrayList("READ"),
-                Sets.newHashSet("ROLE_APP_HENKILONHALLINTA_READ", "ROLE_APP_HENKILONHALLINTA_READ_1.2.3.4.200"));
+                Sets.newHashSet("ROLE_APP_KAYTTOOIKEUS_READ", "ROLE_APP_KAYTTOOIKEUS_READ_READ_1.2.3.4.200"));
         assertThat(hasInternalAccess).isFalse();
         verify(this.organisaatioClient, Mockito.times(2)).getActiveParentOids(eq("1.2.3.4.100"));
     }

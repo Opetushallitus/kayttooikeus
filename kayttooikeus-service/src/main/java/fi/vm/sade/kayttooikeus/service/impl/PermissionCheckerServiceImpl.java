@@ -48,12 +48,8 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     private static CachingRestClient restClient = new CachingRestClient().setClientSubSystemCode("henkilo.authentication-service");
     private static ObjectMapper objectMapper = new ObjectMapper();
     public static final String ROLE_KAYTTOOIKEUS_PREFIX = "ROLE_APP_KAYTTOOIKEUS_";
-    public static final String ROLE_HENKILONHALLINTA_PREFIX = "ROLE_APP_HENKILONHALLINTA_";
     public static final String PALVELU_KAYTTOOIKEUS = "KAYTTOOIKEUS";
-    public static final String PALVELU_HENKILONHALLINTA = "HENKILONHALLINTA";
-    public static final String PALVELU_ANOMUSTENHALLINTA = "ANOMUSTENHALLINTA";
     public static final String ROLE_REKISTERINPITAJA = "REKISTERINPITAJA";
-    public static final String ROLE_ADMIN = "OPHREKISTERI";
     public static final String ROLE_CRUD = "CRUD";
     public static final String ROLE_PREFIX = "ROLE_APP_";
     private static final String ROLE_PALVELUKAYTTAJA_CRUD = "ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_CRUD";
@@ -98,12 +94,6 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean isAllowedToAccessPerson(String personOid, List<String> allowedRoles, ExternalPermissionService permissionService) {
-        return isAllowedToAccessPerson(getCurrentUserOid(), personOid, singletonMap(PALVELU_HENKILONHALLINTA, allowedRoles), permissionService, this.getCasRoles());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public boolean isAllowedToAccessPerson(String personOid, Map<String, List<String>> allowedRoles, ExternalPermissionService permissionService) {
         return isAllowedToAccessPerson(getCurrentUserOid(), personOid, allowedRoles, permissionService, this.getCasRoles());
     }
@@ -111,7 +101,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     @Override
     @Transactional(readOnly = true)
     public boolean isAllowedToAccessPersonOrSelf(String personOid, List<String> allowedRoles, ExternalPermissionService permissionService) {
-        return isAllowedToAccessPersonOrSelf(personOid, singletonMap(PALVELU_HENKILONHALLINTA, allowedRoles), permissionService);
+        return isAllowedToAccessPersonOrSelf(personOid, singletonMap(PALVELU_KAYTTOOIKEUS, allowedRoles), permissionService);
     }
 
     @Override
@@ -125,24 +115,9 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     @Override
     @Transactional(readOnly = true)
     public boolean isAllowedToAccessPerson(PermissionCheckDto permissionCheckDto) {
-        handleAllowedRoles(permissionCheckDto);
         return isAllowedToAccessPerson(permissionCheckDto.getCallingUserOid(),
                 permissionCheckDto.getUserOid(), permissionCheckDto.getAllowedPalveluRooli(),
                 permissionCheckDto.getExternalPermissionService(), permissionCheckDto.getCallingUserRoles());
-    }
-
-    public static void handleAllowedRoles(PermissionCheckDto permissionCheckDto) {
-        // muutetaan vanha "allowedRoles" uuteen "allowedPalveluRooli"-formaattiin
-        if (permissionCheckDto.getAllowedRoles() != null) {
-            if (permissionCheckDto.getAllowedPalveluRooli() == null) {
-                permissionCheckDto.setAllowedPalveluRooli(new HashMap<>());
-            }
-            permissionCheckDto.getAllowedPalveluRooli().merge(PALVELU_HENKILONHALLINTA, permissionCheckDto.getAllowedRoles(), (vanhaArvo, uusiArvo) -> {
-                vanhaArvo.addAll(uusiArvo);
-                return vanhaArvo;
-            });
-            permissionCheckDto.setAllowedRoles(null);
-        }
     }
 
     /*
@@ -169,12 +144,15 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
             return false;
         }
 
+        OrganisaatioMyontoPredicate organisaatioMyontoPredicate = new OrganisaatioMyontoPredicate(
+                // myönnetään vain koski-palvelulle käyttöoikeudet passiivisiin organisaatioihin
+                ExternalPermissionService.KOSKI.equals(permissionCheckService));
         Set<String> flattedOrgs = this.henkiloDataRepository.findByOidHenkilo(callingUserOid).map(henkilo ->
                 henkilo.getOrganisaatioHenkilos().stream()
                         .filter(OrganisaatioHenkilo::isAktiivinen)
                         .map(OrganisaatioHenkilo::getOrganisaatioOid)
                         .flatMap(organisaatioOid -> organisaatioClient
-                                .listWithChildOids(organisaatioOid, new OrganisaatioMyontoPredicate(false)).stream())
+                                .listWithChildOids(organisaatioOid, organisaatioMyontoPredicate).stream())
                         .collect(Collectors.toSet()))
                 .orElse(emptySet());
         if (flattedOrgs.isEmpty()) {
@@ -209,18 +187,18 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     }
 
     /**
-     * Checks if the logged in user has HENKILONHALLINTA roles that
+     * Checks if the logged in user has KAYTTOOIKEUS roles that
      * grants access to the wanted person (personOid)
     */
     @Override
     @Transactional(readOnly = true)
     public boolean hasInternalAccess(String personOid, List<String> allowedRolesWithoutPrefix, Set<String> callingUserRoles) {
-        return hasInternalAccess(personOid, singletonMap(PALVELU_HENKILONHALLINTA, allowedRolesWithoutPrefix), callingUserRoles);
+        return hasInternalAccess(personOid, singletonMap(PALVELU_KAYTTOOIKEUS, allowedRolesWithoutPrefix), callingUserRoles);
     }
 
     /**
-     * Checks if the logged in user has HENKILONHALLINTA roles that
-     * grants access to the wanted person (personOid)
+     * Checks if the logged in user has roles that grants access to the wanted person (personOid) through
+     * privileges and organisation hierarchy
      */
     private boolean hasInternalAccess(String personOid, Map<String, List<String>> allowedPalveluRooli, Set<String> callingUserRoles) {
         if (this.isUserAdmin(callingUserRoles)) {
@@ -311,7 +289,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     @Transactional(readOnly = true)
     public boolean checkRoleForOrganisation(@NotNull List<String> orgOidList, List<String> allowedRolesWithoutPrefix) {
         for(String oid : orgOidList) {
-            if (!this.hasRoleForOrganisation(oid, allowedRolesWithoutPrefix)) {
+            if (!this.hasRoleForOrganisation(oid, singletonMap(PALVELU_KAYTTOOIKEUS, allowedRolesWithoutPrefix))) {
                 return false;
             }
         }
@@ -351,12 +329,6 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
 
     private static Set<String> getPrefixedRoles(final String prefix, final List<String> rolesWithoutPrefix) {
         return rolesWithoutPrefix.stream().map(prefix::concat).collect(Collectors.toSet());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public boolean hasRoleForOrganisation(String orgOid, final List<String> allowedRolesWithoutPrefix) {
-        return hasRoleForOrganisation(orgOid, singletonMap(PALVELU_ANOMUSTENHALLINTA, allowedRolesWithoutPrefix));
     }
 
     @Override
@@ -435,8 +407,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     // Rekisterinpitäjä
     @Override
     public boolean isUserAdmin(Set<String> userRoles) {
-        return this.isUserMiniAdmin(userRoles, PALVELU_HENKILONHALLINTA, ROLE_ADMIN)
-                || isUserMiniAdmin(userRoles, PALVELU_KAYTTOOIKEUS, ROLE_REKISTERINPITAJA);
+        return this.isUserMiniAdmin(userRoles, PALVELU_KAYTTOOIKEUS, ROLE_REKISTERINPITAJA);
     }
 
     // OPH virkailija

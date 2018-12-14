@@ -26,13 +26,9 @@ public class OrganisaatioHenkiloController {
         this.organisaatioHenkiloService = organisaatioHenkiloService;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_HENKILONHALLINTA_READ',"
-            + "'ROLE_APP_KAYTTOOIKEUS_READ',"
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_READ',"
             + "'ROLE_APP_KAYTTOOIKEUS_CRUD',"
-            + "'ROLE_APP_HENKILONHALLINTA_READ_UPDATE',"
-            + "'ROLE_APP_HENKILONHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @RequestMapping(value = "/current/availablehenkilotype", method = RequestMethod.GET)
     @ApiOperation(value = "Listaa sallitut organisaatiohenkilötyypit henkilöiden luontiin liittyen.",
             notes = "Listaa ne organisaatiohenkilötyypit joita kirjautunt käyttäjä saa luoda henkilöhallintaan.")
@@ -49,14 +45,14 @@ public class OrganisaatioHenkiloController {
         return organisaatioHenkiloService.listOrganisaatioOidBy(criteria);
     }
 
-    @PreAuthorize("@permissionCheckerServiceImpl.hasRoleForOrganisations(#organisaatioHenkiloList, {'HENKILONHALLINTA': {'CRUD'}, 'KAYTTOOIKEUS': {'CRUD'}})")
+    @PreAuthorize("@permissionCheckerServiceImpl.hasRoleForOrganisations(#organisaatioHenkiloList, {'KAYTTOOIKEUS': {'CRUD'}})")
     @RequestMapping(value = "/{oid}/findOrCreate", method = RequestMethod.POST)
     public List<OrganisaatioHenkiloDto> findOrCreateOrganisaatioHenkilos(@PathVariable(value = "oid") String oidHenkilo,
                                                                          @RequestBody List<OrganisaatioHenkiloCreateDto> organisaatioHenkiloList) {
         return this.organisaatioHenkiloService.addOrganisaatioHenkilot(oidHenkilo, organisaatioHenkiloList);
     }
 
-    @PreAuthorize("@permissionCheckerServiceImpl.hasRoleForOrganisations(#organisaatioHenkiloList, {'HENKILONHALLINTA': {'CRUD'}, 'KAYTTOOIKEUS': {'CRUD'}})")
+    @PreAuthorize("@permissionCheckerServiceImpl.hasRoleForOrganisations(#organisaatioHenkiloList, {'KAYTTOOIKEUS': {'CRUD'}})")
     @RequestMapping(value = "/{oid}/createOrUpdate", method = RequestMethod.PUT)
     public List<OrganisaatioHenkiloDto> updateOrganisaatioHenkilos(@PathVariable(value = "oid") String oidHenkilo,
                                                                    @RequestBody List<OrganisaatioHenkiloUpdateDto> organisaatioHenkiloList) {
@@ -64,7 +60,7 @@ public class OrganisaatioHenkiloController {
     }
 
     @ApiOperation(value = "Passsivoi henkilön organisaation ja kaikki tähän liittyvät käyttöoikeudet.")
-    @PreAuthorize("@permissionCheckerServiceImpl.checkRoleForOrganisation({#henkiloOrganisationOid}, {'HENKILONHALLINTA': {'CRUD'}, 'KAYTTOOIKEUS': {'CRUD'}})")
+    @PreAuthorize("@permissionCheckerServiceImpl.checkRoleForOrganisation({#henkiloOrganisationOid}, {'KAYTTOOIKEUS': {'CRUD'}})")
     @RequestMapping(value = "/{oid}/{henkiloOrganisationOid}", method = RequestMethod.DELETE)
     public void passivoiHenkiloOrganisation(@PathVariable("oid") String oidHenkilo,
                                             @PathVariable("henkiloOrganisationOid") String henkiloOrganisationOid) {

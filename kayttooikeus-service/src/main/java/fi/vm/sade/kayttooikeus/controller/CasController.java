@@ -46,11 +46,7 @@ public class CasController {
 
     @ApiOperation(value = "Generoi autentikointitokenin henkilölle.",
             notes = "Generoi tokenin CAS autentikointia varten henkilölle annettujen IdP tunnisteiden pohjalta.")
-    @PreAuthorize("hasAnyRole('ROLE_APP_HENKILONHALLINTA_READ',"
-            + "'ROLE_APP_HENKILONHALLINTA_READ_UPDATE',"
-            + "'ROLE_APP_HENKILONHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @RequestMapping(value = "/auth/oid/{oid}", method = RequestMethod.GET)
     public String generateAuthTokenForHenkilo(@PathVariable("oid") String oid,
                                               @RequestParam("idpkey") String idpKey,
@@ -58,11 +54,7 @@ public class CasController {
         return identificationService.generateAuthTokenForHenkilo(oid, idpKey, idpIdentifier);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_HENKILONHALLINTA_READ',"
-            + "'ROLE_APP_HENKILONHALLINTA_READ_UPDATE',"
-            + "'ROLE_APP_HENKILONHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Hakee henkilön OID:n autentikaation perusteella.",
             notes = "Hakee henkilön OID:n annettujen IdP tunnisteiden perusteella.")
     @RequestMapping(value = "/auth/idp/{idpkey}", method = RequestMethod.GET)
@@ -71,35 +63,35 @@ public class CasController {
         return identificationService.getHenkiloOidByIdpAndIdentifier(idpKey, idpIdentifier);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation("Palauttaa tiedon henkilön aiemmasta vahvasta tunnistautumisesta")
     @RequestMapping(value = "/auth/henkilo/{oidHenkilo}/vahvastiTunnistettu", method = RequestMethod.GET)
     public boolean isVahvastiTunnistettu(@PathVariable String oidHenkilo) {
         return this.henkiloService.isVahvastiTunnistettu(oidHenkilo);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation("Palauttaa tiedon henkilön aiemmasta vahvasta tunnistautumisesta")
     @RequestMapping(value = "/auth/henkilo/username/{username}/vahvastiTunnistettu", method = RequestMethod.GET)
     public boolean isVahvastiTunnistettuByUsername(@PathVariable String username) {
         return this.henkiloService.isVahvastiTunnistettuByUsername(username);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation("Palauttaa uri:n johon käyttäjä tulee ohjata kirjautumisen yhteydessä, tai null jos uudelleenohjausta ei tarvita")
     @RequestMapping(value = "/auth/henkilo/{oidHenkilo}/logInRedirect")
     public LogInRedirectType logInRedirectByOidHenkilo(@PathVariable("oidHenkilo") String oidHenkilo) {
         return this.henkiloService.logInRedirectByOidhenkilo(oidHenkilo);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation("Palauttaa uri:n johon käyttäjä tulee ohjata kirjautumisen yhteydessä, tai null jos uudelleenohjausta ei tarvita")
     @RequestMapping(value = "/auth/henkilo/username/{username}/logInRedirect")
     public LogInRedirectType logInRedirectByUsername(@PathVariable("username") String username) {
         return this.henkiloService.logInRedirectByUsername(username);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation("Luo tilapäisen tokenin henkilön vahvan tunnistaumisen ajaksi")
     @RequestMapping(value = "/auth/henkilo/{oidHenkilo}/loginToken", method = RequestMethod.GET)
     public String createLoginToken(@PathVariable String oidHenkilo, @RequestParam(required = false) Boolean salasananVaihto) {

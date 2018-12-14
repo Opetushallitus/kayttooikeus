@@ -34,7 +34,7 @@ public class AnomusControllerTest extends AbstractControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA")
     public void getActiveAnomuksetByHenkilo() throws Exception {
         given(this.kayttooikeusAnomusService.listHaetutKayttoOikeusRyhmat(any(AnomusCriteria.class), anyLong(), anyLong(), any()))
                 .willReturn(new ArrayList<>());
@@ -43,7 +43,7 @@ public class AnomusControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA")
     public void getActiveAnomuksetByHenkiloNotFound() throws Exception {
         given(this.kayttooikeusAnomusService.listHaetutKayttoOikeusRyhmat(anyString(), anyBoolean()))
                 .willThrow(new NotFoundException("message"));
@@ -52,7 +52,7 @@ public class AnomusControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA")
     public void updateHaettuKayttooikeusryhma() throws Exception {
         UpdateHaettuKayttooikeusryhmaDto haettuKayttooikeusryhmaDto = new UpdateHaettuKayttooikeusryhmaDto(1L,
                 KayttoOikeudenTila.MYONNETTY.toString(), LocalDateTime.now().toLocalDate(), LocalDateTime.now().plusYears(1).toLocalDate(), "hylkaysperusteteksti");
@@ -63,7 +63,7 @@ public class AnomusControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA")
     public void grantMyonnettyKayttooikeusryhmaForHenkilo() throws Exception {
         GrantKayttooikeusryhmaDto grantKayttooikeusryhmaDto = new GrantKayttooikeusryhmaDto(1L,
                 LocalDateTime.now().toLocalDate(), LocalDateTime.now().plusYears(1).toLocalDate());
@@ -74,7 +74,7 @@ public class AnomusControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA")
     public void createKayttooikeusAnomus() throws Exception {
         ArrayList<Long> oids = new ArrayList<>();
         oids.add(1L);

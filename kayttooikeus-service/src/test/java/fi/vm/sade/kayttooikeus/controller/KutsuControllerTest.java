@@ -29,7 +29,7 @@ public class KutsuControllerTest extends AbstractControllerTest {
     private KutsuService kutsuService;
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_CRUD")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_CRUD")
     public void listAvoinKutsusTest() throws Exception {
 
         given(this.kutsuService.listKutsus(eq(KutsuOrganisaatioOrder.AIKALEIMA), eq(Sort.Direction.DESC), any(), eq(null), eq(20l)))
@@ -46,7 +46,7 @@ public class KutsuControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_CRUD")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_CRUD")
     public void createTest() throws Exception {
         given(kutsuService.createKutsu(any())).willReturn(1L);
 
@@ -56,7 +56,7 @@ public class KutsuControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_CRUD")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_CRUD")
     public void deleteTest() throws Exception {
         this.mvc.perform(delete("/kutsu/1").accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk());

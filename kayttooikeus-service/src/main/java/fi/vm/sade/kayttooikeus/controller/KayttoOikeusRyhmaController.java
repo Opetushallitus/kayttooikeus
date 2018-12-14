@@ -38,7 +38,7 @@ public class KayttoOikeusRyhmaController {
     }
 
     @ApiOperation(value = "Hakee henkilön käyttöoikeusryhmät organisaatioittain")
-    @PreAuthorize("hasAnyRole('APP_KAYTTOOIKEUS_REKISTERINPITAJA', 'APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @RequestMapping(value = "ryhmasByOrganisaatio/{oid}", method = RequestMethod.GET)
     public Map<String, List<Integer>> ryhmasByOrganisation(@PathVariable("oid") String henkiloOid) {
         return this.kayttoOikeusService.findKayttooikeusryhmatAndOrganisaatioByHenkiloOid(henkiloOid);
@@ -53,7 +53,7 @@ public class KayttoOikeusRyhmaController {
     }
 
     @RequestMapping(value = "/{oid}/{organisaatioOid}", method = RequestMethod.GET)
-    @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#oid, {'HENKILONHALLINTA': {'READ', 'READ_UPDATE', 'CRUD'}, 'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
+    @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#oid, {'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
     @ApiOperation(value = "Hakee henkilön voimassa olevat käyttöoikeusryhmät.",
             notes = "Listaa kaikki annetun henkilön ja tämän annettuun organisaatioon "
                     + "liittyvät voimassaolevat sekä mahdollisesti myönnettävissä olevat "
@@ -64,7 +64,7 @@ public class KayttoOikeusRyhmaController {
     }
 
     @RequestMapping(value = "/henkilo/{oid}", method = RequestMethod.GET)
-    @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#oid, {'HENKILONHALLINTA': {'READ', 'READ_UPDATE', 'CRUD'}, 'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
+    @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#oid, {'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
     @ApiOperation(value = "Hakee henkilön käyttöoikeusryhmät.",
             notes = "Listaa henkilön kaikki käyttöoikeusryhmät sekä rajaa ne "
                     + "tiettyyn organisaatioon, jos kutsussa on annettu organisaatiorajoite.")
@@ -90,8 +90,7 @@ public class KayttoOikeusRyhmaController {
             + "'ROLE_APP_KOOSTEROOLIENHALLINTA_READ_UPDATE',"
             + "'ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_KAYTTOOIKEUSRYHMIEN_LUKU',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Hakee käyttöoikeusryhmän tiedot.",
             notes = "Hakee yhden käyttöoikeusryhmän kaikki tiedot "
                     + "annetun käyttöoikeusryhmän ID:n avulla.")
@@ -114,8 +113,7 @@ public class KayttoOikeusRyhmaController {
             + "'ROLE_APP_KOOSTEROOLIENHALLINTA_READ_UPDATE',"
             + "'ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_KAYTTOOIKEUSRYHMIEN_LUKU',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Hakee käyttöoikeusryhmään kuuluvat palvelut ja roolit.",
             notes = "Listaa kaikki annettuun käyttöoikeusryhmään kuuluvat "
                     + "palvelut ja roolit yhdistelmäpareina DTO:n avulla.")
@@ -125,11 +123,7 @@ public class KayttoOikeusRyhmaController {
 
 
     @RequestMapping(value = "/{id}/henkilot", method = RequestMethod.GET)
-    @PreAuthorize("hasAnyRole('ROLE_APP_HENKILONHALLINTA_READ',"
-            + "'ROLE_APP_HENKILONHALLINTA_READ_UPDATE',"
-            + "'ROLE_APP_HENKILONHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Hakee käyttöoikeusryhmään kuuluvat henkilot",
             notes = "Listaa kaikki annettuun käyttöoikeusryhmään kuuluvat henkilöt joilla voimassaoleva lupa")
     public RyhmanHenkilotDto getHenkilosByKayttoOikeusRyhma(@PathVariable("id") Long id) {
@@ -139,8 +133,7 @@ public class KayttoOikeusRyhmaController {
 
     @RequestMapping(method = RequestMethod.POST)
     @PreAuthorize("hasAnyRole('ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Luo uuden käyttöoikeusryhmän.",
             notes = "Tekee uuden käyttöoikeusryhmän annetun DTO:n pohjalta.")
     @ResponseBody
@@ -151,8 +144,7 @@ public class KayttoOikeusRyhmaController {
 
     @RequestMapping(value = "/kayttooikeus", method = RequestMethod.POST)
     @PreAuthorize("hasAnyRole('ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Luo uuden käyttöoikeuden.",
             notes = "Luo uuden käyttöoikeuden annetun käyttöoikeus modelin pohjalta.")
     public KayttoOikeusDto createNewKayttoOikeus(@RequestBody @Validated KayttoOikeusCreateDto kayttoOikeus) {
@@ -163,8 +155,7 @@ public class KayttoOikeusRyhmaController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     @PreAuthorize("hasAnyRole('ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Päivittää käyttöoikeusryhmän.",
             notes = "Päivittää käyttöoikeusryhmän tiedot annetun DTO:n avulla.")
     public KayttoOikeusRyhmaDto updateKayttoOikeusRyhma(@PathVariable("id") Long id, @RequestBody @Validated KayttoOikeusRyhmaModifyDto ryhmaData) {
@@ -174,8 +165,7 @@ public class KayttoOikeusRyhmaController {
 
     @RequestMapping(value = "/{id}/passivoi", method = RequestMethod.PUT)
     @PreAuthorize("hasAnyRole('ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Passivoi käyttöoikeusryhmän.",
             notes = "Passivoi käyttöoikeusryhmän. ")
     public void passivoiKayttoOikeusRyhma(@PathVariable("id") Long id) {
@@ -187,8 +177,7 @@ public class KayttoOikeusRyhmaController {
             + "'ROLE_APP_KOOSTEROOLIENHALLINTA_READ_UPDATE',"
             + "'ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_KAYTTOOIKEUSRYHMIEN_LUKU',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Listaa käyttöoikeusryhmät käyttooikeuksien mukaan.",
             notes = "Hakee käyttöoikeusryhmät joissa esiintyy jokin annetuista käyttöoikeuksista.")
     public List<KayttoOikeusRyhmaDto> getKayttoOikeusRyhmasByKayttoOikeus(

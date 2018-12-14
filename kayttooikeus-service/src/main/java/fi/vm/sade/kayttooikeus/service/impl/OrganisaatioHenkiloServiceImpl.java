@@ -104,11 +104,11 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
     @Transactional(readOnly = true)
     public List<KayttajaTyyppi> listPossibleHenkiloTypesAccessibleForCurrentUser() {
         if (kayttoOikeusRepository.isHenkiloMyonnettyKayttoOikeusToPalveluInRole(getCurrentUserOid(),
-                PALVELU_HENKILONHALLINTA, ROLE_ADMIN)) {
+                PALVELU_KAYTTOOIKEUS, ROLE_REKISTERINPITAJA)) {
             return asList(VIRKAILIJA, PALVELU);
         }
         if (kayttoOikeusRepository.isHenkiloMyonnettyKayttoOikeusToPalveluInRole(getCurrentUserOid(),
-                PALVELU_HENKILONHALLINTA, ROLE_CRUD)) {
+                PALVELU_KAYTTOOIKEUS, ROLE_CRUD)) {
             return singletonList(VIRKAILIJA);
         }
         return emptyList();
@@ -180,9 +180,7 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
                 )
                 .forEach(organisaatioHenkiloUpdateDto -> {
                     if (!this.getCurrentUserOid().equals(henkiloOid)) {
-                        Map<String, List<String>> allowedRoles = new LinkedHashMap<>();
-                        allowedRoles.put(PALVELU_ANOMUSTENHALLINTA, asList("CRUD", "READ_UPDATE"));
-                        allowedRoles.put(PALVELU_KAYTTOOIKEUS, asList("CRUD"));
+                        Map<String, List<String>> allowedRoles = Collections.singletonMap(PALVELU_KAYTTOOIKEUS, asList("CRUD"));
                         this.permissionCheckerService.hasRoleForOrganisations(Collections.singletonList(organisaatioHenkiloUpdateDto),
                                 allowedRoles);
                     }

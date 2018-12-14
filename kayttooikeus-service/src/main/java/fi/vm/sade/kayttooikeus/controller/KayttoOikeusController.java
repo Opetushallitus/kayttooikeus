@@ -32,13 +32,9 @@ public class KayttoOikeusController {
         this.taskExecutorService = taskExecutorService;
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_HENKILONHALLINTA_READ',"
-            + "'ROLE_APP_KAYTTOOIKEUS_READ',"
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_READ',"
             + "'ROLE_APP_KAYTTOOIKEUS_CRUD',"
-            + "'ROLE_APP_HENKILONHALLINTA_READ_UPDATE',"
-            + "'ROLE_APP_HENKILONHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Hakee palveluun liittyvät käyttöoikeudet.",
             notes = "Listaa kaikki palveluun liitetyt käyttöoikeudet "
                     + "palvelu-käyttöoikeus DTO:n avulla, johon on asetettu "
@@ -49,13 +45,9 @@ public class KayttoOikeusController {
         return kayttoOikeusService.listKayttoOikeusByPalvelu(name);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_HENKILONHALLINTA_READ',"
-            + "'ROLE_APP_KAYTTOOIKEUS_READ',"
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_READ',"
             + "'ROLE_APP_KAYTTOOIKEUS_CRUD',"
-            + "'ROLE_APP_HENKILONHALLINTA_READ_UPDATE',"
-            + "'ROLE_APP_HENKILONHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Hakee kirjautuneen käyttäjän käyttöoikeudet.",
             notes = "Listaa kaikki nykyisen sisäänkirjautuneen käyttäjän käyttöoikeudet, "
                     + "jossa on mukana myös vanhentuneet käyttöoikeudet.")
@@ -64,13 +56,9 @@ public class KayttoOikeusController {
         return this.kayttoOikeusService.listMyonnettyKayttoOikeusHistoriaForCurrentUser();
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_APP_HENKILONHALLINTA_READ',"
-            + "'ROLE_APP_KAYTTOOIKEUS_READ',"
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_READ',"
             + "'ROLE_APP_KAYTTOOIKEUS_CRUD',"
-            + "'ROLE_APP_HENKILONHALLINTA_READ_UPDATE',"
-            + "'ROLE_APP_HENKILONHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Hakee käyttäjien käyttöoikeudet annetuilla hakukriteereillä. Haku rajoitettu 1000 kerralla.",
             notes = "Vastauksessa ei tule välttämättä 1000 henkilöä koska tulosjoukkoon tehdään yhdistämisiä.")
     @RequestMapping(value = "/kayttaja", method = RequestMethod.GET)
@@ -81,11 +69,10 @@ public class KayttoOikeusController {
     }
 
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_SCHEDULE',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
+            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Lähettää muistutusviestit henkilöille joilla on käyttöoikeus päättymässä.",
             notes = "Tämä on alustavasti vain automaattisen sähköpostimuistutuksen testausta varten.",
-            authorizations = @Authorization("ROLE_APP_HENKILONHALLINTA_OPHREKISTERI"),
+            authorizations = @Authorization("ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA"),
             response = Integer.class)
     @RequestMapping(value = "/expirationReminders", method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON)

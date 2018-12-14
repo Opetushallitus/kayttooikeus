@@ -23,7 +23,7 @@ public class CasControllerTest extends AbstractControllerTest {
     private IdentificationService identificationService;
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_READ")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA")
     public void generateAuthTokenForHenkiloTest() throws Exception {
         given(this.identificationService.generateAuthTokenForHenkilo("1.2.3.4.9", "somekey", "someidentifier"))
                 .willReturn("myrandomtoken");
@@ -40,7 +40,7 @@ public class CasControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_READ")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA")
     public void getHenkiloOidByIdPAndIdentifierTest() throws Exception {
         given(identificationService.getHenkiloOidByIdpAndIdentifier("somekey", "someidentifier"))
                 .willReturn("token");

@@ -1,7 +1,6 @@
 package fi.vm.sade.kayttooikeus.repositories.criteria;
 
 import fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_ANOMUSTENHALLINTA;
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
 import java.util.Set;
 import static java.util.stream.Collectors.toSet;
@@ -21,9 +20,9 @@ public class MyontooikeusCriteria {
     private String rooli;
 
     public static MyontooikeusCriteria oletus() {
-        // käyttöoikeusanomuksien käsittely on sallittu vain ANOMUSTENHALLINTA_CRUD ja KAYTTOOIKEUS_CRUD -käyttöoikeuksilla
+        // käyttöoikeusanomuksien käsittely on sallittu vain KAYTTOOIKEUS_CRUD -käyttöoikeuksilla
         return MyontooikeusCriteria.builder()
-                .palvelut(Stream.of(PALVELU_ANOMUSTENHALLINTA, PALVELU_KAYTTOOIKEUS).collect(toSet()))
+                .palvelut(Stream.of(PALVELU_KAYTTOOIKEUS).collect(toSet()))
                 .rooli(PermissionCheckerServiceImpl.ROLE_CRUD)
                 .build();
     }

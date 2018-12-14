@@ -35,7 +35,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_READ")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_READ")
     public void listKayttoOikeusRyhmaTest() throws Exception {
         given(this.kayttoOikeusService.listAllKayttoOikeusRyhmas())
             .willReturn(singletonList(KayttoOikeusRyhmaDto.builder()
@@ -60,7 +60,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_READ")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_READ")
     public void listKayttoOikeusRyhmasByOrdOidTest() throws Exception {
         given(this.kayttoOikeusService.listPossibleRyhmasByOrganization("123"))
                 .willReturn(singletonList(KayttoOikeusRyhmaDto.builder()
@@ -86,8 +86,8 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
 
     @Test
     @WithMockUser(username = "1.2.3.4.5", authorities = {
-        "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI",
-        "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001",
+        "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA",
+        "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001",
     })
     public void listKayttoOikeusRyhmasIncludingHenkilosTest() throws Exception {
         given(this.kayttoOikeusService.listMyonnettyKayttoOikeusRyhmasMergedWithHenkilos("234", "123", "1.2.3.4.5"))
@@ -121,7 +121,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_READ")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_READ")
     public void listKayttoOikeusRyhmaByHenkiloTest() throws Exception {
         given(this.kayttoOikeusService.listMyonnettyKayttoOikeusRyhmasByHenkiloAndOrganisaatio("1.2.3.4.5", null))
                 .willReturn(singletonList(buildKayttoOikeusForHenkilo()));
@@ -138,7 +138,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_READ")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_READ")
     public void listKayttoOikeusRyhmaByCurrentHenkiloTest() throws Exception {
         given(this.kayttoOikeusService.listMyonnettyKayttoOikeusRyhmasByHenkiloAndOrganisaatio("1.2.3.4.5", null))
                 .willReturn(singletonList(buildKayttoOikeusForHenkilo()));
@@ -150,7 +150,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
 
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_READ")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_READ")
     public void getKayttoOikeusRyhmaDeniedTest() throws Exception {
         this.mvc.perform(get("/kayttooikeusryhma/44").accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().is4xxClientError());
@@ -197,7 +197,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_READ")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_READ")
     public void getKayttoOikeusByKayttoOikeusRyhmaTestDenied() throws Exception {
         this.mvc.perform(get("/kayttooikeusryhma/46/kayttooikeus").accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().is4xxClientError());
@@ -242,7 +242,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_READ")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_READ")
     public void createNewKayttoOikeusDeniedTest() throws Exception {
         this.mvc.perform(post("/kayttooikeusryhma/kayttooikeus").contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(jsonResource("classpath:kayttooikeusryhma/createKayttoOikeus.json"))
@@ -299,7 +299,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_HENKILONHALLINTA_READ")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_READ")
     public void updateKayttoOikeusRyhmaTestDenied() throws Exception {
         this.mvc.perform(put("/kayttooikeusryhma/345").contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(jsonResource("classpath:kayttooikeusryhma/updateKayttoOikeusRyhma.json"))
