@@ -16,7 +16,7 @@ public class MyonnettyKayttoOikeusController {
     private final MyonnettyKayttoOikeusService myonnettyKayttooikeusService;
 
     @DeleteMapping("/vanhentuneet")
-    @PreAuthorize("hasRole('ROLE_APP_KAYTTOOIKEUS_SCHEDULE')")
+    @PreAuthorize("hasRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation("Poistaa vanhentuneet käyttöoikeudet.")
     public synchronized void poistaVanhentuneet() {
         myonnettyKayttooikeusService.poistaVanhentuneet();
