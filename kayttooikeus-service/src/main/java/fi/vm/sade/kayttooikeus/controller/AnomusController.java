@@ -65,8 +65,7 @@ public class AnomusController {
 
     @ApiOperation("Hyväksyy tai hylkää haetun käyttöoikeusryhmän")
     // Organisation access validated on server layer
-    @PreAuthorize("hasAnyRole('ROLE_APP_ANOMUSTENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_CRUD',"
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @RequestMapping(value = "", method = RequestMethod.PUT)
     public void updateHaettuKayttooikeusryhma(@ApiParam("kayttoOikeudenTila MYONNETTY tai HYLATTY")
@@ -76,8 +75,7 @@ public class AnomusController {
 
     @ApiOperation("Myöntää halutut käyttöoikeusryhmät käyttäjälle haluttuun organisaatioon")
     // Organisation access validated on server layer
-    @PreAuthorize("hasAnyRole('ROLE_APP_ANOMUSTENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_CRUD',"
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @RequestMapping(value = "/{oidHenkilo}/{organisaatioOid}", method = RequestMethod.PUT)
     public void grantMyonnettyKayttooikeusryhmaForHenkilo(@PathVariable String oidHenkilo, @PathVariable String organisaatioOid,
@@ -103,8 +101,7 @@ public class AnomusController {
     }
 
     @ApiOperation("Poistaa henkilöltä käyttöoikeuden halutusta organisaatiosta")
-    @PreAuthorize("hasAnyRole('ROLE_APP_ANOMUSTENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_CRUD',"
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @RequestMapping(value = "/{oidHenkilo}/{organisaatioOid}/{id}", method = RequestMethod.DELETE)
     public void removePrivilege(@PathVariable String oidHenkilo,
