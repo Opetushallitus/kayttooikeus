@@ -74,7 +74,7 @@ public class KayttoOikeusControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_SCHEDULE")
+    @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA")
     public void sendExpirationRemindersTest() throws Exception {
         given(this.taskExecutorService.sendExpirationReminders(any(Period.class))).willReturn(1);
         this.mvc.perform(post("/kayttooikeus/expirationReminders")

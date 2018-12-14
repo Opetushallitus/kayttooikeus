@@ -185,8 +185,7 @@ public class HenkiloController {
     }
 
     @PutMapping("/{oid}/ldap")
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_SCHEDULE',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation("Lisää henkilön LDAP-synkronointijonoon")
     public void updateHenkiloToLdap(@PathVariable String oid,
             @RequestParam(required = false, defaultValue = "NORMAL") LdapSynchronizationType ldapSynchronization) {
