@@ -21,6 +21,10 @@ spring:
     baseline-on-migrate: false
     # If DB is not empty will not run migrations until this version
     baseline-version: 20180419161113283
+  jpa:
+    properties:
+      # https://hibernate.atlassian.net/browse/HHH-12368
+      hibernate.jdbc.lob.non_contextual_creation: true
   ldap:
     urls: ldap://localhost:389
     base: dc=opintopolku,dc=fi

@@ -23,6 +23,9 @@ public class KutsuCreateDto {
     private String sahkoposti;
     @NotNull
     private Asiointikieli asiointikieli;
+
+    private String saate;
+
     @Valid
     @NotNull
     private Set<KutsuOrganisaatioDto> organisaatiot;

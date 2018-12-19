@@ -22,6 +22,7 @@ public class KutsuReadDto {
     private Asiointikieli asiointikieli;
     private Set<KutsuOrganisaatioDto> organisaatiot = new HashSet<>();
     private Boolean hakaIdentifier;
+    private String saate;
 
     @Getter
     @Setter
