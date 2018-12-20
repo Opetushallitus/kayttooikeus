@@ -293,6 +293,7 @@ public class EmailServiceImpl implements EmailService {
                                                 .filter(Objects::nonNull).sorted().collect(toList())
                                 )
                         ).sorted(comparing(OranizationReplacement::getName)).collect(toList())),
+                replacement("saate", kutsu.getSaate()),
                 replacement("kutsuja", mapper.map(kutsuja, SahkopostiHenkiloDto.class)),
                 replacement("voimassa", kutsu.getAikaleima().plusMonths(1).format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
         ));
