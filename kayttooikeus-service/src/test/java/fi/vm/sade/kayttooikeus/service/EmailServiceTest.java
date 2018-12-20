@@ -186,6 +186,7 @@ public class EmailServiceTest extends AbstractServiceTest {
                 .salaisuus("salaisuushash")
                 .etunimi("arpa")
                 .sukunimi("kuutio")
+                .saate(null)
                 .organisaatiot(Sets.newHashSet(KutsuOrganisaatio.builder()
                         .organisaatioOid("1.2.3.4.1")
                         .ryhmat(Sets.newHashSet(KayttoOikeusRyhma.builder().nimi(new TextGroup()).build()))
@@ -200,7 +201,7 @@ public class EmailServiceTest extends AbstractServiceTest {
         assertThat(emailData.getRecipient()).hasSize(1);
         assertThat(emailData.getRecipient().get(0).getRecipientReplacements())
                 .extracting("name")
-                .containsExactlyInAnyOrder("vastaanottaja", "organisaatiot", "linkki", "kutsuja", "voimassa");
+                .containsExactlyInAnyOrder("vastaanottaja", "organisaatiot", "linkki", "kutsuja", "voimassa", "saate");
         assertThat(emailData.getRecipient().get(0).getOid()).isEqualTo("");
         assertThat(emailData.getRecipient().get(0).getOidType()).isEqualTo("");
         assertThat(emailData.getRecipient().get(0).getEmail()).isEqualTo("arpa@kuutio.fi");
