@@ -233,7 +233,7 @@ public class KutsuServiceImpl implements KutsuService {
         String henkiloOid;
         if(isNewHenkilo) {
             HenkiloCreateDto henkiloCreateDto = this.getHenkiloCreateDto(henkiloCreateByKutsuDto, kutsuByToken);
-            henkiloOid = this.oppijanumerorekisteriClient.createHenkiloForKutsu(henkiloCreateDto).get();
+            henkiloOid = this.oppijanumerorekisteriClient.createHenkilo(henkiloCreateDto);
         } else {
             henkiloOid = henkiloByHetu.get().getOidHenkilo();
         }

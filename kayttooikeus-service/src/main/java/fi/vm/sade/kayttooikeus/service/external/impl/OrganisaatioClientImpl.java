@@ -1,7 +1,8 @@
 package fi.vm.sade.kayttooikeus.service.external.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fi.vm.sade.generic.rest.CachingRestClient;
+import fi.vm.sade.javautils.http.OphHttpClient;
+import fi.vm.sade.javautils.http.OphHttpRequest;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.config.properties.UrlConfiguration;
@@ -12,6 +13,7 @@ import fi.vm.sade.kayttooikeus.service.external.OrganisaatioHakutulos;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -20,15 +22,17 @@ import java.util.stream.Collectors;
 import static com.carrotsearch.sizeof.RamUsageEstimator.humanReadableUnits;
 import static com.carrotsearch.sizeof.RamUsageEstimator.sizeOf;
 import static fi.vm.sade.kayttooikeus.service.external.ExternalServiceException.mapper;
+import static fi.vm.sade.kayttooikeus.service.external.impl.HttpClientUtil.noContentOrNotFoundException;
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.io;
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.retrying;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 @Slf4j
+@Component
 public class OrganisaatioClientImpl implements OrganisaatioClient {
-    private final CachingRestClient restClient = new CachingRestClient()
-            .setClientSubSystemCode("kayttooikeus.kayttooikeuspalvelu-service");
+
+    private final OphHttpClient httpClient;
     private final UrlConfiguration urlConfiguration;
     private final String rootOrganizationOid;
     private final ObjectMapper objectMapper;
@@ -37,10 +41,12 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
     private OrganisaatioCache cache;
     
     
-    public OrganisaatioClientImpl(UrlConfiguration urlConfiguration,
+    public OrganisaatioClientImpl(OphHttpClient httpClient,
+                                  UrlConfiguration urlConfiguration,
                                   ObjectMapper objectMapper,
                                   CommonProperties commonProperties,
                                   OrikaBeanMapper orikaBeanMapper) {
+        this.httpClient = httpClient;
         this.urlConfiguration = urlConfiguration;
         this.objectMapper = objectMapper;
         this.rootOrganizationOid = commonProperties.getRootOrganizationOid();
@@ -57,7 +63,7 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
         String haeHierarchyUrl = this.urlConfiguration.url("organisaatio-service.organisaatio.v4.hae", queryParamsAktiivisetSuunnitellut);
         // Add organisations to cache (active, incoming and passive)
         List<OrganisaatioPerustieto> organisaatiosWithoutRootOrg =
-                retrying(io(() -> this.restClient.get(haeHierarchyUrl, OrganisaatioHakutulos.class)), 2)
+                retrying(io(() -> get(haeHierarchyUrl, OrganisaatioHakutulos.class)), 2)
                         .get().orFail(mapper(haeHierarchyUrl)).getOrganisaatiot();
         // Add ryhmas to cache
         Map<String, String> queryParamsRyhmat = new HashMap<String, String>() {{
@@ -66,7 +72,7 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
         }};
         String haeRyhmasUrl = this.urlConfiguration.url("organisaatio-service.organisaatio.ryhmat", queryParamsRyhmat);
         organisaatiosWithoutRootOrg.addAll(Arrays.stream(retrying(io(() ->
-                this.restClient.get(haeRyhmasUrl, OrganisaatioPerustieto[].class)), 2)
+                get(haeRyhmasUrl, OrganisaatioPerustieto[].class)), 2)
                 .get().<ExternalServiceException>orFail(mapper(haeRyhmasUrl)))
                 // Make ryhma parentoidpath format same as on normal organisations.
                 .map(ryhma -> {
@@ -81,8 +87,15 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
 
     private OrganisaatioPerustieto fetchPerustiedot(String oid) {
         String url = urlConfiguration.url("organisaatio-service.organisaatio.perustiedot", oid);
-        return this.orikaBeanMapper.map(retrying(io(() -> (OrganisaatioRDTO) objectMapper.readerFor(OrganisaatioRDTO.class)
-                .readValue(restClient.getAsString(url))), 2).get().orFail(mapper(url)), OrganisaatioPerustieto.class);
+        return this.orikaBeanMapper.map(retrying(io(() -> get(url, OrganisaatioRDTO.class)), 2).get()
+                .orFail(mapper(url)), OrganisaatioPerustieto.class);
+    }
+
+    private <T> T get(String url, Class<T> type) {
+        return httpClient.<T>execute(OphHttpRequest.Builder.get(url).build())
+                .expectedStatus(200)
+                .mapWith(json -> io(() -> objectMapper.readValue(json, type)).get())
+                .orElseThrow(() -> noContentOrNotFoundException(url));
     }
 
     @Override

@@ -30,8 +30,6 @@ import fi.vm.sade.ryhmasahkoposti.api.dto.ReportedRecipientReplacementDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.sql.Date;
 import java.text.DateFormat;
 import java.time.ZoneId;
@@ -300,11 +297,11 @@ public class EmailServiceImpl implements EmailService {
         emailData.setRecipient(singletonList(recipient));
 
         logger.info("Sending invitation email to {}", kutsu.getSahkoposti());
-        HttpResponse response = this.ryhmasahkopostiClient.sendRyhmasahkoposti(emailData);
+        String response = this.ryhmasahkopostiClient.sendRyhmasahkoposti(emailData);
         try {
             logger.info("Sent invitation email to {}, ryhmasahkoposti-result: {}", kutsu.getSahkoposti(),
-                    IOUtils.toString(response.getEntity().getContent()));
-        } catch (IOException|NullPointerException e) {
+                    response);
+        } catch (Exception e) {
             logger.error("Could not read ryhmasahkoposti-result: " + e.getMessage(), e);
         }
     }

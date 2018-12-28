@@ -22,11 +22,6 @@ import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.kayttooikeus.service.external.RyhmasahkopostiClient;
 import fi.vm.sade.oppijanumerorekisteri.dto.*;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpVersion;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.message.BasicHttpResponse;
-import org.apache.http.message.BasicStatusLine;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +33,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -291,10 +285,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     @Test
     @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void createKutsuAsAdmin() {
-        HttpEntity emailResponseEntity = new StringEntity("12345", Charset.forName("UTF-8"));
-        BasicHttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 200, "Ok"));
-        response.setEntity(emailResponseEntity);
-        given(ryhmasahkopostiClient.sendRyhmasahkoposti(any())).willReturn(response);
+        given(ryhmasahkopostiClient.sendRyhmasahkoposti(any())).willReturn("12345");
         doReturn(HenkiloDto.builder()
                 .kutsumanimi("kutsun")
                 .sukunimi("kutsuja")
@@ -349,10 +340,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     @Test
     @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD", "ROLE_APP_KAYTTOOIKEUS_CRUD_1.2.3.4.5"})
     public void createKutsuAsNormalUser() {
-        HttpEntity emailResponseEntity = new StringEntity("12345", Charset.forName("UTF-8"));
-        BasicHttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 200, "Ok"));
-        response.setEntity(emailResponseEntity);
-        given(this.ryhmasahkopostiClient.sendRyhmasahkoposti(any())).willReturn(response);
+        given(this.ryhmasahkopostiClient.sendRyhmasahkoposti(any())).willReturn("12345");
         doReturn(HenkiloDto.builder()
                 .kutsumanimi("kutsun")
                 .sukunimi("kutsuja")
@@ -553,7 +541,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                         .ryhma(KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma("ryhma").withNimi(text("FI", "Kuvaus")))));
         Henkilo henkilo = populate(HenkiloPopulator.henkilo("1.2.3.4.5"));
         populate(HenkiloPopulator.henkilo("1.2.3.4.1"));
-        doReturn(Optional.of("1.2.3.4.5")).when(this.oppijanumerorekisteriClient).createHenkiloForKutsu(any(HenkiloCreateDto.class));
+        doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).createHenkilo(any(HenkiloCreateDto.class));
         doReturn(Optional.ofNullable(null)).when(this.oppijanumerorekisteriClient).getHenkiloByHetu(any());
         doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).getOidByHetu("hetu");
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
@@ -597,7 +585,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                         .ryhma(KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma("ryhma").withNimi(text("FI", "Kuvaus")))));
         Henkilo henkilo = populate(HenkiloPopulator.henkilo("1.2.3.4.5"));
         populate(HenkiloPopulator.henkilo("1.2.3.4.1"));
-        doReturn(Optional.of("1.2.3.4.5")).when(this.oppijanumerorekisteriClient).createHenkiloForKutsu(any(HenkiloCreateDto.class));
+        doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).createHenkilo(any(HenkiloCreateDto.class));
         doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).getOidByHetu("valid hetu");
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), "arpauser", "stronkPassword1!");
@@ -678,7 +666,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                         .ryhma(KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma("ryhma").withNimi(text("FI", "Kuvaus")))));
         Henkilo henkilo = populate(HenkiloPopulator.henkilo("1.2.3.4.5"));
         populate(HenkiloPopulator.henkilo("1.2.3.4.1"));
-        doReturn(Optional.of("1.2.3.4.5")).when(this.oppijanumerorekisteriClient).createHenkiloForKutsu(any(HenkiloCreateDto.class));
+        doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).createHenkilo(any(HenkiloCreateDto.class));
         doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).getOidByHetu("hetu");
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), null, null);
@@ -729,7 +717,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 "!haka%Identifier1/",
                 HenkiloPopulator.henkilo("1.2.3.4.1")))
                 .getHenkilo();
-        doReturn(Optional.of("1.2.3.4.5")).when(this.oppijanumerorekisteriClient).createHenkiloForKutsu(any(HenkiloCreateDto.class));
+        doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).createHenkilo(any(HenkiloCreateDto.class));
         doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).getOidByHetu("hetu");
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), null, null);
@@ -784,7 +772,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 HenkiloPopulator.henkilo("1.2.3.4.5")))
                 .getHenkilo();
         populate(HenkiloPopulator.henkilo("1.2.3.4.1"));
-        doReturn(Optional.of("1.2.3.4.5")).when(this.oppijanumerorekisteriClient).createHenkiloForKutsu(any(HenkiloCreateDto.class));
+        doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).createHenkilo(any(HenkiloCreateDto.class));
         doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).getOidByHetu("hetu");
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), null, null);

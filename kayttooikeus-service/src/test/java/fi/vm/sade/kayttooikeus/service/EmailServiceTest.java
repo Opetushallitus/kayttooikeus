@@ -14,8 +14,6 @@ import fi.vm.sade.kayttooikeus.service.external.RyhmasahkopostiClient;
 import fi.vm.sade.kayttooikeus.util.CreateUtil;
 import fi.vm.sade.oppijanumerorekisteri.dto.*;
 import fi.vm.sade.ryhmasahkoposti.api.dto.EmailData;
-import org.apache.http.message.BasicHttpResponse;
-import org.apache.http.message.BasicStatusLine;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
@@ -34,7 +32,6 @@ import java.util.Optional;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.Optional.of;
-import static org.apache.http.HttpVersion.HTTP_1_1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -78,7 +75,7 @@ public class EmailServiceTest extends AbstractServiceTest {
                 .build()));
         given(oppijanumerorekisteriClient.getHenkiloByOid("1.2.3.4.5")).willReturn(henkiloDto);
         given(ryhmasahkopostiClient.sendRyhmasahkoposti(any(EmailData.class)))
-                .willReturn(new BasicHttpResponse(new BasicStatusLine(HTTP_1_1, 200, "")));
+                .willReturn("");
         emailService.sendExpirationReminder("1.2.3.4.5", asList(
                 ExpiringKayttoOikeusDto.builder()
                     .henkiloOid("1.2.3.4.5")

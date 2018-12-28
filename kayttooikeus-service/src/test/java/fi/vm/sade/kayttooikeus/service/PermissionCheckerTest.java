@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import fi.vm.sade.generic.rest.CachingRestClient;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import fi.vm.sade.kayttooikeus.dto.permissioncheck.ExternalPermissionService;
@@ -14,6 +13,7 @@ import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.OrganisaatioHenkilo;
 import fi.vm.sade.kayttooikeus.model.OrganisaatioViite;
 import fi.vm.sade.kayttooikeus.repositories.*;
+import fi.vm.sade.kayttooikeus.service.external.ExternalPermissionClient;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
@@ -21,20 +21,15 @@ import fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl;
 import fi.vm.sade.kayttooikeus.util.CreateUtil;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
 import fi.vm.sade.properties.OphProperties;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.ProtocolVersion;
 import org.apache.http.entity.BasicHttpEntity;
-import org.apache.http.message.BasicHttpResponse;
-import org.apache.http.message.BasicStatusLine;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -70,8 +65,8 @@ public class PermissionCheckerTest {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    private FakeRestClient fakeRestClient = new FakeRestClient();
-
+    @Mock
+    private ExternalPermissionClient externalPermissionClient;
     @Mock
     private OppijanumerorekisteriClient oppijanumerorekisteriClient;
 
@@ -97,11 +92,10 @@ public class PermissionCheckerTest {
         OphProperties ophPropertiesMock = Mockito.mock(OphProperties.class);
         when(ophPropertiesMock.url(anyString())).thenReturn("fakeurl");
 
-        this.permissionChecker = spy(new PermissionCheckerServiceImpl(ophPropertiesMock,
-                this.henkiloDataRepositoryMock, organisaatioClient, this.oppijanumerorekisteriClient,
+        this.permissionChecker = spy(new PermissionCheckerServiceImpl(
+                this.henkiloDataRepositoryMock, organisaatioClient, externalPermissionClient, this.oppijanumerorekisteriClient,
                 this.myonnettyKayttoOikeusRyhmaTapahtumaRepository, this.kayttoOikeusRyhmaMyontoViiteRepository,
                 commonProperties, this.organisaatioHenkiloRepository, this.kayttooikeusryhmaDataRepository));
-        ReflectionTestUtils.setField(permissionChecker, "restClient", this.fakeRestClient);
         when(this.oppijanumerorekisteriClient.getAllOidsForSamePerson(anyString())).thenReturn(
                 Sets.newHashSet("masterOid", "slaveOid1", "slaveOid2")
         );
@@ -320,10 +314,18 @@ public class PermissionCheckerTest {
         when(henkiloDataRepositoryMock.findByOidHenkilo(eq("callingPerson"))).thenReturn(Optional.of(henkilo));
         Set<String> organisaatioOids = Stream.of(ORG1, ORG2, ORG2 + ".child1", ORG2 + ".child1.child1", ORG2 + ".child2").collect(Collectors.toSet());
         doReturn(organisaatioOids).when(this.organisaatioClient).listWithChildOids(any(), any());
-        this.fakeRestClient.setAllowAccess(false);
+        when(externalPermissionClient.getPermission(any(), any())).thenReturn(PermissionCheckResponseDto.denied());
         when(this.henkiloDataRepositoryMock.findByOidHenkilo(eq("testPerson"))).thenReturn(Optional.empty());
         assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Collections.singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD")),
                 ExternalPermissionService.HAKU_APP)).isFalse();
+        ArgumentCaptor<PermissionCheckRequestDto> permissionCheckRequestDtoArgumentCaptor = ArgumentCaptor.forClass(PermissionCheckRequestDto.class);
+        verify(externalPermissionClient).getPermission(any(), permissionCheckRequestDtoArgumentCaptor.capture());
+        PermissionCheckRequestDto permissionCheckRequestDto = permissionCheckRequestDtoArgumentCaptor.getValue();
+        assertThat(permissionCheckRequestDto).isNotNull();
+        assertThat(permissionCheckRequestDto.getPersonOidsForSamePerson())
+                .containsExactlyInAnyOrder("masterOid", "slaveOid1", "slaveOid2");
+        assertThat(permissionCheckRequestDto.getOrganisationOids())
+                .containsExactlyInAnyOrder(ORG1, ORG2, ORG2 + ".child1", ORG2 + ".child2", ORG2 + ".child1.child1");
     }
 
     @Test
@@ -335,12 +337,20 @@ public class PermissionCheckerTest {
         when(henkiloDataRepositoryMock.findByOidHenkilo(eq("callingPerson"))).thenReturn(Optional.of(henkilo));
         Set<String> organisaatioOids = Stream.of(ORG1, ORG2, ORG2 + ".child1", ORG2 + ".child1.child1", ORG2 + ".child2").collect(Collectors.toSet());
         doReturn(organisaatioOids).when(this.organisaatioClient).listWithChildOids(any(), any());
-        this.fakeRestClient.setAllowAccess(false);
+        when(externalPermissionClient.getPermission(any(), any())).thenReturn(PermissionCheckResponseDto.denied());
         when(this.henkiloDataRepositoryMock.findByOidHenkilo(eq("testPerson"))).thenReturn(Optional.empty());
-        this.fakeRestClient.setAllowAccess(true);
+        when(externalPermissionClient.getPermission(any(), any())).thenReturn(PermissionCheckResponseDto.allowed());
         assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson",
                 Collections.singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD")), ExternalPermissionService.HAKU_APP))
                 .isTrue();
+        ArgumentCaptor<PermissionCheckRequestDto> permissionCheckRequestDtoArgumentCaptor = ArgumentCaptor.forClass(PermissionCheckRequestDto.class);
+        verify(externalPermissionClient).getPermission(any(), permissionCheckRequestDtoArgumentCaptor.capture());
+        PermissionCheckRequestDto permissionCheckRequestDto = permissionCheckRequestDtoArgumentCaptor.getValue();
+        assertThat(permissionCheckRequestDto).isNotNull();
+        assertThat(permissionCheckRequestDto.getPersonOidsForSamePerson())
+                .containsExactlyInAnyOrder("masterOid", "slaveOid1", "slaveOid2");
+        assertThat(permissionCheckRequestDto.getOrganisationOids())
+                .containsExactlyInAnyOrder(ORG1, ORG2, ORG2 + ".child1", ORG2 + ".child2", ORG2 + ".child1.child1");
     }
 
     @Test
@@ -684,42 +694,6 @@ public class PermissionCheckerTest {
                 Sets.newHashSet("ROLE_APP_KAYTTOOIKEUS_READ", "ROLE_APP_KAYTTOOIKEUS_READ_READ_1.2.3.4.200"));
         assertThat(hasInternalAccess).isFalse();
         verify(this.organisaatioClient, Mockito.times(2)).getActiveParentOids(eq("1.2.3.4.100"));
-    }
-
-    class FakeRestClient extends CachingRestClient {
-
-        private boolean allowAccess;
-
-        @Override
-        public HttpResponse post(String url, String charset, String json) throws IOException {
-            PermissionCheckRequestDto request = objectMapper.readValue(json, PermissionCheckRequestDto.class);
-
-            // Assert that the client request was correct
-            assertThat(request.getPersonOidsForSamePerson().contains("masterOid")).isTrue();
-            assertThat(request.getPersonOidsForSamePerson().contains("slaveOid1")).isTrue();
-            assertThat(request.getPersonOidsForSamePerson().contains("slaveOid2")).isTrue();
-            assertThat(5).isEqualTo(request.getOrganisationOids().size());
-            assertThat(request.getOrganisationOids().contains(ORG1)).isTrue();
-            assertThat(request.getOrganisationOids().contains(ORG2)).isTrue();
-            assertThat(request.getOrganisationOids().contains(ORG2 + ".child1")).isTrue();
-            assertThat(request.getOrganisationOids().contains(ORG2 + ".child2")).isTrue();
-            assertThat(request.getOrganisationOids().contains(ORG2 + ".child1.child1")).isTrue();
-
-            HttpResponse httpResponse = new BasicHttpResponse(new BasicStatusLine(new ProtocolVersion("HTTP", 1, 1), 200, "OK"));
-
-            PermissionCheckResponseDto response = new PermissionCheckResponseDto();
-            response.setAccessAllowed(this.allowAccess);
-
-            when(entity.getContent()).thenReturn(IOUtils.toInputStream(objectMapper.writeValueAsString(response)));
-            httpResponse.setEntity(entity);
-
-            return httpResponse;
-        }
-
-        void setAllowAccess(boolean allowAccess) {
-            this.allowAccess = allowAccess;
-        }
-
     }
 
 }

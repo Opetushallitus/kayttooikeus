@@ -32,8 +32,6 @@ public interface OppijanumerorekisteriClient {
 
     List<String> getModifiedSince(LocalDateTime dateTime, long offset, long amount);
 
-    HenkiloPerustietoDto getPerustietoByOid(String oidHenkilo);
-
     HenkiloDto getHenkiloByOid(String oid);
 
     Optional<HenkiloDto> findHenkiloByOid(String oid);
@@ -41,8 +39,6 @@ public interface OppijanumerorekisteriClient {
     Optional<HenkiloDto> getHenkiloByHetu(String hetu);
 
     Collection<HenkiloYhteystiedotDto> listYhteystiedot(HenkiloHakuCriteria criteria);
-
-    Optional<String> createHenkiloForKutsu(HenkiloCreateDto henkiloCreateDto);
 
     String createHenkilo(HenkiloCreateDto henkiloCreateDto);
 

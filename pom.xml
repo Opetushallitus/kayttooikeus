@@ -42,7 +42,6 @@
         <ryhmasahkoposti.version>14.7</ryhmasahkoposti.version>
 
         <!-- Sade utils -->
-        <generic.version>9.7-SNAPSHOT</generic.version>
         <auditlog.api.version>7.2.0-SNAPSHOT</auditlog.api.version>
 
         <!-- Utils -->
@@ -85,11 +84,6 @@
 
             <!-- SADE -->
             <dependency>
-                <groupId>fi.vm.sade.generic</groupId>
-                <artifactId>generic-common</artifactId>
-                <version>${generic.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>fi.vm.sade</groupId>
                 <artifactId>auditlogger</artifactId>
                 <version>${auditlog.api.version}</version>
@@ -104,6 +98,11 @@
                 <groupId>fi.vm.sade.java-utils</groupId>
                 <artifactId>java-properties</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>fi.vm.sade.java-utils</groupId>
+                <artifactId>java-http</artifactId>
+                <version>0.1.4-SNAPSHOT</version>
             </dependency>
 
             <dependency>

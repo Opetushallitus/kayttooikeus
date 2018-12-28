@@ -1,10 +1,8 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fi.vm.sade.generic.rest.CachingRestClient;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.permissioncheck.ExternalPermissionService;
@@ -15,16 +13,15 @@ import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
+import fi.vm.sade.kayttooikeus.service.external.ExternalPermissionClient;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.kayttooikeus.util.OrganisaatioMyontoPredicate;
 import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
-import fi.vm.sade.properties.OphProperties;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +42,6 @@ import static java.util.Collections.*;
 @Service
 public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     private static final Logger LOG = LoggerFactory.getLogger(PermissionCheckerService.class);
-    private static CachingRestClient restClient = new CachingRestClient().setClientSubSystemCode("henkilo.authentication-service");
-    private static ObjectMapper objectMapper = new ObjectMapper();
     public static final String PALVELU_KAYTTOOIKEUS_PREFIX = "ROLE_APP_KAYTTOOIKEUS_";
     public static final String PALVELU_KOOSTEROOLIENHALLINTA_PREFIX = "ROLE_APP_KOOSTEROOLIENHALLINTA_"; // Käyttöoikeusryhmien katselu ja muokkaus
     public static final String PALVELU_KAYTTOOIKEUS = "KAYTTOOIKEUS";
@@ -55,36 +50,31 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     public static final String ROLE_PREFIX = "ROLE_APP_";
     private static final String ROLE_PALVELUKAYTTAJA_CRUD = "ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_CRUD";
 
-
     private final HenkiloDataRepository henkiloDataRepository;
     private final MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
     private final KayttoOikeusRyhmaMyontoViiteRepository kayttoOikeusRyhmaMyontoViiteRepository;
     private final OrganisaatioHenkiloRepository organisaatioHenkiloRepository;
     private final KayttooikeusryhmaDataRepository kayttooikeusryhmaDataRepository;
 
+    private ExternalPermissionClient externalPermissionClient;
     private OppijanumerorekisteriClient oppijanumerorekisteriClient;
     private OrganisaatioClient organisaatioClient;
 
     private CommonProperties commonProperties;
 
-    private static Map<ExternalPermissionService, String> SERVICE_URIS = new HashMap<>();
-
     @Autowired
-    public PermissionCheckerServiceImpl(OphProperties ophProperties,
-                                        HenkiloDataRepository henkiloDataRepository,
+    public PermissionCheckerServiceImpl(HenkiloDataRepository henkiloDataRepository,
                                         OrganisaatioClient organisaatioClient,
+                                        ExternalPermissionClient externalPermissionClient,
                                         OppijanumerorekisteriClient oppijanumerorekisteriClient,
                                         MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository,
                                         KayttoOikeusRyhmaMyontoViiteRepository kayttoOikeusRyhmaMyontoViiteRepository,
                                         CommonProperties commonProperties,
                                         OrganisaatioHenkiloRepository organisaatioHenkiloRepository,
                                         KayttooikeusryhmaDataRepository kayttooikeusryhmaDataRepository) {
-        SERVICE_URIS.put(ExternalPermissionService.HAKU_APP, ophProperties.url("haku-app.external-permission-check"));
-        SERVICE_URIS.put(ExternalPermissionService.SURE, ophProperties.url("suoritusrekisteri.external-permission-check"));
-        SERVICE_URIS.put(ExternalPermissionService.ATARU, ophProperties.url("ataru-editori.external-permission-check"));
-        SERVICE_URIS.put(ExternalPermissionService.KOSKI, ophProperties.url("koski.external-permission-check"));
         this.henkiloDataRepository = henkiloDataRepository;
         this.organisaatioClient = organisaatioClient;
+        this.externalPermissionClient = externalPermissionClient;
         this.oppijanumerorekisteriClient = oppijanumerorekisteriClient;
         this.myonnettyKayttoOikeusRyhmaTapahtumaRepository = myonnettyKayttoOikeusRyhmaTapahtumaRepository;
         this.kayttoOikeusRyhmaMyontoViiteRepository = kayttoOikeusRyhmaMyontoViiteRepository;
@@ -131,11 +121,8 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
             return true;
         }
 
-        // If no internal access -> try to check permission from external service
-        String serviceUri = SERVICE_URIS.get(permissionCheckService);
-
-        if (StringUtils.isBlank(personOidToAccess) || StringUtils.isBlank(serviceUri)) {
-            LOG.error("isAllowedToAccess() called with empty personOid or invalid permissionCheckService");
+        if (StringUtils.isBlank(personOidToAccess) || permissionCheckService == null) {
+            LOG.error("isAllowedToAccess() called with empty personOid or permissionCheckService");
             return false;
         }
 
@@ -163,17 +150,20 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
 
         Set<String> personOidsForSamePerson = oppijanumerorekisteriClient.getAllOidsForSamePerson(personOidToAccess);
 
-        PermissionCheckResponseDto response = checkPermissionFromExternalService(serviceUri, personOidsForSamePerson, flattedOrgs, callingUserRoles);
+        PermissionCheckRequestDto permissionCheckRequestDto = new PermissionCheckRequestDto();
+        permissionCheckRequestDto.setPersonOidsForSamePerson(Lists.newArrayList(personOidsForSamePerson));
+        permissionCheckRequestDto.setOrganisationOids(Lists.newArrayList(flattedOrgs));
+        permissionCheckRequestDto.setLoggedInUserRoles(callingUserRoles);
 
+        PermissionCheckResponseDto response = externalPermissionClient.getPermission(permissionCheckService,  permissionCheckRequestDto);
 
 //        SURElla ei kaikissa tapauksissa (esim. jos YO tutkinto ennen 90-lukua) ole tietoa
 //        henkilösta, joten pitää kysyä varmuuden vuoksi myös haku-appilta ja sen jälkeen atarulta
         if (!response.isAccessAllowed() && ExternalPermissionService.SURE.equals(permissionCheckService)) {
-            PermissionCheckResponseDto responseHakuApp = checkPermissionFromExternalService(
-                    SERVICE_URIS.get(ExternalPermissionService.HAKU_APP), personOidsForSamePerson, flattedOrgs, callingUserRoles);
+            PermissionCheckResponseDto responseHakuApp = externalPermissionClient.getPermission(
+                    ExternalPermissionService.HAKU_APP, permissionCheckRequestDto);
             if (!responseHakuApp.isAccessAllowed()) {
-                return checkPermissionFromExternalService(
-                        SERVICE_URIS.get(ExternalPermissionService.ATARU), personOidsForSamePerson, flattedOrgs, callingUserRoles).isAccessAllowed();
+                return externalPermissionClient.getPermission(ExternalPermissionService.ATARU,permissionCheckRequestDto).isAccessAllowed();
             } else {
                 return true;
             }
@@ -305,27 +295,6 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
             }
         }
         return true;
-    }
-
-    private static PermissionCheckResponseDto checkPermissionFromExternalService(String serviceUrl,
-                                                                                 Set<String> personOidsForSamePerson,
-                                                                                 Set<String> organisationOids,
-                                                                                 Set<String> loggedInUserRoles) {
-        PermissionCheckRequestDto requestDTO = new PermissionCheckRequestDto();
-        requestDTO.setPersonOidsForSamePerson(Lists.newArrayList(personOidsForSamePerson));
-        requestDTO.setOrganisationOids(Lists.newArrayList(organisationOids));
-        requestDTO.setLoggedInUserRoles(loggedInUserRoles);
-
-        try {
-            HttpResponse httpResponse = restClient.post(
-                    serviceUrl, "application/json; charset=UTF-8", objectMapper.writeValueAsString(requestDTO)
-            );
-            return objectMapper.readValue(httpResponse.getEntity().getContent(), PermissionCheckResponseDto.class);
-        }
-        catch (Exception e) {
-            LOG.error("External permission check failed: " + e.toString());
-            throw new RuntimeException("Failed: " + e);
-        }
     }
 
     private static Set<String> getPrefixedRoles(final String prefix, final List<String> rolesWithoutPrefix) {

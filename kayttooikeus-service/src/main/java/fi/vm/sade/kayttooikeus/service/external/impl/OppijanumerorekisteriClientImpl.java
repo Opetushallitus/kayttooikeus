@@ -1,61 +1,53 @@
 package fi.vm.sade.kayttooikeus.service.external.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fi.vm.sade.generic.rest.CachingRestClient;
-import fi.vm.sade.kayttooikeus.config.properties.ServiceUsersProperties;
+import fi.vm.sade.javautils.http.OphHttpClient;
+import fi.vm.sade.javautils.http.OphHttpEntity;
+import fi.vm.sade.javautils.http.OphHttpRequest;
 import fi.vm.sade.kayttooikeus.service.dto.HenkiloVahvaTunnistusDto;
 import fi.vm.sade.kayttooikeus.service.dto.HenkiloYhteystiedotDto;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.ExternalServiceException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
-import fi.vm.sade.kayttooikeus.util.FunctionalUtils;
 import fi.vm.sade.oppijanumerorekisteri.dto.*;
 import fi.vm.sade.properties.OphProperties;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
+import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import static fi.vm.sade.kayttooikeus.config.HttpClientConfiguration.HTTP_CLIENT_OPPIJANUMEROREKISTERI;
 import static fi.vm.sade.kayttooikeus.service.external.ExternalServiceException.mapper;
+import static fi.vm.sade.kayttooikeus.service.external.impl.HttpClientUtil.noContentOrNotFoundException;
+import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.io;
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.retrying;
 import static java.util.Collections.singletonList;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 @Component
 public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriClient {
-    private static final String SERVICE_CODE = "kayttooikeus.kayttooikeuspalvelu-service";
+
     private final ObjectMapper objectMapper;
+    private final OphHttpClient httpClient;
     private final OphProperties urlProperties;
-    private final CachingRestClient proxyRestClient;
-    private final CachingRestClient serviceAccountClient;
 
     @Autowired
-    public OppijanumerorekisteriClientImpl(ObjectMapper objectMapper, OphProperties urlProperties,
-                                           ServiceUsersProperties serviceUsersProperties) {
+    public OppijanumerorekisteriClientImpl(ObjectMapper objectMapper,
+                                           @Qualifier(HTTP_CLIENT_OPPIJANUMEROREKISTERI) OphHttpClient httpClient,
+                                           OphProperties urlProperties) {
         this.objectMapper = objectMapper;
+        this.httpClient = httpClient;
         this.urlProperties = urlProperties;
-        this.proxyRestClient = new CachingRestClient().setClientSubSystemCode(SERVICE_CODE);
-        this.proxyRestClient.setWebCasUrl(urlProperties.url("cas.url"));
-        this.proxyRestClient.setCasService(urlProperties.url("oppijanumerorekisteri-service.security-check"));
-        this.proxyRestClient.setUseProxyAuthentication(true);
-        
-        this.serviceAccountClient = new CachingRestClient().setClientSubSystemCode(SERVICE_CODE);
-        this.serviceAccountClient.setWebCasUrl(urlProperties.url("cas.url"));
-        this.serviceAccountClient.setCasService(urlProperties.url("oppijanumerorekisteri-service.security-check"));
-        this.serviceAccountClient.setUsername(serviceUsersProperties.getOppijanumerorekisteri().getUsername());
-        this.serviceAccountClient.setPassword(serviceUsersProperties.getOppijanumerorekisteri().getPassword());
     }
 
     @Override
@@ -64,11 +56,19 @@ public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriCli
             return new ArrayList<>();
         }
         String url = urlProperties.url("oppijanumerorekisteri-service.henkilo.henkiloPerustietosByHenkiloOidList");
-        return retrying(FunctionalUtils.<List<HenkiloPerustietoDto>>io(
-            () -> objectMapper.readerFor(new TypeReference<List<HenkiloPerustietoDto>>() {})
-                    .readValue(IOUtils.toString(serviceAccountClient.post(url, MediaType.APPLICATION_JSON_VALUE,
-                            objectMapper.writer().writeValueAsString(henkiloOid)).getEntity().getContent()))), 2).get()
-                .orFail(mapper(url));
+        OphHttpRequest request = OphHttpRequest.Builder
+                .post(url)
+                .setEntity(new OphHttpEntity.Builder()
+                        .content(io(() -> objectMapper.writeValueAsString(henkiloOid)).get())
+                        .contentType(ContentType.APPLICATION_JSON)
+                        .build())
+                .build();
+        Supplier<List<HenkiloPerustietoDto>> action = () -> httpClient.<HenkiloPerustietoDto[]>execute(request)
+                .expectedStatus(200)
+                .mapWith(json -> io(() -> objectMapper.readValue(json, HenkiloPerustietoDto[].class)).get())
+                .map(array -> Arrays.stream(array).collect(toList()))
+                .orElseThrow(() -> noContentOrNotFoundException(url));
+        return retrying(action, 2).get().orFail(mapper(url));
     }
 
     @Override
@@ -76,28 +76,30 @@ public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriCli
         String url = urlProperties.url("oppijanumerorekisteri-service.s2s.duplicateHenkilos");
         Map<String,Object> criteria = new HashMap<>();
         criteria.put("henkiloOids", singletonList(personOid));
-        return Stream.concat(Stream.of(personOid),
-            retrying(FunctionalUtils.<List<HenkiloViiteDto>>io(
-                () ->  objectMapper.readerFor(new TypeReference<List<HenkiloViiteDto>>() {})
-                    .readValue(IOUtils.toString(this.serviceAccountClient.post(url, MediaType.APPLICATION_JSON_VALUE,
-                        objectMapper.writeValueAsString(criteria)).getEntity().getContent()))), 2).get()
-            .orFail(mapper(url)).stream().flatMap(viite -> Stream.of(viite.getHenkiloOid(), viite.getMasterOid()))
-        ).collect(toSet());
+        OphHttpRequest request = OphHttpRequest.Builder
+                .post(url)
+                .setEntity(new OphHttpEntity.Builder()
+                        .content(io(() -> objectMapper.writeValueAsString(criteria)).get())
+                        .contentType(ContentType.APPLICATION_JSON)
+                        .build())
+                .build();
+        Supplier<List<HenkiloViiteDto>> action = () -> httpClient.<HenkiloViiteDto[]>execute(request)
+                .expectedStatus(200)
+                .mapWith(json -> io(() -> objectMapper.readValue(json, HenkiloViiteDto[].class)).get())
+                .map(array -> Arrays.stream(array).collect(toList()))
+                .orElseThrow(() -> noContentOrNotFoundException(url));
+        return Stream.concat(Stream.of(personOid), retrying(action, 2).get().orFail(mapper(url))
+                .stream().flatMap(viite -> Stream.of(viite.getHenkiloOid(), viite.getMasterOid()))).collect(toSet());
     }
 
     @Override
     public String getOidByHetu(String hetu) {
         String url = urlProperties.url("oppijanumerorekisteri-service.s2s.oidByHetu", hetu);
-        return retrying(FunctionalUtils.io(
-                () -> IOUtils.toString(serviceAccountClient.get(url))), 2).get()
-                .orFail((RuntimeException e) -> {
-                    if (e.getCause() instanceof CachingRestClient.HttpException) {
-                        if (((CachingRestClient.HttpException) e.getCause()).getStatusCode() == 404) {
-                            throw new NotFoundException("could not find oid with hetu: " + hetu);
-                        }
-                    }
-                    return new ExternalServiceException(url, e.getMessage(), e);
-                });
+        Supplier<String> action = () -> httpClient.<String>execute(OphHttpRequest.Builder.get(url).build())
+                .expectedStatus(200)
+                .mapWith(identity())
+                .orElseThrow(() -> new NotFoundException("could not find oid with hetu: " + hetu));
+        return retrying(action, 2).get().orFail(mapper(url));
     }
 
     @Override
@@ -118,11 +120,19 @@ public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriCli
         }
 
         String url = this.urlProperties.url("oppijanumerorekisteri-service.s2s.henkilohaku-list-as-admin", params);
-        return retrying(FunctionalUtils.<List<HenkiloHakuPerustietoDto>>io(
-                () -> objectMapper.readerFor(new TypeReference<List<HenkiloHakuPerustietoDto>>() {})
-                        .readValue(this.serviceAccountClient.post(url, MediaType.APPLICATION_JSON_VALUE,
-                                data).getEntity().getContent())), 2).get()
-                .orFail(mapper(url));
+        OphHttpRequest request = OphHttpRequest.Builder
+                .post(url)
+                .setEntity(new OphHttpEntity.Builder()
+                        .content(data)
+                        .contentType(ContentType.APPLICATION_JSON)
+                        .build())
+                .build();
+        Supplier<List<HenkiloHakuPerustietoDto>> action = () -> httpClient.<HenkiloHakuPerustietoDto[]>execute(request)
+                .expectedStatus(200)
+                .mapWith(json -> io(() -> objectMapper.readValue(json, HenkiloHakuPerustietoDto[].class)).get())
+                .map(array -> Arrays.stream(array).collect(toList()))
+                .orElseThrow(() -> noContentOrNotFoundException(url));
+        return retrying(action, 2).get().orFail(mapper(url));
     }
 
     @Override
@@ -132,148 +142,137 @@ public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriCli
             put("amount", Long.toString(amount));
         }};
         String url = this.urlProperties.url("oppijanumerorekisteri-service.s2s.modified-since", dateTime, params);
-        return retrying(FunctionalUtils.<List<String>>io(
-                () -> this.objectMapper.readerFor(new TypeReference<List<String>>() {})
-                        .readValue(this.serviceAccountClient.get(url))), 2).get()
-                .orFail((RuntimeException e) -> new ExternalServiceException(url, e.getMessage(), e));
-    }
-
-
-    @Override
-    public HenkiloPerustietoDto getPerustietoByOid(String oid) {
-        String url = urlProperties.url("oppijanumerorekisteri-service.s2s.henkiloPerustieto");
-        Map<String,Object> data = new HashMap<>();
-        data.put("oidHenkilo", oid);
-
-        return retrying(FunctionalUtils.<HenkiloPerustiedotDto>io(
-                () -> objectMapper.readerFor(HenkiloPerustiedotDto.class)
-                        .readValue(this.serviceAccountClient.post(url, MediaType.APPLICATION_JSON_VALUE,
-                                objectMapper.writeValueAsString(data)).getEntity().getContent())), 2).get()
-                .orFail(mapper(url));
+        Supplier<List<String>> action = () -> httpClient.<String[]>execute(OphHttpRequest.Builder.get(url).build())
+                .expectedStatus(200)
+                .mapWith(json -> io(() -> objectMapper.readValue(json, String[].class)).get())
+                .map(array -> Arrays.stream(array).collect(toList()))
+                .orElseThrow(() -> noContentOrNotFoundException(url));
+        return retrying(action, 2).get().orFail(e -> new ExternalServiceException(url, e.getMessage(), e));
     }
 
     @Override
     public HenkiloDto getHenkiloByOid(String oid) {
         String url = this.urlProperties.url("oppijanumerorekisteri-service.henkilo.henkiloByOid", oid);
 
-        return retrying(FunctionalUtils.<HenkiloDto>io(
-                () -> this.objectMapper.readerFor(HenkiloDto.class)
-                        .readValue(this.serviceAccountClient.get(url))), 2).get()
-                .orFail((RuntimeException e) -> {
-                    if (e.getCause() instanceof CachingRestClient.HttpException) {
-                        if (((CachingRestClient.HttpException) e.getCause()).getStatusCode() == 404) {
-                            throw new NotFoundException("Could not find henkilo by oid: " + oid);
-                        }
-                    }
-                    return new ExternalServiceException(url, e.getMessage(), e);
-                });
+        Supplier<HenkiloDto> action = () -> httpClient.<HenkiloDto>execute(OphHttpRequest.Builder.get(url).build())
+                .expectedStatus(200)
+                .mapWith(json -> io(() -> objectMapper.readValue(json, HenkiloDto.class)).get())
+                .orElseThrow(() -> noContentOrNotFoundException(url));
+        return retrying(action, 2).get().orFail(mapper(url));
     }
 
     @Override
     public Optional<HenkiloDto> findHenkiloByOid(String oid) {
-        try {
-            return Optional.of(getHenkiloByOid(oid));
-        } catch (NotFoundException e) {
-            return Optional.empty();
-        }
+        String url = this.urlProperties.url("oppijanumerorekisteri-service.henkilo.henkiloByOid", oid);
+
+        Supplier<Optional<HenkiloDto>> action = () -> httpClient.<HenkiloDto>execute(OphHttpRequest.Builder.get(url).build())
+                .expectedStatus(200)
+                .mapWith(json -> io(() -> objectMapper.readValue(json, HenkiloDto.class)).get());
+        return retrying(action, 2).get().orFail(mapper(url));
     }
 
     @Override
     public Optional<HenkiloDto> getHenkiloByHetu(String hetu) {
         String url = this.urlProperties.url("oppijanumerorekisteri-service.henkilo.henkiloByHetu", hetu);
-
-        return retrying(FunctionalUtils.<HenkiloDto>io(
-                () -> this.objectMapper.readerFor(HenkiloDto.class)
-                        .readValue(this.serviceAccountClient.get(url))), 2)
-                .get().as(new ResponseToOptional<>(url));
+        return httpClient.<HenkiloDto>execute(OphHttpRequest.Builder.get(url).build())
+                .expectedStatus(200)
+                .mapWith(json -> io(() -> objectMapper.readValue(json, HenkiloDto.class)).get());
     }
 
     @Override
     public Collection<HenkiloYhteystiedotDto> listYhteystiedot(HenkiloHakuCriteria criteria) {
         String url = urlProperties.url("oppijanumerorekisteri-service.henkilo.yhteystiedot");
-
-        return retrying(FunctionalUtils.<Collection<HenkiloYhteystiedotDto>>io(
-                () -> objectMapper.readerFor(new TypeReference<Collection<HenkiloYhteystiedotDto>>() {})
-                        .readValue(IOUtils.toString(serviceAccountClient.post(url, MediaType.APPLICATION_JSON_VALUE,
-                                objectMapper.writeValueAsString(criteria)).getEntity().getContent()))), 2).get()
-                .orFail(mapper(url));
-    }
-
-    @Override
-    public Optional<String> createHenkiloForKutsu(HenkiloCreateDto henkiloCreateDto) {
-        try {
-            return Optional.ofNullable(this.createHenkilo(henkiloCreateDto));
-        } catch (ExternalServiceException e) {
-            if(e.getCause() instanceof CachingRestClient.HttpException
-                    && ((CachingRestClient.HttpException)e.getCause()).getStatusCode() == HttpStatus.SC_BAD_REQUEST) {
-                return Optional.empty();
-            }
-            throw e;
-        }
-
+        OphHttpRequest request = OphHttpRequest.Builder
+                .post(url)
+                .setEntity(new OphHttpEntity.Builder()
+                        .content(io(() -> objectMapper.writeValueAsString(criteria)).get())
+                        .contentType(ContentType.APPLICATION_JSON)
+                        .build())
+                .build();
+        Supplier<Collection<HenkiloYhteystiedotDto>> action = () -> httpClient.<HenkiloYhteystiedotDto[]>execute(request)
+                .expectedStatus(200)
+                .mapWith(json -> io(() -> objectMapper.readValue(json, HenkiloYhteystiedotDto[].class)).get())
+                .map(array -> Arrays.stream(array).collect(toList()))
+                .orElseThrow(() -> noContentOrNotFoundException(url));
+        return retrying(action, 2).get().orFail(mapper(url));
     }
 
     @Override
     public String createHenkilo(HenkiloCreateDto henkiloCreateDto) {
         String url = this.urlProperties.url("oppijanumerorekisteri-service.henkilo");
-        return retrying(
-                FunctionalUtils.<String>io(() -> {
-                    try {
-                        return IOUtils.toString(this.serviceAccountClient.post(url, MediaType.APPLICATION_JSON_VALUE,
-                                objectMapper.writeValueAsString(henkiloCreateDto)).getEntity().getContent());
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException("Unexpected error during json processing");
-                    }
-                }),
-                2).get().orFail(mapper(url));
+        OphHttpRequest request = OphHttpRequest.Builder
+                .post(url)
+                .setEntity(new OphHttpEntity.Builder()
+                        .content(io(() -> objectMapper.writeValueAsString(henkiloCreateDto)).get())
+                        .contentType(ContentType.APPLICATION_JSON)
+                        .build())
+                .build();
+        Supplier<String> action = () -> httpClient.<String>execute(request)
+                .expectedStatus(201)
+                .mapWith(identity())
+                .orElseThrow(() -> noContentOrNotFoundException(url));
+        return retrying(action, 2).get().orFail(mapper(url));
     }
 
     @Override
     public void setStrongIdentifiedHetu(String oidHenkilo, HenkiloVahvaTunnistusDto henkiloVahvaTunnistusDto) {
         String url = this.urlProperties.url("oppijanumerorekisteri-service.cas.vahva-tunnistus", oidHenkilo);
-        retrying(
-                FunctionalUtils.io(() -> this.serviceAccountClient.put(url,
-                        MediaType.APPLICATION_JSON_VALUE,
-                        this.objectMapper.writeValueAsString(henkiloVahvaTunnistusDto))), 2)
-                .get()
-                .orFail(mapper(url));
+        OphHttpRequest request = OphHttpRequest.Builder
+                .put(url)
+                .setEntity(new OphHttpEntity.Builder()
+                        .content(io(() -> objectMapper.writeValueAsString(henkiloVahvaTunnistusDto)).get())
+                        .contentType(ContentType.APPLICATION_JSON)
+                        .build())
+                .build();
+        Supplier<String> action = () -> httpClient.<String>execute(request)
+                .expectedStatus(200)
+                .mapWith(identity())
+                .orElseThrow(() -> noContentOrNotFoundException(url));
+        retrying(action, 2).get().orFail(mapper(url));
     }
 
     @Override
     public void updateHenkilo(HenkiloUpdateDto henkiloUpdateDto) {
         String url = this.urlProperties.url("oppijanumerorekisteri-service.henkilo");
-        retrying(
-                FunctionalUtils.io(() -> this.serviceAccountClient.put(url,
-                        MediaType.APPLICATION_JSON_VALUE,
-                        this.objectMapper.writeValueAsString(henkiloUpdateDto))), 2)
-                .get()
-                .orFail(mapper(url));
+        OphHttpRequest request = OphHttpRequest.Builder
+                .put(url)
+                .setEntity(new OphHttpEntity.Builder()
+                        .content(io(() -> objectMapper.writeValueAsString(henkiloUpdateDto)).get())
+                        .contentType(ContentType.APPLICATION_JSON)
+                        .build())
+                .build();
+        Supplier<String> action = () -> httpClient.<String>execute(request)
+                .expectedStatus(200)
+                .mapWith(identity())
+                .orElseThrow(() -> noContentOrNotFoundException(url));
+        retrying(action, 2).get().orFail(mapper(url));
     }
 
     @Override
     public void yhdistaHenkilot(String oid, Collection<String> duplicateOids) {
         String url = urlProperties.url("oppijanumerorekisteri-service.henkilo.byOid.yhdistaHenkilot", oid);
-        retrying(FunctionalUtils.io(() -> serviceAccountClient.post(url, MediaType.APPLICATION_JSON_VALUE,
-                objectMapper.writeValueAsString(duplicateOids))), 2).get().orFail(mapper(url));
+        OphHttpRequest request = OphHttpRequest.Builder
+                .post(url)
+                .setEntity(new OphHttpEntity.Builder()
+                        .content(io(() -> objectMapper.writeValueAsString(duplicateOids)).get())
+                        .contentType(ContentType.APPLICATION_JSON)
+                        .build())
+                .build();
+        Supplier<String> action = () -> httpClient.<String>execute(request)
+                .expectedStatus(200)
+                .mapWith(identity())
+                .orElseThrow(() -> noContentOrNotFoundException(url));
+        retrying(action, 2).get().orFail(mapper(url));
     }
 
     @Override
     public HenkiloOmattiedotDto getOmatTiedot(String oidHenkilo) {
         String url = this.urlProperties.url("oppijanumerorekisteri.henkilo.omattiedot-by-oid", oidHenkilo);
-        return retrying(FunctionalUtils.<HenkiloOmattiedotDto>io(
-                () -> this.objectMapper.readerFor(HenkiloOmattiedotDto.class)
-                        .readValue(this.serviceAccountClient.get(url))), 2)
-                .get()
-                .orFail(mapper(url));
-    }
-
-    //ONR uses java.time.LocalDate
-    public static class HenkiloPerustiedotDto extends HenkiloPerustietoDto {
-        public void setSyntymaaika(String localDate) {
-            if (!StringUtils.isEmpty(localDate)) {
-                this.setSyntymaaika(LocalDate.parse(localDate));
-            }
-        }
+        Supplier<HenkiloOmattiedotDto> action = () -> httpClient.<HenkiloOmattiedotDto>execute(OphHttpRequest.Builder.get(url).build())
+                .expectedStatus(200)
+                .mapWith(json -> io(() -> objectMapper.readValue(json, HenkiloOmattiedotDto.class)).get())
+                .orElseThrow(() -> noContentOrNotFoundException(url));
+        return retrying(action, 2).get().orFail(mapper(url));
     }
 
     @Getter @Setter
@@ -282,26 +281,4 @@ public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriCli
         private String masterOid;
     }
 
-    private static class ResponseToOptional<T, E extends RuntimeException> implements BiFunction<T, E, Optional<T>> {
-
-        private final String url;
-
-        public ResponseToOptional(String url) {
-            this.url = url;
-        }
-
-        @Override
-        public Optional<T> apply(T result, E failure) {
-            if (failure != null) {
-                if (failure.getCause() instanceof CachingRestClient.HttpException) {
-                    if (((CachingRestClient.HttpException) failure.getCause()).getStatusCode() == HttpStatus.SC_NOT_FOUND) {
-                        return Optional.empty();
-                    }
-                }
-                throw mapper(url).apply(failure);
-            }
-            return Optional.of(result);
-        }
-
-    }
 }

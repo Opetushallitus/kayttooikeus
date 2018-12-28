@@ -14,4 +14,16 @@ public class PermissionCheckResponseDto {
         return accessAllowed;
     }
 
+    public static PermissionCheckResponseDto allowed() {
+        PermissionCheckResponseDto dto = new PermissionCheckResponseDto();
+        dto.setAccessAllowed(true);
+        return dto;
+    }
+
+    public static PermissionCheckResponseDto denied() {
+        PermissionCheckResponseDto dto = new PermissionCheckResponseDto();
+        dto.setAccessAllowed(false);
+        return dto;
+    }
+
 }
