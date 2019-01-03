@@ -1,7 +1,7 @@
 -- Poistetaan vanhat HENKILONHALLINTA ja ANOMUSTENHALLINTA palvelut ja näiden käyttöoikeudet. Oletetaan, että tätä ennen
 -- vanhat ei passivoidut oikeudet on vaihdettu uusiin.
 
--- Poistetaan vanhoihin käyttöoikeuksien myönnetyt oikeudet
+-- Poistetaan vanhojen käyttöoikeuksien myönnetyt oikeudet
 delete from myonnetty_kayttooikeusryhma_tapahtuma
 where id in (
   select distinct mkt.id
@@ -11,34 +11,6 @@ where id in (
   join palvelu p on k.palvelu_id = p.id
   where p.name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA')
 );
-
--- Näitä ei ehkä kannata siivota koska vanhat käyttöoikeudet taitavat käyttää toistensa tietoja
--- -- Poistetaan vanhojen käyttöoikeuksien tekstit
--- delete from text
--- where textgroup_id in (
---   select distinct k.textgroup_id
---   from kayttooikeus k
---   join palvelu p on k.palvelu_id = p.id
---   where p.name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA')
--- );
---
--- -- Poistetaan vanhojen käyttöoikeuksien tekstirymien roolit
--- delete from rooli
--- where textgroup_id in (
---   select distinct k.textgroup_id
---   from kayttooikeus k
---   join palvelu p on k.palvelu_id = p.id
---   where p.name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA')
--- );
---
--- -- Poistetaan vanhojen käyttöoikeuksien tekstiryhmät
--- delete from text_group
--- where id in (
---   select distinct k.textgroup_id
---   from kayttooikeus k
---   join palvelu p on k.palvelu_id = p.id
---   where p.name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA')
--- );
 
 -- Poistetaan vanhat käyttöoikeudet käyttöoikeusryhmistä
 delete from kayttooikeusryhma_kayttooikeus
@@ -59,6 +31,27 @@ where id in (
   where p.name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA')
 );
 
+-- Poistetaan vanhojen palveluiden tekstit
+delete from text
+where textgroup_id in (
+  select distinct p.textgroup_id
+  from palvelu p
+  where p.name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA')
+);
+
 -- Poistetaan vanhat palvelut
 delete from palvelu where name in ('HENKILONHALLINTA', 'ANOMUSTENHALLINTA');
 
+-- Siivoa viittauksettomat textgroupit. Tätä ei voi tehdä ennen palvelun poistamista koska palvelu viittaa textgrouppiin
+-- joten palvelu on poistettava ensin.
+delete from text_group
+where id in (select t.id
+from text_group t
+left join kayttooikeusryhma k on k.textgroup_id = t.id
+left join text tt on tt.textgroup_id = t.id
+left join rooli r on r.textgroup_id = t.id
+left join kayttooikeusryhma kr on kr.kuvaus_id = t.id
+where k.textgroup_id is null
+  and tt.textgroup_id is null
+  and r.textgroup_id is null
+  and kr.kuvaus_id is null);
