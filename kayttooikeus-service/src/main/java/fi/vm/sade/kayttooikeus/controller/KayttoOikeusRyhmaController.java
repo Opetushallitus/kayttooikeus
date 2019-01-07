@@ -86,10 +86,7 @@ public class KayttoOikeusRyhmaController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    @PreAuthorize("hasAnyRole('ROLE_APP_KOOSTEROOLIENHALLINTA_READ',"
-            + "'ROLE_APP_KOOSTEROOLIENHALLINTA_READ_UPDATE',"
-            + "'ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_KAYTTOOIKEUSRYHMIEN_LUKU',"
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_KAYTTOOIKEUSRYHMIEN_LUKU',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Hakee käyttöoikeusryhmän tiedot.",
             notes = "Hakee yhden käyttöoikeusryhmän kaikki tiedot "
@@ -109,10 +106,7 @@ public class KayttoOikeusRyhmaController {
     }
 
     @RequestMapping(value = "/{id}/kayttooikeus", method = RequestMethod.GET)
-    @PreAuthorize("hasAnyRole('ROLE_APP_KOOSTEROOLIENHALLINTA_READ',"
-            + "'ROLE_APP_KOOSTEROOLIENHALLINTA_READ_UPDATE',"
-            + "'ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_KAYTTOOIKEUSRYHMIEN_LUKU',"
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_KAYTTOOIKEUSRYHMIEN_LUKU',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Hakee käyttöoikeusryhmään kuuluvat palvelut ja roolit.",
             notes = "Listaa kaikki annettuun käyttöoikeusryhmään kuuluvat "
@@ -132,8 +126,7 @@ public class KayttoOikeusRyhmaController {
 
 
     @RequestMapping(method = RequestMethod.POST)
-    @PreAuthorize("hasAnyRole('ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Luo uuden käyttöoikeusryhmän.",
             notes = "Tekee uuden käyttöoikeusryhmän annetun DTO:n pohjalta.")
     @ResponseBody
@@ -143,8 +136,7 @@ public class KayttoOikeusRyhmaController {
 
 
     @RequestMapping(value = "/kayttooikeus", method = RequestMethod.POST)
-    @PreAuthorize("hasAnyRole('ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Luo uuden käyttöoikeuden.",
             notes = "Luo uuden käyttöoikeuden annetun käyttöoikeus modelin pohjalta.")
     public KayttoOikeusDto createNewKayttoOikeus(@RequestBody @Validated KayttoOikeusCreateDto kayttoOikeus) {
@@ -154,8 +146,7 @@ public class KayttoOikeusRyhmaController {
 
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    @PreAuthorize("hasAnyRole('ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Päivittää käyttöoikeusryhmän.",
             notes = "Päivittää käyttöoikeusryhmän tiedot annetun DTO:n avulla.")
     public KayttoOikeusRyhmaDto updateKayttoOikeusRyhma(@PathVariable("id") Long id, @RequestBody @Validated KayttoOikeusRyhmaModifyDto ryhmaData) {
@@ -164,8 +155,7 @@ public class KayttoOikeusRyhmaController {
     }
 
     @RequestMapping(value = "/{id}/passivoi", method = RequestMethod.PUT)
-    @PreAuthorize("hasAnyRole('ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Passivoi käyttöoikeusryhmän.",
             notes = "Passivoi käyttöoikeusryhmän. ")
     public void passivoiKayttoOikeusRyhma(@PathVariable("id") Long id) {
@@ -173,10 +163,7 @@ public class KayttoOikeusRyhmaController {
     }
 
     @RequestMapping(value = "/ryhmasByKayttooikeus", method = RequestMethod.POST)
-    @PreAuthorize("hasAnyRole('ROLE_APP_KOOSTEROOLIENHALLINTA_READ',"
-            + "'ROLE_APP_KOOSTEROOLIENHALLINTA_READ_UPDATE',"
-            + "'ROLE_APP_KOOSTEROOLIENHALLINTA_CRUD',"
-            + "'ROLE_APP_KAYTTOOIKEUS_KAYTTOOIKEUSRYHMIEN_LUKU',"
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_KAYTTOOIKEUSRYHMIEN_LUKU',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Listaa käyttöoikeusryhmät käyttooikeuksien mukaan.",
             notes = "Hakee käyttöoikeusryhmät joissa esiintyy jokin annetuista käyttöoikeuksista.")

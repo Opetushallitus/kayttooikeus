@@ -8,12 +8,12 @@ Käyttöoikeuspalvelu on henkilö-palvelusta eriytetty käyttöoikeusryhmien ja 
 - Java 1.8.0_92 (ei toiminut 1.8.0_60)
 
 ### Palvelin
-* Tomcat 7
+* Tomcat 8
 * Java 8
 * Spring Boot
 * QueryDSL
 * PostgreSQL
-* JPA / Hibernate 4
+* JPA / Hibernate 5
 
 ### Käännösautomaatio
 * Maven 3
@@ -22,6 +22,10 @@ Käyttöoikeuspalvelu on henkilö-palvelusta eriytetty käyttöoikeusryhmien ja 
 
     mvn clean test
     
+## Kääntäminen
+
+    mvn clean install
+
 ## Käynnistäminen
 
 ### kayttooikeus-service
@@ -30,31 +34,38 @@ Devausta varten kopioi oph-configuraation-hakemistoon
 * security-context-backend-local-testing.properties.template ja nimeä tiedosto security-context.properties
 * kayttooikeus.yml.template, nimeä tiedosto kayttooikeus.yml ja aseta placeholdereiden tilalle kehitysympäristön tiedot
 
-Lisää kayttoikeus.yml:ään host-osioon
 
-    front.lokalisointi.baseUrl: https://<virkailija>
+#### Backend-palvelun käynnistäminen CAS kirjautumisella
 
-Backend-palvelun käynnistäminen dev-profiililla:
+    java -jar -Dspring.config.additional-location=/<path>/<to>/oph-configuration/kayttooikeus.yml kayttooikeus-service/target/kayttooikeus-service-1.0.0-SNAPSHOT.jar
+
+Tämä vaatii CAS-filtterin konfiguroinnin käyttämään localhostia (ei https!)
+
+    cas:
+      service: http://localhost:8180/kayttooikeus-service
+
+Nyt voit käyttää ympäristön CAS-tunnuksiasia kirjautumiseen lokaaliin palveluun.
+    
+**Ensimmäinen kirjautuminen palvelun käynnistyttyä täytyy tehdä suoralla GET kutsulla rajapintaan, ei swaggeristä**
+
+#### Backend-palvelun käynnistäminen dev-profiililla
+Tämä ei ole kehityksessä tällä hetkellä yleisesti käytetty tapa. Tällöin kirjautuminen lokaaliin palveluun tapahtuu basic authilla koodissa määritellyillä tunnuksilla.
 
     java -jar -Dspring.profiles.active=dev -Dspring.config.additional-location=/<path>/<to>/oph-configuration/kayttooikeus.yml kayttooikeus-service/target/kayttooikeus-service-1.0.0-SNAPSHOT.jar
 
-## Webpack-dev-server
 
-Service käynnistää käyttöliittymän oletuksena /kayttooikeus-service/virkailija-polkuun.
+#### Kantamigraatiot
 
-Jos haluat käyttää palvelua suoraan käyttöliittymän kanssa, lisää palvelimen käynnistykseen
+Kantamigraatiot tapahtuvat db.migrations-kansiosta löytyvillä flyway skripteillä.
 
-    -Dfront.kayttooikeus-service.virkailija-ui.basePath=""
+Jos toimimassasi ympäristössä on ajettu skriptejä joita ei ole master haarassa voit olla välittämättä näistä seuraavalla konfiguraatiolla
 
-tai jos tämä on yleisempi vaihtoehto, niin vaihtoehtoisesti kayttooikeus.yml-tiedostoon host-osioon:
+    spring:
+        flyway:
+            # TODO REMOVE
+            ignore-missing-migrations: true
 
-    front.kayttooikeus-service.virkailija-ui.basePath:
-
-ja ylikirjoita tämä tarvittaessa.
-
-## Kääntäminen
-
-    mvn clean install
+Kommentti muistutuksena, ettei tätä muutosta commitata.
 
 ## API-dokumentaatio
 

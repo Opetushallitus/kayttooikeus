@@ -298,12 +298,7 @@ public class EmailServiceImpl implements EmailService {
 
         logger.info("Sending invitation email to {}", kutsu.getSahkoposti());
         String response = this.ryhmasahkopostiClient.sendRyhmasahkoposti(emailData);
-        try {
-            logger.info("Sent invitation email to {}, ryhmasahkoposti-result: {}", kutsu.getSahkoposti(),
-                    response);
-        } catch (Exception e) {
-            logger.error("Could not read ryhmasahkoposti-result: " + e.getMessage(), e);
-        }
+        logger.info("Sent invitation email to {}, ryhmasahkoposti-result: {}", kutsu.getSahkoposti(), response);
     }
 
     @NotNull

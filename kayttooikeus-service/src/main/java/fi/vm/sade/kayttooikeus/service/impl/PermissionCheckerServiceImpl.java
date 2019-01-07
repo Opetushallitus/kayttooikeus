@@ -43,7 +43,6 @@ import static java.util.Collections.*;
 public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     private static final Logger LOG = LoggerFactory.getLogger(PermissionCheckerService.class);
     public static final String PALVELU_KAYTTOOIKEUS_PREFIX = "ROLE_APP_KAYTTOOIKEUS_";
-    public static final String PALVELU_KOOSTEROOLIENHALLINTA_PREFIX = "ROLE_APP_KOOSTEROOLIENHALLINTA_"; // Käyttöoikeusryhmien katselu ja muokkaus
     public static final String PALVELU_KAYTTOOIKEUS = "KAYTTOOIKEUS";
     public static final String ROLE_REKISTERINPITAJA = "REKISTERINPITAJA";
     public static final String ROLE_CRUD = "CRUD";
