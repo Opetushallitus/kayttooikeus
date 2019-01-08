@@ -92,8 +92,7 @@ public class KutsuServiceImpl implements KutsuService {
             throw new IllegalArgumentException("kutsu_with_sahkoposti_already_sent");
         }
         if (!this.permissionCheckerService.isCurrentUserAdmin()) {
-            if (!this.permissionCheckerService.isCurrentUserMiniAdmin(PALVELU_KAYTTOOIKEUS, ROLE_CRUD)
-                    && !permissionCheckerService.isCurrentUserMiniAdmin(PALVELU_KAYTTOOIKEUS, ROLE_CRUD)) {
+            if (!this.permissionCheckerService.isCurrentUserMiniAdmin(PALVELU_KAYTTOOIKEUS, ROLE_CRUD)) {
                 this.throwIfNotInHierarchy(kutsuCreateDto);
                 this.organisaatioViiteLimitationsAreValidThrows(kutsuCreateDto.getOrganisaatiot());
             }
