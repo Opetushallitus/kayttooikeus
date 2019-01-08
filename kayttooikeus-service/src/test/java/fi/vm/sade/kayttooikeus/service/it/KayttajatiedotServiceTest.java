@@ -132,7 +132,7 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
         assertThatThrownBy(() -> kayttajatiedotService.getByUsernameAndPassword("user2", "pass2"))
                 .isInstanceOf(UnauthorizedException.class);
         KayttajatiedotReadDto readDto = kayttajatiedotService.getByUsernameAndPassword("USER2", "IFuRzDC5+aYLSSqE");
-        assertThat(readDto).extracting(KayttajatiedotReadDto::getUsername).containsExactly("user2");
+        assertThat(readDto).extracting(KayttajatiedotReadDto::getUsername).isEqualTo("user2");
 
         // käyttäjä on passivoitu
         henkiloService.passivoi("oid2", "oid1");
