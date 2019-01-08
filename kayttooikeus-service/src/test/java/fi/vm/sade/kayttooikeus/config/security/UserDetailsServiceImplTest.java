@@ -40,7 +40,7 @@ public class UserDetailsServiceImplTest extends AbstractServiceIntegrationTest {
         kayttajatiedotService.create("oid123", new KayttajatiedotCreateDto(kayttajatunnus),
                 LdapSynchronizationService.LdapSynchronizationType.NORMAL);
         UserDetails userDetails = userDetailsService.loadUserByUsername(kayttajatunnus);
-        assertThat(userDetails).extracting(UserDetails::getUsername).containsExactly("oid123");
+        assertThat(userDetails).extracting(UserDetails::getUsername).isEqualTo("oid123");
         assertThat(userDetails.getAuthorities()).isEmpty();
     }
 

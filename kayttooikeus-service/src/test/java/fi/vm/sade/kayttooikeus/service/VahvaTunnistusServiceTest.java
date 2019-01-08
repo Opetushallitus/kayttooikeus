@@ -85,7 +85,7 @@ public class VahvaTunnistusServiceTest extends AbstractServiceIntegrationTest {
 
         assertThat(responseDto)
                 .extracting(VahvaTunnistusResponseDto::getAuthToken)
-                .isNotEmpty();
+                .isNotNull();
         assertThat(tunnistusTokenRepository.findByLoginToken(loginToken))
                 .map(TunnistusToken::getKaytetty)
                 .isNotEmpty();
@@ -117,7 +117,7 @@ public class VahvaTunnistusServiceTest extends AbstractServiceIntegrationTest {
 
         assertThat(responseDto)
                 .extracting(VahvaTunnistusResponseDto::getAuthToken)
-                .isNotEmpty();
+                .isNotNull();
         assertThat(tunnistusTokenRepository.findByLoginToken(loginToken))
                 .map(TunnistusToken::getKaytetty)
                 .isNotEmpty();
