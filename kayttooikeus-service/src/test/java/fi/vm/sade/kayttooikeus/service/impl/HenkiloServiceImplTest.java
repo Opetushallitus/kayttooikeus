@@ -4,17 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.HenkilohakuCriteriaDto;
-import fi.vm.sade.kayttooikeus.dto.enumeration.LogInRedirectType;
-import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.HenkiloCriteria;
-import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
-import fi.vm.sade.properties.OphProperties;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,11 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.security.auth.login.LoginException;
-import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
-import static fi.vm.sade.kayttooikeus.util.CreateUtil.createHenkilo;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,8 +45,6 @@ public class HenkiloServiceImplTest {
     private OrganisaatioHenkiloRepository organisaatioHenkiloRepositoryMock;
     @Mock
     private MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepositoryMock;
-    @Mock
-    private LdapSynchronizationService ldapSynchronizationServiceMock;
     @Mock
     private HenkiloDataRepository henkiloDataRepositoryMock;
     @Mock
@@ -81,7 +71,6 @@ public class HenkiloServiceImplTest {
                 kayttoOikeusRyhmaTapahtumaHistoriaDataRepositoryMock,
                 organisaatioHenkiloRepositoryMock,
                 myonnettyKayttoOikeusRyhmaTapahtumaRepositoryMock,
-                ldapSynchronizationServiceMock,
                 henkiloDataRepositoryMock,
                 kayttajatiedotRepositoryMock,
                 commonPropertiesMock,

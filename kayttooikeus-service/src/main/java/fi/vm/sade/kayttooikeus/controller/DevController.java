@@ -1,6 +1,5 @@
 package fi.vm.sade.kayttooikeus.controller;
 
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -14,17 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class DevController {
 
-    private final LdapSynchronizationService ldapSynchronizationService;
     private final OrganisaatioService organisaatioService;
-
-    @PutMapping("/ldapsynkronointi")
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_SCHEDULE',"
-            + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA',"
-            + "'ROLE_APP_HENKILONHALLINTA_OPHREKISTERI')")
-    @ApiOperation("Suorittaa LDAP-synkronoinnin")
-    public void ldapSynkronointi() {
-        ldapSynchronizationService.runSynchronizer();
-    }
 
     @PostMapping("/organisaatioCache")
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_SCHEDULE', " +

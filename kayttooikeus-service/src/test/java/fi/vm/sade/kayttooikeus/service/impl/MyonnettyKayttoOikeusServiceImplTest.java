@@ -8,21 +8,15 @@ import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaTapahtumaHistoriaDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
 import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloRepository;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
-import org.assertj.core.util.Sets;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
 
-import static fi.vm.sade.kayttooikeus.util.CreateUtil.createHenkilo;
-import static fi.vm.sade.kayttooikeus.util.CreateUtil.createMyonnettyKayttoOikeusRyhmaTapahtumaWithOrganisation;
-import static fi.vm.sade.kayttooikeus.util.CreateUtil.createOrganisaatioHenkilo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -49,9 +43,6 @@ public class MyonnettyKayttoOikeusServiceImplTest {
 
     @Mock
     private OrganisaatioHenkiloRepository organisaatioHenkiloRepository;
-
-    @Mock
-    private LdapSynchronizationService ldapSynchronizationService;
 
     @Test
     public void varmentajallaOnYhaOikeuksiaSamaanOrganisaatioon() {
@@ -100,7 +91,6 @@ public class MyonnettyKayttoOikeusServiceImplTest {
         assertThat(henkiloVarmentaja.isTila()).isTrue();
         verify(kayttoOikeusRyhmaTapahtumaHistoriaDataRepository, times(1)).save(any());
         verify(myonnettyKayttoOikeusRyhmaTapahtumaRepository, times(1)).delete(any());
-        verify(ldapSynchronizationService, times(1)).updateHenkilo(any());
     }
 
     @Test
@@ -142,7 +132,6 @@ public class MyonnettyKayttoOikeusServiceImplTest {
         assertThat(henkiloVarmentaja.isTila()).isFalse();
         verify(kayttoOikeusRyhmaTapahtumaHistoriaDataRepository, times(1)).save(any());
         verify(myonnettyKayttoOikeusRyhmaTapahtumaRepository, times(1)).delete(any());
-        verify(ldapSynchronizationService, times(1)).updateHenkilo(any());
     }
 
 }

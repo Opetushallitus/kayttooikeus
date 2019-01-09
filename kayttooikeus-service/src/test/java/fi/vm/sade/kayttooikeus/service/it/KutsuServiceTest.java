@@ -14,7 +14,6 @@ import fi.vm.sade.kayttooikeus.repositories.criteria.KutsuCriteria;
 import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
 import fi.vm.sade.kayttooikeus.repositories.populate.*;
 import fi.vm.sade.kayttooikeus.service.KutsuService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioService;
 import fi.vm.sade.kayttooikeus.service.exception.ForbiddenException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
@@ -82,9 +81,6 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
 
     @MockBean
     private HenkiloHelper henkiloHelper;
-
-    @MockBean
-    private LdapSynchronizationService ldapSynchronizationService;
 
     @MockBean
     private OrganisaatioService organisaatioService;

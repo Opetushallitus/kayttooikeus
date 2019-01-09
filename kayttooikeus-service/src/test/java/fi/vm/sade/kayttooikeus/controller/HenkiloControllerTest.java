@@ -4,7 +4,6 @@ import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto.OrganisaatioDto;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService.LdapSynchronizationType;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioHenkiloService;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import org.junit.Test;
@@ -56,7 +55,7 @@ public class HenkiloControllerTest extends AbstractControllerTest {
                 .content("{\"username\": \"user1\"}").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
         ArgumentCaptor<KayttajatiedotCreateDto> captor = ArgumentCaptor.forClass(KayttajatiedotCreateDto.class);
-        verify(kayttajatiedotService).create(eq("1.2.3.4.5"), captor.capture(), eq(LdapSynchronizationType.ASAP));
+        verify(kayttajatiedotService).create(eq("1.2.3.4.5"), captor.capture());
         KayttajatiedotCreateDto kayttajatiedot = captor.getValue();
         assertThat(kayttajatiedot.getUsername()).isEqualTo("user1");
     }
@@ -68,7 +67,7 @@ public class HenkiloControllerTest extends AbstractControllerTest {
                 .content("{\"username\": \"user1\"}").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
         ArgumentCaptor<KayttajatiedotCreateDto> captor = ArgumentCaptor.forClass(KayttajatiedotCreateDto.class);
-        verify(kayttajatiedotService).create(eq("1.2.3.4.5"), captor.capture(), eq(LdapSynchronizationType.NOW));
+        verify(kayttajatiedotService).create(eq("1.2.3.4.5"), captor.capture());
         KayttajatiedotCreateDto kayttajatiedot = captor.getValue();
         assertThat(kayttajatiedot.getUsername()).isEqualTo("user1");
     }

@@ -47,7 +47,6 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
     private final KayttoOikeusRyhmaTapahtumaHistoriaDataRepository kayttoOikeusRyhmaTapahtumaHistoriaDataRepository;
     private final OrganisaatioHenkiloRepository organisaatioHenkiloRepository;
     private final MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
-    private final LdapSynchronizationService ldapSynchronizationService;
     private final HenkiloDataRepository henkiloDataRepository;
     private final KayttajatiedotRepository kayttajatiedotRepository;
     private final CommonProperties commonProperties;
@@ -130,8 +129,6 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
         }
 
         henkilo.getHenkiloVarmennettavas().forEach(henkiloVarmentaja -> henkiloVarmentaja.setTila(false));
-
-        ldapSynchronizationService.updateHenkiloAsap(henkilo.getOidHenkilo());
     }
 
     @Override
@@ -196,14 +193,6 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
                 .orElseThrow(() -> new NotFoundException("Henkilo not found with username " + username));
         boolean isVahvastiTunnistettu = this.isVahvastiTunnistettu(henkilo);
         return HenkiloUtils.getLoginRedirectType(henkilo, isVahvastiTunnistettu, LocalDateTime.now());
-    }
-
-    @Override
-    @Transactional
-    public void updateHenkiloToLdap(String oid, LdapSynchronizationService.LdapSynchronizationType ldapSynchronization) {
-        Henkilo henkilo = henkiloDataRepository.findByOidHenkilo(oid)
-                .orElseThrow(() -> new NotFoundException(String.format("Henkilöä ei löytynyt OID:lla %s", oid)));
-        ldapSynchronization.getAction().accept(ldapSynchronizationService, henkilo.getOidHenkilo());
     }
 
     @Override

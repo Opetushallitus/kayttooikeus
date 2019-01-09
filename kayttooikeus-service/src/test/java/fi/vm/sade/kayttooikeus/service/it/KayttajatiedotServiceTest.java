@@ -7,7 +7,6 @@ import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService.LdapSynchronizationType;
 import fi.vm.sade.kayttooikeus.service.exception.UnauthorizedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +41,7 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
         KayttajatiedotCreateDto createDto = new KayttajatiedotCreateDto();
         createDto.setUsername("user1");
 
-        KayttajatiedotReadDto readDto = kayttajatiedotService.create(oid, createDto, LdapSynchronizationType.ASAP);
+        KayttajatiedotReadDto readDto = kayttajatiedotService.create(oid, createDto);
 
         assertThat(readDto).isNotNull();
     }
@@ -54,7 +53,7 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
         KayttajatiedotCreateDto createDto = new KayttajatiedotCreateDto();
         createDto.setUsername("USER1");
 
-        Throwable throwable = catchThrowable(() -> kayttajatiedotService.create(oid, createDto, LdapSynchronizationType.ASAP));
+        Throwable throwable = catchThrowable(() -> kayttajatiedotService.create(oid, createDto));
 
         assertThat(throwable)
                 .isInstanceOf(IllegalArgumentException.class)
@@ -123,7 +122,7 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
 
         // käyttäjällä ei ole salasanaa
         KayttajatiedotCreateDto createDto = new KayttajatiedotCreateDto("user2");
-        kayttajatiedotService.create("oid2", createDto, LdapSynchronizationType.ASAP);
+        kayttajatiedotService.create("oid2", createDto);
         assertThatThrownBy(() -> kayttajatiedotService.getByUsernameAndPassword("user2", "pass2"))
                 .isInstanceOf(UnauthorizedException.class);
 

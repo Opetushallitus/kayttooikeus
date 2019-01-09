@@ -51,7 +51,6 @@ public class KutsuServiceImpl implements KutsuService {
     private final KayttajatiedotService kayttajatiedotService;
     private final KayttooikeusAnomusService kayttooikeusAnomusService;
     private final IdentificationService identificationService;
-    private final LdapSynchronizationService ldapSynchronizationService;
     private final PermissionCheckerService permissionCheckerService;
 
     private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
@@ -272,7 +271,6 @@ public class KutsuServiceImpl implements KutsuService {
             addEmailToExistingHenkiloUpdateDto(henkiloOid, kutsuByToken.getSahkoposti(), henkiloUpdateDto);
         }
 
-        this.ldapSynchronizationService.updateHenkiloNow(henkiloOid);
         return henkiloUpdateDto;
     }
 
@@ -335,8 +333,7 @@ public class KutsuServiceImpl implements KutsuService {
                 this.createHakaUsername(henkiloCreateByKutsuDto, kutsuByToken);
             }
         }
-        this.kayttajatiedotService.createOrUpdateUsername(henkiloOid, henkiloCreateByKutsuDto.getKayttajanimi(),
-                LdapSynchronizationService.LdapSynchronizationType.ASAP);
+        this.kayttajatiedotService.createOrUpdateUsername(henkiloOid, henkiloCreateByKutsuDto.getKayttajanimi());
         if (StringUtils.isEmpty(kutsuByToken.getHakaIdentifier())) {
             this.kayttajatiedotService.changePasswordAsAdmin(henkiloOid, henkiloCreateByKutsuDto.getPassword());
         }

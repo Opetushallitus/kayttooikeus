@@ -7,10 +7,8 @@ import fi.vm.sade.kayttooikeus.dto.YhteystietojenTyypit;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.TunnistusToken;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
-import fi.vm.sade.kayttooikeus.repositories.TunnistusTokenDataRepository;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.VahvaTunnistusService;
 import fi.vm.sade.kayttooikeus.service.dto.HenkiloVahvaTunnistusDto;
 import fi.vm.sade.kayttooikeus.service.exception.LoginTokenNotFoundException;
@@ -65,7 +63,7 @@ public class VahvaTunnistusServiceImpl implements VahvaTunnistusService {
 
         Optional.ofNullable(lisatiedotDto.getSalasana())
                 .filter(StringUtils::hasLength)
-                .ifPresent(salasana -> kayttajatiedotService.changePasswordAsAdmin(henkiloOid, salasana, LdapSynchronizationService.LdapSynchronizationType.NOW));
+                .ifPresent(salasana -> kayttajatiedotService.changePasswordAsAdmin(henkiloOid, salasana));
 
         String authToken = identificationService.consumeLoginToken(tunnistusToken.getLoginToken(), STRONG_AUTHENTICATION_IDP);
         henkiloByLoginToken.setVahvastiTunnistettu(true);

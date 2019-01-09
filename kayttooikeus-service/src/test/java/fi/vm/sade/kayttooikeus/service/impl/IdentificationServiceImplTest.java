@@ -9,7 +9,6 @@ import fi.vm.sade.kayttooikeus.repositories.IdentificationRepository;
 import fi.vm.sade.kayttooikeus.repositories.KutsuRepository;
 import fi.vm.sade.kayttooikeus.repositories.TunnistusTokenDataRepository;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.exception.ValidationException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import org.junit.Before;
@@ -44,8 +43,6 @@ public class IdentificationServiceImplTest {
 
     @Mock
     private KayttoOikeusService kayttoOikeusServiceMock;
-    @Mock
-    private LdapSynchronizationService ldapSynchronizationServiceMock;
 
     @Mock
     private OrikaBeanMapper mapperMock;
@@ -57,7 +54,7 @@ public class IdentificationServiceImplTest {
     public void setup() {
         identificationServiceImpl = new IdentificationServiceImpl(identificationRepositoryMock,
                 henkiloDataRepositoryMock, kutsuRepositoryMock, tunnistusTokenDataRepositoryMock,
-                kayttoOikeusServiceMock, ldapSynchronizationServiceMock, mapperMock, oppijanumerorekisteriClientMock);
+                kayttoOikeusServiceMock, mapperMock, oppijanumerorekisteriClientMock);
     }
 
     @Test

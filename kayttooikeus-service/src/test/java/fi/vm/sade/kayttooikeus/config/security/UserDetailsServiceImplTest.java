@@ -5,7 +5,6 @@ import fi.vm.sade.kayttooikeus.dto.KayttajatiedotCreateDto;
 import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRepository;
 import fi.vm.sade.kayttooikeus.repositories.PalveluRepository;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.it.AbstractServiceIntegrationTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,8 +36,7 @@ public class UserDetailsServiceImplTest extends AbstractServiceIntegrationTest {
         Throwable throwable = catchThrowable(() -> userDetailsService.loadUserByUsername(kayttajatunnus));
         assertThat(throwable).isInstanceOf(UsernameNotFoundException.class);
 
-        kayttajatiedotService.create("oid123", new KayttajatiedotCreateDto(kayttajatunnus),
-                LdapSynchronizationService.LdapSynchronizationType.NORMAL);
+        kayttajatiedotService.create("oid123", new KayttajatiedotCreateDto(kayttajatunnus));
         UserDetails userDetails = userDetailsService.loadUserByUsername(kayttajatunnus);
         assertThat(userDetails).extracting(UserDetails::getUsername).containsExactly("oid123");
         assertThat(userDetails.getAuthorities()).isEmpty();

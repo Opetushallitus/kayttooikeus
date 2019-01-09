@@ -25,7 +25,6 @@ public class SchedulingClusterConfiguration {
     @Bean(destroyMethod = "stop")
     Scheduler scheduler(@Qualifier("dataSource") DataSource dataSource,
                         LahetaUusienAnomuksienIlmoituksetTask lahetaUusienAnomuksienIlmoituksetTask,
-                        LdapSynkronointiTask ldapSynkronointiTask,
                         PoistaVanhentuneetKayttooikeudetTask poistaVanhentuneetKayttooikeudetTask,
                         KasitteleOrganisaatioLakkautusTask kasitteleOrganisaatioLakkautusTask,
                         SendExpirationRemindersTask sendExpirationRemindersTask,
@@ -33,7 +32,6 @@ public class SchedulingClusterConfiguration {
                         UpdateHenkiloNimiCacheTask updateHenkiloNimiCacheTask) {
         Scheduler scheduler = Scheduler.create(dataSource)
                 .startTasks(lahetaUusienAnomuksienIlmoituksetTask,
-                        ldapSynkronointiTask,
                         poistaVanhentuneetKayttooikeudetTask,
                         kasitteleOrganisaatioLakkautusTask,
                         sendExpirationRemindersTask,
