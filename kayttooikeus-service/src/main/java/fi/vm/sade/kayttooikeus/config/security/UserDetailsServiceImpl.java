@@ -23,8 +23,6 @@ import static java.util.stream.Collectors.toSet;
 /**
  * {@link UserDetailsService}-toteutus joka muodostaa käyttäjän roolit tietokannasta.
  *
- * Huom! Muodostettavat roolit tulee olla samat kuin mitä LDAPiin tallennetaan
- * ({@link fi.vm.sade.kayttooikeus.service.impl.ldap.LdapRoolitBuilder}).
  */
 @Component
 @RequiredArgsConstructor

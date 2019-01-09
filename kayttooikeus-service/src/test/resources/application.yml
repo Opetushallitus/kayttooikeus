@@ -6,11 +6,6 @@ spring:
       ddl-auto: create
     show-sql: false
     database-platform: org.hibernate.dialect.H2Dialect
-  ldap:
-    embedded:
-      base-dn:
-        - dc=opintopolku,dc=fi
-      enabled: true
   flyway:
     enabled: false
 
@@ -54,13 +49,6 @@ tasks:
     sender-email: noreply@oph.fi
 
 kayttooikeus:
-  ldap_synchronization:
-    dayTime:
-      intervalInMinutes: -1
-      loadThresholdInSeconds: 60
-    nightTime:
-      intervalInMinutes: -1
-      loadThresholdInSeconds: 60
   scheduling:
     enabled: false
     run-on-startup: false

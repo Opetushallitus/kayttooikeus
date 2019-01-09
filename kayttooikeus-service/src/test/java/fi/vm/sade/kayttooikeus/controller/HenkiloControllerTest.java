@@ -62,18 +62,6 @@ public class HenkiloControllerTest extends AbstractControllerTest {
 
     @Test
     @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
-    public void postHenkiloKayttajatiedotWorkWithLdapSynchronizationQueryParam() throws Exception {
-        mvc.perform(post("/henkilo/{henkiloOid}/kayttajatiedot?ldapSynchronization={type}", "1.2.3.4.5", "NOW")
-                .content("{\"username\": \"user1\"}").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-        ArgumentCaptor<KayttajatiedotCreateDto> captor = ArgumentCaptor.forClass(KayttajatiedotCreateDto.class);
-        verify(kayttajatiedotService).create(eq("1.2.3.4.5"), captor.capture());
-        KayttajatiedotCreateDto kayttajatiedot = captor.getValue();
-        assertThat(kayttajatiedot.getUsername()).isEqualTo("user1");
-    }
-
-    @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_HENKILONHALLINTA_OPHREKISTERI", "ROLE_APP_HENKILONHALLINTA_OPHREKISTERI_1.2.246.562.10.00000000001"})
     public void postHenkiloKayttajatiedotShouldReturnValidationError() throws Exception {
         mvc.perform(post("/henkilo/{henkiloOid}/kayttajatiedot", "1.2.3.4.5")
                 .content("{\"username\": \"user.1\"}").contentType(MediaType.APPLICATION_JSON))

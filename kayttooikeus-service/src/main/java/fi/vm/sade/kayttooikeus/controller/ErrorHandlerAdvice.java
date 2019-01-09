@@ -16,7 +16,6 @@ import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.ldap.AuthenticationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
@@ -65,14 +64,6 @@ public class ErrorHandlerAdvice {
                         messageSource.getMessage("error_NotFoundException", new Object[0], getLocale(req)));
     }
     
-    @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
-    @ExceptionHandler(AuthenticationException.class)
-    @ResponseBody
-    public Map<String,Object> unauthorized(HttpServletRequest req, AuthenticationException exception) {
-        return handleException(req, exception, "error_NotAuthorizedException",
-                messageSource.getMessage("error_NotAuthorizedException", new Object[0], getLocale(req)));
-    }
-
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED) // 401 Not authorized
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseBody
