@@ -59,8 +59,6 @@ public interface HenkiloService {
 
     LogInRedirectType logInRedirectByUsername(String username);
 
-    void updateHenkiloToLdap(String oid, LdapSynchronizationService.LdapSynchronizationType ldapSynchronization);
-
     /**
      * UI:ta varten henkilön käyttöoikeuksien tutkimiseen
      * @return henkilön tiedot

@@ -24,7 +24,6 @@ import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 
 @Service
 @Transactional
@@ -37,7 +36,6 @@ public class MyonnettyKayttoOikeusServiceImpl implements MyonnettyKayttoOikeusSe
     private final HenkiloDataRepository henkiloDataRepository;
     private final MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
     private final KayttoOikeusRyhmaTapahtumaHistoriaDataRepository kayttoOikeusRyhmaTapahtumaHistoriaDataRepository;
-    private final LdapSynchronizationService ldapSynchronizationService;
     private final OrganisaatioHenkiloRepository organisaatioHenkiloRepository;
 
     @Override
@@ -71,8 +69,6 @@ public class MyonnettyKayttoOikeusServiceImpl implements MyonnettyKayttoOikeusSe
                     LocalDateTime.now(), "Oikeuksien poisto, vanhentunut");
             kayttoOikeusRyhmaTapahtumaHistoriaDataRepository.save(historia);
             myonnettyKayttoOikeusRyhmaTapahtumaRepository.delete(kayttoOikeus);
-
-            ldapSynchronizationService.updateHenkilo(henkiloOid);
         }
         LOGGER.info("Vanhentuneiden käyttöoikeuksien poisto päättyy: poistettiin {} käyttöoikeutta", kayttoOikeudet.size());
     }

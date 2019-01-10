@@ -8,7 +8,6 @@ import fi.vm.sade.kayttooikeus.repositories.dto.HenkilohakuResultDto;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService.LdapSynchronizationType;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioHenkiloService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -95,9 +94,8 @@ public class HenkiloController {
             notes = "Luo henkilön käyttäjätiedot.")
     @RequestMapping(value = "/{oid}/kayttajatiedot", method = RequestMethod.POST)
     public KayttajatiedotReadDto createKayttajatiedot(@PathVariable("oid") String henkiloOid,
-                                                      @RequestBody @Validated KayttajatiedotCreateDto kayttajatiedot,
-                                                      @RequestParam(required = false, defaultValue = "ASAP") LdapSynchronizationType ldapSynchronization) {
-        return kayttajatiedotService.create(henkiloOid, kayttajatiedot, ldapSynchronization);
+                                                      @RequestBody @Validated KayttajatiedotCreateDto kayttajatiedot) {
+        return kayttajatiedotService.create(henkiloOid, kayttajatiedot);
     }
 
     @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#henkiloOid, {'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
@@ -202,14 +200,6 @@ public class HenkiloController {
     @ApiOperation("Palauttaa henkilöiden oid:t joiden tietoihin annetulla henkilöllä on oikeutus")
     public KayttooikeudetDto postKayttooikeudet(@PathVariable String oid, @RequestBody OrganisaatioHenkiloCriteria criteria) {
         return henkiloService.getKayttooikeudet(oid, criteria);
-    }
-
-    @PutMapping("/{oid}/ldap")
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
-    @ApiOperation("Lisää henkilön LDAP-synkronointijonoon")
-    public void updateHenkiloToLdap(@PathVariable String oid,
-            @RequestParam(required = false, defaultValue = "NORMAL") LdapSynchronizationType ldapSynchronization) {
-        henkiloService.updateHenkiloToLdap(oid, ldapSynchronization);
     }
 
     @PostMapping("/henkilohaku")

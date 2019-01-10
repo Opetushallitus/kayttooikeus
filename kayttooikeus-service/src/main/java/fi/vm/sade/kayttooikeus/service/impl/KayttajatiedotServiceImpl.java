@@ -11,8 +11,6 @@ import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.service.CryptoService;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService.LdapSynchronizationType;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.UnauthorizedException;
 import fi.vm.sade.kayttooikeus.service.exception.UsernameAlreadyExistsException;
@@ -34,16 +32,13 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
     private final HenkiloDataRepository henkiloDataRepository;
     private final OrikaBeanMapper mapper;
     private final CryptoService cryptoService;
-    private final LdapSynchronizationService ldapSynchronizationService;
 
     @Override
     @Transactional
-    public KayttajatiedotReadDto create(String henkiloOid, KayttajatiedotCreateDto createDto, LdapSynchronizationType ldapSynchronization) {
-        KayttajatiedotReadDto readDto = henkiloDataRepository.findByOidHenkilo(henkiloOid)
+    public KayttajatiedotReadDto create(String henkiloOid, KayttajatiedotCreateDto createDto) {
+        return henkiloDataRepository.findByOidHenkilo(henkiloOid)
                 .map(henkilo -> create(henkilo, createDto))
                 .orElseGet(() -> create(new Henkilo(henkiloOid), createDto));
-        ldapSynchronization.getAction().accept(ldapSynchronizationService, henkiloOid);
-        return readDto;
     }
 
     public KayttajatiedotReadDto create(Henkilo henkilo, KayttajatiedotCreateDto createDto) {
@@ -67,7 +62,7 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
 
     @Override
     @Transactional
-    public void createOrUpdateUsername(String oidHenkilo, String username, LdapSynchronizationType ldapSynchronization) {
+    public void createOrUpdateUsername(String oidHenkilo, String username) {
         if (StringUtils.hasLength(username)) {
             Optional<Kayttajatiedot> kayttajatiedot = this.kayttajatiedotRepository.findByHenkiloOidHenkilo(oidHenkilo);
             if (kayttajatiedot.isPresent()) {
@@ -76,10 +71,9 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
                             throw new IllegalArgumentException("Käyttäjänimi on jo käytössä");
                         });
                 kayttajatiedot.get().setUsername(username);
-                ldapSynchronization.getAction().accept(this.ldapSynchronizationService, oidHenkilo);
             }
             else {
-                this.create(oidHenkilo, new KayttajatiedotCreateDto(username), ldapSynchronization);
+                this.create(oidHenkilo, new KayttajatiedotCreateDto(username));
             }
         }
         else {
@@ -112,7 +106,6 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
         KayttajatiedotReadDto kayttajatiedotReadDto = henkiloDataRepository.findByOidHenkilo(henkiloOid)
                 .map(henkilo -> updateKayttajatiedot(henkilo, kayttajatiedotUpdateDto))
                 .orElseGet(() -> updateKayttajatiedot(new Henkilo(henkiloOid), kayttajatiedotUpdateDto));
-        this.ldapSynchronizationService.updateHenkiloAsap(henkiloOid);
         return kayttajatiedotReadDto;
     }
 
@@ -133,14 +126,8 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
     @Override
     @Transactional
     public void changePasswordAsAdmin(String oid, String newPassword) {
-        changePasswordAsAdmin(oid, newPassword, LdapSynchronizationType.ASAP);
-    }
-
-    @Override
-    @Transactional
-    public void changePasswordAsAdmin(String oid, String newPassword, LdapSynchronizationType ldapSynchronizationType) {
         this.cryptoService.throwIfNotStrongPassword(newPassword);
-        this.changePassword(oid, newPassword, ldapSynchronizationType);
+        this.changePassword(oid, newPassword);
     }
 
     @Override
@@ -167,10 +154,8 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
                 .orElseThrow(UnauthorizedException::new);
     }
 
-    private void changePassword(String oid, String newPassword, LdapSynchronizationType ldapSynchronizationType) {
+    private void changePassword(String oid, String newPassword) {
         setPasswordForHenkilo(oid, newPassword);
-        // Trigger ASAP priority update to LDAP
-        ldapSynchronizationType.getAction().accept(ldapSynchronizationService, oid);
     }
 
     private void setPasswordForHenkilo(String oidHenkilo, String password) {

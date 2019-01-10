@@ -11,7 +11,6 @@ import fi.vm.sade.kayttooikeus.repositories.KutsuRepository;
 import fi.vm.sade.kayttooikeus.repositories.TunnistusTokenDataRepository;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
 import fi.vm.sade.kayttooikeus.service.exception.LoginTokenNotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
@@ -46,7 +45,6 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
     private final TunnistusTokenDataRepository tunnistusTokenDataRepository;
 
     private final KayttoOikeusService kayttoOikeusService;
-    private final LdapSynchronizationService ldapSynchronizationService;
 
     private final OrikaBeanMapper mapper;
 
@@ -186,7 +184,6 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
                 .map(tunniste -> new Identification(henkilo, idp, tunniste))
                 .forEach(identificationRepository::save);
 
-        ldapSynchronizationService.updateHenkiloAsap(henkiloOid);
         return tunnisteet;
     }
 

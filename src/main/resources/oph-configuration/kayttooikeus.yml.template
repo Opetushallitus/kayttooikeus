@@ -28,11 +28,6 @@ spring:
       maximum-pool-size: {{postgresql_kayttooikeus_maximum_pool_size | default('20')}}
       connection-timeout: {{postgresql_kayttooikeus_connection_timeout | default('10000')}}
       max-lifetime: {{postgresql_kayttooikeus_max_lifetime | default('900000')}}
-  ldap:
-    urls: ldap://{{host_ldap}}
-    base: dc=opintopolku,dc=fi
-    username: {{ldap_manager_userdn}}
-    password: {{ldap_manager_password}}
 cas:
   service: https://{{host_virkailija}}/kayttooikeus-service
   send-renew: false

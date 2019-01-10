@@ -9,7 +9,6 @@ import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KayttooikeusCriteria;
 import fi.vm.sade.kayttooikeus.repositories.dto.ExpiringKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.LocalizationService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
@@ -56,7 +55,6 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
     private final KayttoOikeusRyhmaTapahtumaHistoriaRepository kayttoOikeusRyhmaTapahtumaHistoriaRepository;
     private final PalveluRepository palveluRepository;
     private final OrganisaatioViiteRepository organisaatioViiteRepository;
-    private final LdapSynchronizationService ldapSynchronizationService;
     private final PermissionCheckerService permissionCheckerService;
     private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
     private final CommonProperties commonProperties;
@@ -302,8 +300,6 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
         setRyhmaOrganisaatioViites(ryhmaData, kayttoOikeusRyhma);
 
         setKayttoOikeusRyhmas(ryhmaData, kayttoOikeusRyhma);
-
-        ldapSynchronizationService.updateKayttoOikeusRyhma(id);
     }
 
     @Override
@@ -326,7 +322,6 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
                     LocalDateTime.now(), "Oikeudet poistetaan käyttöoikeusryhmän passivoinnin myötä");
             kayttoOikeusRyhmaTapahtumaHistoriaDataRepository.save(historia);
             myonnettyKayttoOikeusRyhmaTapahtumaRepository.delete(kayttoOikeus);
-            ldapSynchronizationService.updateHenkilo(henkiloOid);
         }
         LOGGER.info("Käyttöoikeusryhmän passivoinnin myötä poistettiin {} käyttöoikeutta", kayttooikeudet.size());
     }

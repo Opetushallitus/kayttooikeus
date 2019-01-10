@@ -20,7 +20,6 @@ public class VirkailijaServiceImpl implements VirkailijaService {
     private final KayttajaService kayttajaService;
     private final KayttajatiedotService kayttajatiedotService;
     private final CryptoService cryptoService;
-    private final LdapSynchronizationService ldapSynchronizationService;
     private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
     private final HenkiloDataRepository henkiloRepository;
     private final OrikaBeanMapper mapper;
@@ -52,7 +51,6 @@ public class VirkailijaServiceImpl implements VirkailijaService {
         kayttajatiedot.setHenkilo(entity);
         entity.setKayttajatiedot(kayttajatiedot);
         henkiloRepository.save(entity);
-        ldapSynchronizationService.updateHenkiloAsap(oid);
 
         return oid;
     }

@@ -55,11 +55,6 @@
         </dependency>
         <dependency>
             <groupId>fi.vm.sade.java-utils</groupId>
-            <artifactId>java-ldap</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>fi.vm.sade.java-utils</groupId>
             <artifactId>opintopolku-cas-servlet-filter</artifactId>
         </dependency>
         <dependency>
@@ -87,10 +82,6 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-ldap</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
@@ -100,10 +91,6 @@
         </dependency>
 
         <!-- Spring dependencies -->
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-ldap</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
@@ -229,12 +216,6 @@
         <dependency>
             <groupId>net.jadler</groupId>
             <artifactId>jadler-jdk</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.unboundid</groupId>
-            <artifactId>unboundid-ldapsdk</artifactId>
             <scope>test</scope>
         </dependency>
 

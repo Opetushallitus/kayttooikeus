@@ -59,7 +59,6 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
     private final OrikaBeanMapper mapper;
     private final LocalizationService localizationService;
     private final EmailService emailService;
-    private final LdapSynchronizationService ldapSynchronizationService;
     private final OrganisaatioService organisaatioService;
 
     private final HaettuKayttooikeusryhmaValidator haettuKayttooikeusryhmaValidator;
@@ -431,8 +430,6 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                         ? "Oikeuksien lisäys"
                         : "Oikeuksien päivitys");
 
-        ldapSynchronizationService.updateHenkiloAsap(anojaOid);
-
         return myonnettyKayttoOikeusRyhmaTapahtuma;
     }
 
@@ -495,7 +492,6 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                 .toHistoria(kasittelija, KayttoOikeudenTila.SULJETTU, LocalDateTime.now(), "Käyttöoikeuden sulkeminen"));
         this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.delete(myonnettyKayttoOikeusRyhmaTapahtuma);
 
-        ldapSynchronizationService.updateHenkiloAsap(oidHenkilo);
     }
 
 

@@ -9,7 +9,6 @@ import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria;
 import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
-import fi.vm.sade.kayttooikeus.service.LdapSynchronizationService;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioHenkiloService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
@@ -56,7 +55,6 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
     private final KayttoOikeusRyhmaTapahtumaHistoriaDataRepository kayttoOikeusRyhmaTapahtumaHistoriaDataRepository;
     private final HaettuKayttooikeusRyhmaRepository haettuKayttooikeusRyhmaRepository;
 
-    private final LdapSynchronizationService ldapSynchronizationService;
     private final PermissionCheckerService permissionCheckerService;
 
     private final OrikaBeanMapper mapper;
@@ -243,7 +241,6 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
         this.kayttoOikeusRyhmaTapahtumaHistoriaDataRepository.saveAll(historia);
         this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.deleteAll(organisaatioHenkilo.getMyonnettyKayttoOikeusRyhmas());
         organisaatioHenkilo.setMyonnettyKayttoOikeusRyhmas(Sets.newHashSet());
-        ldapSynchronizationService.updateHenkiloAsap(organisaatioHenkilo.getHenkilo().getOidHenkilo());
 
         this.henkiloDataRepository.findByOidHenkilo(organisaatioHenkilo.getHenkilo().getOidHenkilo())
                 .ifPresent(this::disableNonValidVarmennettavas);

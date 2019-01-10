@@ -20,7 +20,6 @@ public class KayttooikeusProperties {
         private Long organisaatioRetryTime = 300000L;
 
         private Configuration configuration = new Configuration();
-        private Ldapsynkronointi ldapsynkronointi = new Ldapsynkronointi();
 
         @Getter @Setter
         public static class Configuration {
@@ -37,10 +36,5 @@ public class KayttooikeusProperties {
             private Long henkiloNimiCache = 100000L;
         }
 
-        @Getter @Setter
-        public static class Ldapsynkronointi {
-            private Long fixeddelayinmillis = 60000L;
-            private Long initialdelayinmillis = 30000L;
-        }
     }
 }
