@@ -133,12 +133,21 @@ public class CasController {
         // Kirjataan henkilön vahva tunnistautuminen järjestelmään, vaihe 1
         else if (StringUtils.hasLength(loginToken)) {
             // Joko päästetään suoraan sisään tai käytetään lisätietojen keräyssivun kautta
-            String redirectUrl = this.vahvaTunnistusService.kirjaaVahvaTunnistus(loginToken, kielisyys, hetu);
+            String redirectUrl = getVahvaTunnistusRedirectUrl(loginToken, kielisyys, hetu);
             response.sendRedirect(redirectUrl);
         }
         else {
             String redirectUrl = this.vahvaTunnistusService.kirjaaKayttajaVahvallaTunnistuksella(hetu, kielisyys);
             response.sendRedirect(redirectUrl);
+        }
+    }
+
+    private String getVahvaTunnistusRedirectUrl(String loginToken, String kielisyys, String hetu) {
+        try {
+            return vahvaTunnistusService.kirjaaVahvaTunnistus(loginToken, kielisyys, hetu);
+        } catch (Exception e) {
+            log.error("User failed strong identification", e);
+            return ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, loginToken);
         }
     }
 

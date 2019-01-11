@@ -11,25 +11,22 @@ import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
 import fi.vm.sade.kayttooikeus.service.VahvaTunnistusService;
 import fi.vm.sade.kayttooikeus.service.dto.HenkiloVahvaTunnistusDto;
-import fi.vm.sade.kayttooikeus.service.exception.LoginTokenNotFoundException;
-import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.util.HenkiloUtils;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoTyyppi;
 import fi.vm.sade.properties.OphProperties;
-
-import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.nio.charset.Charset;
+import java.util.Optional;
+
 import static fi.vm.sade.kayttooikeus.model.Identification.STRONG_AUTHENTICATION_IDP;
+import static java.util.Collections.singletonMap;
 
 @Service
 @Transactional
@@ -76,49 +73,39 @@ public class VahvaTunnistusServiceImpl implements VahvaTunnistusService {
 
     @Override
     public String kasitteleKutsunTunnistus(String kutsuToken, String kielisyys, String hetu, String etunimet, String sukunimi) {
-        Map<String, String> queryParams;
-        try {
-            // Dekoodataan etunimet ja sukunimi manuaalisesti, koska shibboleth välittää ASCII-enkoodatut request headerit UTF-8 -merkistössä
-            Charset windows1252 = Charset.forName("Windows-1252");
-            Charset utf8 = Charset.forName("UTF-8");
-            etunimet = new String(etunimet.getBytes(windows1252), utf8);
-            sukunimi = new String(sukunimi.getBytes(windows1252), utf8);
+        // Dekoodataan etunimet ja sukunimi manuaalisesti, koska shibboleth välittää ASCII-enkoodatut request headerit UTF-8 -merkistössä
+        Charset windows1252 = Charset.forName("Windows-1252");
+        Charset utf8 = Charset.forName("UTF-8");
+        etunimet = new String(etunimet.getBytes(windows1252), utf8);
+        sukunimi = new String(sukunimi.getBytes(windows1252), utf8);
 
-            String temporaryKutsuToken = this.identificationService
-                    .updateKutsuAndGenerateTemporaryKutsuToken(kutsuToken, hetu, etunimet, sukunimi);
-            queryParams = new HashMap<String, String>() {{
-                put("temporaryKutsuToken", temporaryKutsuToken);
-            }};
-            return this.ophProperties.url("henkilo-ui.rekisteroidy", queryParams);
-        } catch (NotFoundException e) {
-            return this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vanhakutsu");
-        }
+        return identificationService.updateKutsuAndGenerateTemporaryKutsuToken(kutsuToken, hetu, etunimet, sukunimi)
+                .map(temporaryKutsuToken -> ophProperties.url("henkilo-ui.rekisteroidy", singletonMap("temporaryKutsuToken", temporaryKutsuToken)))
+                .orElseGet(() -> ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vanhakutsu"));
     }
 
     @Override
     public String kirjaaVahvaTunnistus(String loginToken, String kielisyys, String hetu) {
-        try {
-            // otetaan hetu talteen jotta se on vielä tiedossa seuraavassa vaiheessa
-            TunnistusToken tunnistusToken = identificationService.updateLoginToken(loginToken, hetu);
-            HenkiloDto henkiloByLoginToken = oppijanumerorekisteriClient.getHenkiloByOid(tunnistusToken.getHenkilo().getOidHenkilo());
-            if (KayttajaTyyppi.PALVELU.equals(tunnistusToken.getHenkilo().getKayttajaTyyppi())) {
-                log.error("Palvelukäyttäjänä kirjautuminen on estetty");
-                return this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "palvelukayttaja");
-            }
+        // otetaan hetu talteen jotta se on vielä tiedossa seuraavassa vaiheessa
+        return identificationService.updateLoginToken(loginToken, hetu)
+                .map(tunnistusToken -> kirjaaVahvaTunnistus(tunnistusToken, kielisyys, hetu))
+                .orElseGet(() -> ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vanha"));
+    }
 
-            // tarkistetaan että virkailijalla on tämä hetu käytössä
-            if (StringUtils.hasLength(henkiloByLoginToken.getHetu()) && !henkiloByLoginToken.getHetu().equals(hetu)) {
-                log.error(String.format("Vahvan tunnistuksen henkilötunnus %s on eri kuin virkailijan henkilötunnus %s", hetu, henkiloByLoginToken.getHetu()));
-                return this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vaara");
-            }
-
-            return getRedirectUrl(loginToken, kielisyys, tunnistusToken.getSalasananVaihto(), henkiloByLoginToken);
-        } catch (LoginTokenNotFoundException e) {
-            return this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vanha");
-        } catch (Exception e) {
-            log.error("User failed strong identification", e);
-            return this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, loginToken);
+    private String kirjaaVahvaTunnistus(TunnistusToken tunnistusToken, String kielisyys, String hetu) {
+        HenkiloDto henkiloByLoginToken = oppijanumerorekisteriClient.getHenkiloByOid(tunnistusToken.getHenkilo().getOidHenkilo());
+        if (KayttajaTyyppi.PALVELU.equals(tunnistusToken.getHenkilo().getKayttajaTyyppi())) {
+            log.error("Palvelukäyttäjänä kirjautuminen on estetty");
+            return this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "palvelukayttaja");
         }
+
+        // tarkistetaan että virkailijalla on tämä hetu käytössä
+        if (StringUtils.hasLength(henkiloByLoginToken.getHetu()) && !henkiloByLoginToken.getHetu().equals(hetu)) {
+            log.error(String.format("Vahvan tunnistuksen henkilötunnus %s on eri kuin virkailijan henkilötunnus %s", hetu, henkiloByLoginToken.getHetu()));
+            return this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "vaara");
+        }
+
+        return getRedirectUrl(tunnistusToken.getLoginToken(), kielisyys, tunnistusToken.getSalasananVaihto(), henkiloByLoginToken);
     }
 
     private String getRedirectUrl(String loginToken, String kielisyys, Boolean salasananVaihto, HenkiloDto henkiloByLoginToken) {

@@ -28,6 +28,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -189,9 +190,12 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
 
     @Override
     @Transactional
-    public String updateKutsuAndGenerateTemporaryKutsuToken(String kutsuToken, String hetu, String etunimet, String sukunimi) {
-        Kutsu kutsu = this.kutsuRepository.findBySalaisuusIsValid(kutsuToken)
-                .orElseThrow(() -> new NotFoundException("Kutsu not found with token " + kutsuToken + " or token is invalid"));
+    public Optional<String> updateKutsuAndGenerateTemporaryKutsuToken(String kutsuToken, String hetu, String etunimet, String sukunimi) {
+        return this.kutsuRepository.findBySalaisuusIsValid(kutsuToken)
+                .map(kutsu -> updateKutsuAndGenerateTemporaryKutsuToken(kutsu, hetu, etunimet, sukunimi));
+    }
+
+    private String updateKutsuAndGenerateTemporaryKutsuToken(Kutsu kutsu, String hetu, String etunimet, String sukunimi) {
         kutsu.setHetu(hetu);
         kutsu.setEtunimi(etunimet);
         kutsu.setSukunimi(sukunimi);
@@ -212,9 +216,12 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
 
     @Override
     @Transactional
-    public TunnistusToken updateLoginToken(String loginToken, String hetu) {
-        TunnistusToken tunnistusToken = tunnistusTokenDataRepository.findByValidLoginToken(loginToken)
-                .orElseThrow(() -> new LoginTokenNotFoundException("Login token not found " + loginToken));
+    public Optional<TunnistusToken> updateLoginToken(String loginToken, String hetu) {
+        return tunnistusTokenDataRepository.findByValidLoginToken(loginToken)
+                .map(tunnistusToken -> updateLoginToken(tunnistusToken, hetu));
+    }
+
+    public TunnistusToken updateLoginToken(TunnistusToken tunnistusToken, String hetu) {
         tunnistusToken.setHetu(hetu);
         return tunnistusTokenDataRepository.save(tunnistusToken);
     }

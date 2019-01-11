@@ -278,7 +278,7 @@ public class IdentificationServiceTest extends AbstractServiceIntegrationTest {
     public void updateKutsuAndGenerateTemporaryKutsuToken() {
         Kutsu kutsu = populate(KutsuPopulator.kutsu("arpa", "kuutio", "arpa@kuutio.fi").salaisuus("123"));
         String temporaryToken = this.identificationService
-                .updateKutsuAndGenerateTemporaryKutsuToken("123", "hetu", "arpa arpa2", "kuutio");
+                .updateKutsuAndGenerateTemporaryKutsuToken("123", "hetu", "arpa arpa2", "kuutio").get();
         assertThat(kutsu.getEtunimi()).isEqualTo("arpa arpa2");
         assertThat(kutsu.getSukunimi()).isEqualTo("kuutio");
         assertThat(kutsu.getSahkoposti()).isEqualTo("arpa@kuutio.fi");
