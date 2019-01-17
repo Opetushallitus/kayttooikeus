@@ -2,9 +2,9 @@ package fi.vm.sade.kayttooikeus.repositories;
 
 import fi.vm.sade.kayttooikeus.dto.AccessRightTypeDto;
 import fi.vm.sade.kayttooikeus.dto.GroupTypeDto;
-import fi.vm.sade.kayttooikeus.dto.KayttooikeusPerustiedotDto;
 import fi.vm.sade.kayttooikeus.dto.MyonnettyKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioPalveluRooliDto;
+import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KayttooikeusCriteria;
 
@@ -22,7 +22,16 @@ public interface MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryCustom {
 
     List<MyonnettyKayttoOikeusRyhmaTapahtuma> findByVoimassaLoppuPvmBefore(LocalDate voimassaLoppuPvm);
 
-    List<KayttooikeusPerustiedotDto> listCurrentKayttooikeusForHenkilo(KayttooikeusCriteria criteria, Long limit, Long offset);
+    /**
+     * Hakee henkilön käyttöoikeudet annetun kriteerin perusteella. Henkilöllä on oltava aktiivinen organisaatio ja
+     * käyttöoikeusryhmä. Jos henkilöllä on passivoituja ja ei-passivoituja organisaatioita tai käyttöoikeusryhmiä
+     * nämä palautetaan myös.
+     * @param criteria Hakukriteeri
+     * @param limit Montako henkilöä palautetaan
+     * @param offset Poikkeama henkilöinä
+     * @return Kriteerin täyttävät henkilöt.
+     */
+    List<Henkilo> listCurrentKayttooikeusForHenkilo(KayttooikeusCriteria criteria, Long limit, Long offset);
 
     List<OrganisaatioPalveluRooliDto> findOrganisaatioPalveluRooliByOid(String oid);
 

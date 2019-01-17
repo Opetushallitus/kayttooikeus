@@ -19,7 +19,7 @@ public class OrganisaatioHenkiloKayttoOikeusPopulator implements Populator<Myonn
         this.henkilo = henkilo;
         this.kayttoOikeusRyhma = kayttoOikeusRyhma;
     }
-    
+
     public static OrganisaatioHenkiloKayttoOikeusPopulator myonnettyKayttoOikeus(Populator<OrganisaatioHenkilo> henkilo, Populator<KayttoOikeusRyhma> kayttoOikeusRyhma) {
         return new OrganisaatioHenkiloKayttoOikeusPopulator(henkilo, kayttoOikeusRyhma);
     }
@@ -38,7 +38,7 @@ public class OrganisaatioHenkiloKayttoOikeusPopulator implements Populator<Myonn
     public MyonnettyKayttoOikeusRyhmaTapahtuma apply(EntityManager entityManager) {
         MyonnettyKayttoOikeusRyhmaTapahtuma tapahtuma = new MyonnettyKayttoOikeusRyhmaTapahtuma();
         OrganisaatioHenkilo organisaatioHenkilo = henkilo.apply(entityManager);
-        tapahtuma.setOrganisaatioHenkilo(henkilo.apply(entityManager));
+        tapahtuma.setOrganisaatioHenkilo(organisaatioHenkilo);
         tapahtuma.setAikaleima(LocalDateTime.now());
         tapahtuma.setSyy("syy");
         tapahtuma.setKasittelija(organisaatioHenkilo.getHenkilo());
@@ -46,6 +46,9 @@ public class OrganisaatioHenkiloKayttoOikeusPopulator implements Populator<Myonn
         tapahtuma.setVoimassaAlkuPvm(voimassaAlkaen);
         tapahtuma.setVoimassaLoppuPvm(voimassaPaattyen);
         tapahtuma.setKayttoOikeusRyhma(kayttoOikeusRyhma.apply(entityManager));
+        // This needs to be done last since adding to persisted entity causes this to be prematurely persisted on Populator
+        // querying (Populator.first)
+        organisaatioHenkilo.addMyonnettyKayttooikeusryhmaTapahtuma(tapahtuma);
         entityManager.persist(tapahtuma);
         return tapahtuma;
     }

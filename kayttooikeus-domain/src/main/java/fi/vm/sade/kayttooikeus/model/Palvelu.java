@@ -3,6 +3,7 @@ package fi.vm.sade.kayttooikeus.model;
 import fi.vm.sade.kayttooikeus.dto.PalveluTyyppi;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -11,6 +12,7 @@ import java.util.Set;
 @Entity
 @Getter @Setter
 @Table(name = "palvelu", uniqueConstraints = {@UniqueConstraint(columnNames={"name"})})
+@BatchSize(size = 50)
 public class Palvelu extends IdentifiableAndVersionedEntity {
     
     @Column(name = "name", nullable = false, unique = true)

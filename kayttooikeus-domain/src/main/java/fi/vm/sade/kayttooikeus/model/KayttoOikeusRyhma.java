@@ -1,6 +1,7 @@
 package fi.vm.sade.kayttooikeus.model;
 
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "kayttooikeusryhma", uniqueConstraints = {@UniqueConstraint(columnNames={"name"})})
+@BatchSize(size = 20)
 public class KayttoOikeusRyhma extends IdentifiableAndVersionedEntity {
 
     @Column(name = "name", nullable = false)
@@ -24,6 +26,7 @@ public class KayttoOikeusRyhma extends IdentifiableAndVersionedEntity {
     @JoinTable(name = "kayttooikeusryhma_kayttooikeus", inverseJoinColumns = @JoinColumn(name = "kayttooikeus_id",
                 referencedColumnName = "id"), joinColumns = @JoinColumn(name = "kayttooikeusryhma_id",
                 referencedColumnName = "id"))
+    @BatchSize(size = 50)
     private Set<KayttoOikeus> kayttoOikeus = new HashSet<>();
     
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)

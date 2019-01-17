@@ -6,17 +6,9 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import fi.vm.sade.kayttooikeus.dto.AccessRightTypeDto;
 import fi.vm.sade.kayttooikeus.dto.GroupTypeDto;
-import fi.vm.sade.kayttooikeus.dto.KayttooikeusPerustiedotDto;
 import fi.vm.sade.kayttooikeus.dto.MyonnettyKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioPalveluRooliDto;
-import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
-import fi.vm.sade.kayttooikeus.model.QHenkilo;
-import fi.vm.sade.kayttooikeus.model.QKayttajatiedot;
-import fi.vm.sade.kayttooikeus.model.QKayttoOikeus;
-import fi.vm.sade.kayttooikeus.model.QKayttoOikeusRyhma;
-import fi.vm.sade.kayttooikeus.model.QMyonnettyKayttoOikeusRyhmaTapahtuma;
-import fi.vm.sade.kayttooikeus.model.QOrganisaatioHenkilo;
-import fi.vm.sade.kayttooikeus.model.QPalvelu;
+import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryCustom;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KayttooikeusCriteria;
 import org.springframework.data.jpa.repository.JpaContext;
@@ -26,8 +18,6 @@ import org.springframework.util.StringUtils;
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static fi.vm.sade.kayttooikeus.model.QKayttoOikeus.kayttoOikeus;
 import static fi.vm.sade.kayttooikeus.model.QKayttoOikeusRyhma.kayttoOikeusRyhma;
@@ -149,7 +139,7 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryImpl implements Myonne
     }
 
     @Override
-    public List<KayttooikeusPerustiedotDto> listCurrentKayttooikeusForHenkilo(KayttooikeusCriteria criteria, Long limit, Long offset) {
+    public List<Henkilo> listCurrentKayttooikeusForHenkilo(KayttooikeusCriteria criteria, Long limit, Long offset) {
         QMyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
         QOrganisaatioHenkilo organisaatioHenkilo = QOrganisaatioHenkilo.organisaatioHenkilo;
         QHenkilo henkilo = QHenkilo.henkilo;
@@ -158,26 +148,20 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryImpl implements Myonne
         QKayttajatiedot kayttajatiedot = QKayttajatiedot.kayttajatiedot;
         QPalvelu palvelu = QPalvelu.palvelu;
 
-        JPAQuery<KayttooikeusPerustiedotDto> query = jpa()
-                .select(Projections.constructor(KayttooikeusPerustiedotDto.class,
-                        henkilo.oidHenkilo,
-                        kayttajatiedot.username,
-                        organisaatioHenkilo.organisaatioOid,
-                        kayttoOikeus.rooli,
-                        palvelu.name,
-                        henkilo.kayttajaTyyppi))
+        JPAQuery<Henkilo> query = jpa()
+                .select(henkilo)
                 .distinct()
-                .from(myonnettyKayttoOikeusRyhmaTapahtuma)
-                .innerJoin(myonnettyKayttoOikeusRyhmaTapahtuma.organisaatioHenkilo, organisaatioHenkilo)
-                .innerJoin(organisaatioHenkilo.henkilo, henkilo)
+                .from(henkilo)
+                .leftJoin(henkilo.kayttajatiedot, kayttajatiedot).fetchJoin()
+                .innerJoin(henkilo.organisaatioHenkilos, organisaatioHenkilo)
+                .innerJoin(organisaatioHenkilo.myonnettyKayttoOikeusRyhmas, myonnettyKayttoOikeusRyhmaTapahtuma)
                 .innerJoin(myonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma, kayttoOikeusRyhma)
                 .innerJoin(kayttoOikeusRyhma.kayttoOikeus, kayttoOikeus)
-                .leftJoin(henkilo.kayttajatiedot, kayttajatiedot)
                 .innerJoin(kayttoOikeus.palvelu, palvelu)
                 .where(criteria.condition(kayttajatiedot, henkilo, kayttoOikeusRyhma))
                 .where(organisaatioHenkilo.passivoitu.isFalse())
                 .where(kayttoOikeusRyhma.passivoitu.isFalse())
-                .orderBy(henkilo.oidHenkilo.desc())
+                .orderBy(henkilo.oidHenkilo.asc())
                 ;
         if (limit != null) {
             query.limit(limit);
@@ -186,18 +170,7 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryImpl implements Myonne
             query.offset(offset);
         }
 
-        return query.fetch()
-                .stream()
-                // grouping
-                .collect(Collectors.groupingBy(KayttooikeusPerustiedotDto::getOidHenkilo))
-                .values()
-                .stream()
-                .flatMap(kayttooikeusPerustiedotDtoGroup -> kayttooikeusPerustiedotDtoGroup
-                        .stream()
-                        .reduce(KayttooikeusPerustiedotDto::mergeIfSameOid)
-                        .map(Stream::of)
-                        .orElseGet(Stream::empty))
-                .collect(Collectors.toList());
+        return query.fetch();
     }
 
     @Override

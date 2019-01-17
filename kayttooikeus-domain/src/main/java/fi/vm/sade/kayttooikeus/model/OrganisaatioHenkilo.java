@@ -2,6 +2,7 @@ package fi.vm.sade.kayttooikeus.model;
 
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloTyyppi;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -29,6 +30,7 @@ public class OrganisaatioHenkilo extends IdentifiableAndVersionedEntity {
     private OrganisaatioHenkiloTyyppi organisaatioHenkiloTyyppi;
 
     @OneToMany(mappedBy = "organisaatioHenkilo", cascade = { CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH })
+    @BatchSize(size = 50)
     private Set<MyonnettyKayttoOikeusRyhmaTapahtuma> myonnettyKayttoOikeusRyhmas = new HashSet<>();
 
     @OneToMany(mappedBy = "organisaatioHenkilo", cascade = CascadeType.ALL)

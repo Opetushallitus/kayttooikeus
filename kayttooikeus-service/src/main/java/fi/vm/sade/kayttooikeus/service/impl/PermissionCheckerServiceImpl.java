@@ -156,6 +156,19 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
 
         PermissionCheckResponseDto response = externalPermissionClient.getPermission(permissionCheckService,  permissionCheckRequestDto);
 
+//        SURElla ei kaikissa tapauksissa (esim. jos YO tutkinto ennen 90-lukua) ole tietoa
+//        henkilösta, joten pitää kysyä varmuuden vuoksi myös haku-appilta ja sen jälkeen atarulta
+        if (!response.isAccessAllowed() && ExternalPermissionService.SURE.equals(permissionCheckService)) {
+            PermissionCheckResponseDto responseHakuApp = externalPermissionClient.getPermission(
+                    ExternalPermissionService.HAKU_APP, permissionCheckRequestDto);
+            if (!responseHakuApp.isAccessAllowed()) {
+                return externalPermissionClient.getPermission(ExternalPermissionService.ATARU,permissionCheckRequestDto).isAccessAllowed();
+            } else {
+                return true;
+            }
+            
+        }
+
         if (!response.isAccessAllowed()) {
             LOG.error("Insufficient roles. permission check done from external service:"+ permissionCheckService + " Logged in user:" + callingUserOid + " accessed personId:" + personOidToAccess + " loginuser orgs:" + flattedOrgs.stream().collect(Collectors.joining(",")) + " palveluroles needed:" + getPrefixedRolesByPalveluRooli(allowedPalveluRooli).stream().collect(Collectors.joining(",")), " user cas roles:" + callingUserRoles.stream().collect(Collectors.joining(",")) + " personOidsForSamePerson:" + personOidsForSamePerson.stream().collect(Collectors.joining(",")) + " external service error message:" + response.getErrorMessage());
         }
