@@ -2,6 +2,7 @@ package fi.vm.sade.kayttooikeus.model;
 
 import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -41,6 +42,7 @@ public class Henkilo implements Identifiable {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "henkilo", cascade = { CascadeType.MERGE, CascadeType.PERSIST,
             CascadeType.REFRESH })
+    @BatchSize(size = 50)
     private Set<OrganisaatioHenkilo> organisaatioHenkilos = new HashSet<>();
 
     private String etunimetCached;

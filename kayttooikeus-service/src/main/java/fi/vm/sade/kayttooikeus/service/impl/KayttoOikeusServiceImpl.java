@@ -90,7 +90,8 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
     @Override
     @Transactional(readOnly = true)
     public List<KayttooikeusPerustiedotDto> listMyonnettyKayttoOikeusForUser(KayttooikeusCriteria criteria, Long limit, Long offset) {
-        return this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.listCurrentKayttooikeusForHenkilo(criteria, limit, offset);
+        List<Henkilo> henkilos = this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.listCurrentKayttooikeusForHenkilo(criteria, limit, offset);
+        return this.mapper.mapAsList(henkilos, KayttooikeusPerustiedotDto.class);
     }
 
     @Override

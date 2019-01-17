@@ -59,8 +59,7 @@ public class KayttoOikeusController {
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_READ',"
             + "'ROLE_APP_KAYTTOOIKEUS_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
-    @ApiOperation(value = "Hakee käyttäjien käyttöoikeudet annetuilla hakukriteereillä. Haku rajoitettu 1000 kerralla.",
-            notes = "Vastauksessa ei tule välttämättä 1000 henkilöä koska tulosjoukkoon tehdään yhdistämisiä.")
+    @ApiOperation(value = "Hakee käyttäjien käyttöoikeudet annetuilla hakukriteereillä. Haku rajoitettu 1000 kerralla.")
     @RequestMapping(value = "/kayttaja", method = RequestMethod.GET)
     public List<KayttooikeusPerustiedotDto> listKayttoOikeusByOid(KayttooikeusCriteria criteria,
                                                                   @RequestParam(required = false) Long offset) {
