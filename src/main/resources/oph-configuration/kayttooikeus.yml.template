@@ -77,6 +77,7 @@ endpoints:
 
 kayttooikeus:
   uses-ssl-proxy: true
+  disable-same-site-cookie: {{kayttooikeus_disable_same_site_cookie | default('false')}}
   scheduling:
     enabled: true
 
