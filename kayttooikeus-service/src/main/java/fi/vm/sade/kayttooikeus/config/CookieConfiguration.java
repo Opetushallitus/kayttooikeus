@@ -18,6 +18,8 @@ public class CookieConfiguration {
     public CookieSerializer cookieSerializer() {
         DefaultCookieSerializer defaultCookieSerializer = new DefaultCookieSerializer();
         defaultCookieSerializer.setSameSite(null);
+        defaultCookieSerializer.setCookieName("JSESSIONID");
+        defaultCookieSerializer.setUseSecureCookie(true);
         return defaultCookieSerializer;
     }
 }
