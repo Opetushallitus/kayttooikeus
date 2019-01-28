@@ -48,7 +48,7 @@ public class CreateUtil {
     public static HaettuKayttooikeusryhmaDto createHaettuKattyooikeusryhmaDto(Long haettuRyhmaId, String organisaatioOid,
                                                                                KayttoOikeudenTila tila) {
         KayttoOikeusRyhmaDto kayttoOikeusRyhmaDto = new KayttoOikeusRyhmaDto(1001L, "Kayttooikeusryhma x",
-                "10", newArrayList(), new TextGroupDto(2001L), new TextGroupDto(2002L), false, false);
+                "10", newArrayList(), new TextGroupDto(2001L), new TextGroupDto(2002L), false, false, null);
         return new HaettuKayttooikeusryhmaDto(haettuRyhmaId, createAnomusDto(organisaatioOid), kayttoOikeusRyhmaDto, LocalDateTime.now(), tila);
     }
 
@@ -58,7 +58,7 @@ public class CreateUtil {
 
     public static KayttoOikeusRyhma createKayttooikeusryhma(Long id) {
         KayttoOikeusRyhma kayttoOikeusRyhma = new KayttoOikeusRyhma("Kayttooikeusryhma x", Collections.<KayttoOikeus>emptySet(),
-                new TextGroup(), new TextGroup(), Sets.newHashSet(), false, "10", false);
+                new TextGroup(), new TextGroup(), Sets.newHashSet(), false, "10", false, null);
         kayttoOikeusRyhma.setId(id);
         return kayttoOikeusRyhma;
     }

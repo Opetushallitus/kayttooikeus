@@ -411,7 +411,8 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 .sukunimi("kutsuja")
                 .build())
                 .when(this.oppijanumerorekisteriClient).getHenkiloByOid(anyString());
-        this.kutsuService.createKutsu(new KutsuCreateDto());
+        // This kind of kutsu is not actually allowed on api.
+        this.kutsuService.createKutsu(KutsuCreateDto.builder().organisaatiot(new HashSet<>()).build());
     }
 
     // Assert that existing yhteystiedot won't be overrun

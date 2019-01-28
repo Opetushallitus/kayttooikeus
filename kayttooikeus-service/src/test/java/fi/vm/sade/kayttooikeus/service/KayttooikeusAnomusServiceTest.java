@@ -472,8 +472,8 @@ public class KayttooikeusAnomusServiceTest {
                 .willReturn(Optional.of(myonnettyKayttoOikeusRyhmaTapahtuma));
 
         KayttoOikeusRyhma grantKayttooikeusryhma = createKayttooikeusryhma(2001L);
-        this.kayttooikeusAnomusService.grantKayttooikeusryhmaAsAdminWithoutPermissionCheck("1.2.3.4.5", "1.2.0.0.1",
-                Lists.newArrayList(grantKayttooikeusryhma));
+        this.kayttooikeusAnomusService.grantPreValidatedKayttooikeusryhma("1.2.3.4.5", "1.2.0.0.1",LocalDate.now().plusYears(1),
+                Lists.newArrayList(grantKayttooikeusryhma), "1.2.3.4.1");
 
         ArgumentCaptor<MyonnettyKayttoOikeusRyhmaTapahtuma> myonnettyKayttoOikeusRyhmaTapahtumaArgumentCaptor =
                 ArgumentCaptor.forClass(MyonnettyKayttoOikeusRyhmaTapahtuma.class);

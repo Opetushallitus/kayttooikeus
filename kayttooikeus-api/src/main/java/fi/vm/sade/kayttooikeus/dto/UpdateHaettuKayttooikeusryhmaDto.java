@@ -15,6 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class UpdateHaettuKayttooikeusryhmaDto {
 
+    // Haettu käyttöoikeusryhmä id
     private Long id;
 
     @Pattern(regexp = "^(MYONNETTY|HYLATTY)$", message = "invalid.kayttooikeudentila")

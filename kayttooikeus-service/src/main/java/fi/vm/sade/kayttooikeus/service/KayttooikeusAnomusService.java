@@ -17,19 +17,35 @@ public interface KayttooikeusAnomusService {
 
     List<HaettuKayttooikeusryhmaDto> listHaetutKayttoOikeusRyhmat(AnomusCriteria criteria, Long limit, Long offset, OrderByAnomus orderBy);
 
+    /**
+     * Myöntää tai hylkää haetun käyttöoikeusryhmän anomukselta. Myönnettäessä oikeus lisätään anomukselle myönnettyihin
+     * oikeuksiin ja poistetaan anomukselta. Hylättäessä haettu käyttöoikeusryhmä vain poistetaan anomukselta.
+     * @param updateHaettuKayttooikeusryhmaDto Haetun käyttöoikeusryhmän käsittelytiedot
+     */
     void updateHaettuKayttooikeusryhma(UpdateHaettuKayttooikeusryhmaDto updateHaettuKayttooikeusryhmaDto);
 
+    /**
+     * Suora käyttöoikeuksien myöntäminen henkilölle haluttuun organisaatioon.
+     * @param anojaOid Henkilön oid jolle oikeudet myönnetään
+     * @param organisaatioOid Organisaation oid johon oikeudet myönnetään
+     * @param updateHaettuKayttooikeusryhmaDtoList Myönnettävät oikeudet
+     */
     void grantKayttooikeusryhma(String anojaOid, String organisaatioOid, List<GrantKayttooikeusryhmaDto> updateHaettuKayttooikeusryhmaDtoList);
 
-    void grantKayttooikeusryhmaAsAdminWithoutPermissionCheck(String anoja,
-                                                             String organisaatioOid,
-                                                             Collection<KayttoOikeusRyhma> kayttooikeusryhmas);
-
-    void grantKayttooikeusryhmaAsAdminWithoutPermissionCheck(String anoja,
-                                                             String organisaatioOid,
-                                                             LocalDate voimassaLoppuPvm,
-                                                             Collection<KayttoOikeusRyhma> kayttooikeusryhmas,
-                                                             String myontaja);
+    /**
+     * Myöntää henkilölle suoraan käyttöoikeudet ilman tarkistuksia. Oletetaan, että myönnettävät oikeudet on jo validoitu
+     * ja tätä funktiokutsua ei suorita kirjautunut käyttäjä.
+     * @param anoja Henkilön oid jolle oikeudet myönnetään
+     * @param organisaatioOid Organisaation oid johon oikeudet myönnetään
+     * @param voimassaLoppuPvm Oikeuksien sulkeutumispäivämäärä
+     * @param kayttooikeusryhmas Myönnettävät oikeudet
+     * @param myontaja Henkilön oid joka katsotaan myöntäväksi henkilöksi
+     */
+    void grantPreValidatedKayttooikeusryhma(String anoja,
+                                            String organisaatioOid,
+                                            LocalDate voimassaLoppuPvm,
+                                            Collection<KayttoOikeusRyhma> kayttooikeusryhmas,
+                                            String myontaja);
 
     Long createKayttooikeusAnomus(String anojaOid, KayttooikeusAnomusDto kayttooikeusAnomusDto);
 

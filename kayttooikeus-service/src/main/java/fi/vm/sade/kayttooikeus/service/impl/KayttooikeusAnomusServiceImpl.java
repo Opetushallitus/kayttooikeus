@@ -35,6 +35,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.appending;
@@ -275,21 +276,8 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                         this.permissionCheckerService.getCurrentUserOid()));
     }
 
-    // For internal calls when permission checks are redundant.
     @Override
-    @Transactional
-    public void grantKayttooikeusryhmaAsAdminWithoutPermissionCheck(String anoja,
-                                                                    String organisaatioOid,
-                                                                    Collection<KayttoOikeusRyhma> kayttooikeusryhmas) {
-        this.grantKayttooikeusryhmaAsAdminWithoutPermissionCheck(anoja,
-                organisaatioOid,
-                LocalDate.now().plusYears(1),
-                kayttooikeusryhmas,
-                this.permissionCheckerService.getCurrentUserOid());
-    }
-
-    @Override
-    public void grantKayttooikeusryhmaAsAdminWithoutPermissionCheck(String anoja, String organisaatioOid, LocalDate voimassaLoppuPvm, Collection<KayttoOikeusRyhma> kayttooikeusryhmas, String myontajaOid) {
+    public void grantPreValidatedKayttooikeusryhma(String anoja, String organisaatioOid, LocalDate voimassaLoppuPvm, Collection<KayttoOikeusRyhma> kayttooikeusryhmas, String myontajaOid) {
         kayttooikeusryhmas.forEach(kayttooikeusryhma -> this.grantKayttooikeusryhma(
                 LocalDate.now(),
                 voimassaLoppuPvm,
@@ -316,11 +304,13 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         anomus.setAnottuPvm(LocalDateTime.now());
         anomus.setOrganisaatioOid(kayttooikeusAnomusDto.getOrganisaatioOrRyhmaOid());
 
-
         Iterable<KayttoOikeusRyhma> kayttoOikeusRyhmas = this.kayttooikeusryhmaDataRepository
                 .findAllById(kayttooikeusAnomusDto.getKayttooikeusRyhmaIds());
 
         kayttoOikeusRyhmas.forEach(k -> {
+            if (!k.isSallittuKayttajatyypilla(anoja.getKayttajaTyyppi())) {
+                throw new IllegalStateException(String.format("Käyttöikeusryhmää %d ei ole sallittu henkilön %s käyttäjätyypille %s", k.getId(), anoja.getOidHenkilo(), anoja.getKayttajaTyyppi()));
+            }
             HaettuKayttoOikeusRyhma h = new HaettuKayttoOikeusRyhma();
             h.setKayttoOikeusRyhma(k);
             anomus.addHaettuKayttoOikeusRyhma(h);
@@ -409,7 +399,9 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                 .orElseThrow(() -> new NotFoundException("Anoja not found with oid " + anojaOid));
         Henkilo kasittelija = this.henkiloDataRepository.findByOidHenkilo(kasittelijaOid)
                 .orElseThrow(() -> new NotFoundException("Kasittelija not found with oid " + this.getCurrentUserOid()));
-
+        Optional.of(myonnettavaKayttoOikeusRyhma)
+                .filter(kayttooikeusRyhma -> kayttooikeusRyhma.isSallittuKayttajatyypilla(anoja.getKayttajaTyyppi()))
+                .orElseThrow(() -> new IllegalStateException(String.format("Yritetään myöntää käyttöoikeutta väärälle käyttäjätyypille %s käyttöoikeusryhmään %d kun sallitaan vain %s", anoja.getKayttajaTyyppi(), myonnettavaKayttoOikeusRyhma.getId(), myonnettavaKayttoOikeusRyhma.getSallittuKayttajatyyppi())));
         OrganisaatioHenkilo myonnettavaOrganisaatioHenkilo = this.findOrCreateHaettuOrganisaatioHenkilo(
                 organisaatioOid, anoja, tehtavanimike);
 

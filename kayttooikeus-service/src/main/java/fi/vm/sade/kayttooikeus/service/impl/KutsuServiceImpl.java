@@ -5,10 +5,7 @@ import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.enumeration.KutsuOrganisaatioOrder;
-import fi.vm.sade.kayttooikeus.model.Henkilo;
-import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
-import fi.vm.sade.kayttooikeus.model.Kutsu;
-import fi.vm.sade.kayttooikeus.model.KutsuOrganisaatio;
+import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KutsuCriteria;
 import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
@@ -59,6 +56,7 @@ public class KutsuServiceImpl implements KutsuService {
     private final OrganisaatioHenkiloRepository organisaatioHenkiloRepository;
     private final MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
     private final IdentificationRepository identificationRepository;
+    private final KayttoOikeusRyhmaRepository kayttoOikeusRyhmaRepository;
 
     private final CommonProperties commonProperties;
 
@@ -96,6 +94,17 @@ public class KutsuServiceImpl implements KutsuService {
                 this.organisaatioViiteLimitationsAreValidThrows(kutsuCreateDto.getOrganisaatiot());
             }
             this.kayttooikeusryhmaLimitationsAreValid(kutsuCreateDto.getOrganisaatiot());
+        }
+        Set<Long> eiSallitutKayttooikeusryhmat = kutsuCreateDto.getOrganisaatiot().stream()
+                .flatMap(kutsuOrganisaatioDto -> kutsuOrganisaatioDto.getKayttoOikeusRyhmat().stream())
+                .map(kayttoOikeusRyhmaDto -> this.kayttoOikeusRyhmaRepository.findById(kayttoOikeusRyhmaDto.getId()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .filter(kayttoOikeusRyhma -> !kayttoOikeusRyhma.isSallittuKayttajatyypilla(KayttajaTyyppi.VIRKAILIJA))
+                .map(KayttoOikeusRyhma::getId)
+                .collect(Collectors.toSet());
+        if (eiSallitutKayttooikeusryhmat.size() > 0) {
+            throw new IllegalArgumentException(String.format("Käyttöoikeusryhmiä %s ei voi myöntää käyttäjätyypille %s", eiSallitutKayttooikeusryhmat.toString(), KayttajaTyyppi.VIRKAILIJA));
         }
         // This is redundant after every virkailija has been strongly identified
         final String currentUserOid = this.permissionCheckerService.getCurrentUserOid();
@@ -336,14 +345,19 @@ public class KutsuServiceImpl implements KutsuService {
             this.kayttajatiedotService.changePasswordAsAdmin(henkiloOid, henkiloCreateByKutsuDto.getPassword());
         }
 
-        kutsuByToken.getOrganisaatiot().forEach(kutsuOrganisaatio ->
-                this.kayttooikeusAnomusService.grantKayttooikeusryhmaAsAdminWithoutPermissionCheck(
-                        henkiloOid,
-                        kutsuOrganisaatio.getOrganisaatioOid(),
-                        Optional.ofNullable(kutsuOrganisaatio.getVoimassaLoppuPvm())
-                                .orElseGet(() -> LocalDate.now().plusYears(1)),
-                        kutsuOrganisaatio.getRyhmat(),
-                        kutsuByToken.getKutsuja()));
+        kutsuByToken.getOrganisaatiot().forEach(kutsuOrganisaatio -> {
+            // Filtteröidään ei virkailijoille sallitut käyttöoikeusryhmät. Virkailija voi anoa tarvitsemiaan oikeuksia päästyään palveluun.
+            Set<KayttoOikeusRyhma> kayttooikeusRyhmas = kutsuOrganisaatio.getRyhmat().stream()
+                    .filter(kayttoOikeusRyhma -> kayttoOikeusRyhma.isSallittuKayttajatyypilla(KayttajaTyyppi.VIRKAILIJA))
+                    .collect(Collectors.toSet());
+            this.kayttooikeusAnomusService.grantPreValidatedKayttooikeusryhma(
+                    henkiloOid,
+                    kutsuOrganisaatio.getOrganisaatioOid(),
+                    Optional.ofNullable(kutsuOrganisaatio.getVoimassaLoppuPvm())
+                            .orElseGet(() -> LocalDate.now().plusYears(1)),
+                    kayttooikeusRyhmas,
+                    kutsuByToken.getKutsuja());
+        });
 
     }
 

@@ -64,7 +64,7 @@ public class AnomusController {
 
 
     @ApiOperation("Hyväksyy tai hylkää haetun käyttöoikeusryhmän")
-    // Organisation access validated on server layer
+    // Organisation access validated on service layer
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @RequestMapping(value = "", method = RequestMethod.PUT)
@@ -74,7 +74,7 @@ public class AnomusController {
     }
 
     @ApiOperation("Myöntää halutut käyttöoikeusryhmät käyttäjälle haluttuun organisaatioon")
-    // Organisation access validated on server layer
+    // Organisation access validated on service layer
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @RequestMapping(value = "/{oidHenkilo}/{organisaatioOid}", method = RequestMethod.PUT)

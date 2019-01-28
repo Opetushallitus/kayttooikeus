@@ -18,12 +18,15 @@ public class KayttoOikeusRyhmaDto implements Serializable, LocalizableDto {
 
     private Long id;
     private String tunniste;
+    // Not used anywhere
+    @Deprecated
     private String rooliRajoite;
     private List<OrganisaatioViiteDto> organisaatioViite = new ArrayList<>();
     private TextGroupDto nimi;
     private TextGroupDto kuvaus;
     private boolean passivoitu;
     private boolean ryhmaRestriction;
+    private KayttajaTyyppi sallittuKayttajatyyppi;
 
     public void setNimiId(Long id) {
         this.nimi = localizeLaterById(id);
