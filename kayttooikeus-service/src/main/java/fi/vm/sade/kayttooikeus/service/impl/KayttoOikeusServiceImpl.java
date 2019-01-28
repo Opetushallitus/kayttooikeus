@@ -236,6 +236,8 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
         }
         kayttoOikeusRyhma.setRooliRajoite(uusiRyhma.getRooliRajoite());
 
+        kayttoOikeusRyhma.setSallittuKayttajatyyppi(uusiRyhma.getSallittuKayttajatyyppi());
+
         kayttoOikeusRyhma.getKayttoOikeus().addAll(uusiRyhma.getPalvelutRoolit().stream()
                 .map(palveluRoooliDto ->
                         ofNullable(kayttoOikeusRepository.findByRooliAndPalvelu(palveluRoooliDto.getRooli(),
@@ -301,6 +303,8 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
         setRyhmaOrganisaatioViites(ryhmaData, kayttoOikeusRyhma);
 
         setKayttoOikeusRyhmas(ryhmaData, kayttoOikeusRyhma);
+
+        kayttoOikeusRyhma.setSallittuKayttajatyyppi(ryhmaData.getSallittuKayttajatyyppi());
     }
 
     @Override

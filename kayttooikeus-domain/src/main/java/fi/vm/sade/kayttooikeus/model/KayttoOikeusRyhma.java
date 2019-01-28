@@ -1,5 +1,6 @@
 package fi.vm.sade.kayttooikeus.model;
 
+import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
 
@@ -43,12 +44,19 @@ public class KayttoOikeusRyhma extends IdentifiableAndVersionedEntity {
     
     @Column(name = "hidden", nullable = false)
     private boolean passivoitu;
-    
+
+    // Not used anywhere
+    @Deprecated
     @Column(name = "rooli_rajoite")
     private String rooliRajoite;
 
     @Column(name = "ryhma_restriction", nullable = false)
     private boolean ryhmaRestriction;
+
+    // Käyttäjätyyppi jolle tämän käyttöoikeusryhmän voi myöntää. Sallittu kaikille jos ei asetettu.
+    @Column(name = "allowed_usertype")
+    @Enumerated(EnumType.STRING)
+    private KayttajaTyyppi sallittuKayttajatyyppi;
 
     public void addOrganisaatioViite(OrganisaatioViite organisaatioViite) {
         organisaatioViite.setKayttoOikeusRyhma(this);
@@ -68,6 +76,10 @@ public class KayttoOikeusRyhma extends IdentifiableAndVersionedEntity {
             this.kayttoOikeus = new HashSet<>();
         }
         this.kayttoOikeus.add(kayttoOikeus);
+    }
+
+    public boolean isSallittuKayttajatyypilla(KayttajaTyyppi kayttajaTyyppi) {
+        return this.getSallittuKayttajatyyppi() == null || this.getSallittuKayttajatyyppi().equals(kayttajaTyyppi);
     }
 
 }

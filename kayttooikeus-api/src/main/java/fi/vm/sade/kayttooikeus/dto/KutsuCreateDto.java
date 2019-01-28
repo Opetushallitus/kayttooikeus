@@ -1,7 +1,6 @@
 package fi.vm.sade.kayttooikeus.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
@@ -13,6 +12,9 @@ import java.util.Set;
 
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class KutsuCreateDto {
     @NotEmpty
     private String etunimi;

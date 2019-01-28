@@ -23,10 +23,13 @@ public class KayttoOikeusRyhmaModifyDto {
     @Valid
     private List<PalveluRooliModifyDto> palvelutRoolit;
     private List<String> organisaatioTyypit;
+    // Not used anywhere
+    @Deprecated
     private String rooliRajoite;
     private List<Long> slaveIds;
     @NotNull
     private boolean ryhmaRestriction;
+    private KayttajaTyyppi sallittuKayttajatyyppi;
 
 
     /**
