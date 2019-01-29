@@ -5,13 +5,18 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.QBean;
 import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila;
 import fi.vm.sade.kayttooikeus.dto.KayttoOikeusRyhmaDto;
 import fi.vm.sade.kayttooikeus.model.*;
-import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaRepository;
+import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaRepositoryCustom;
+import org.springframework.data.jpa.repository.JpaContext;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +24,18 @@ import java.util.Optional;
 
 
 @Repository
-public class KayttoOikeusRyhmaRepositoryImpl extends BaseRepositoryImpl<KayttoOikeusRyhma> implements KayttoOikeusRyhmaRepository {
+@Transactional(propagation = Propagation.MANDATORY)
+public class KayttoOikeusRyhmaRepositoryImpl implements KayttoOikeusRyhmaRepositoryCustom {
+
+    private final EntityManager em;
+
+    public KayttoOikeusRyhmaRepositoryImpl(JpaContext context) {
+        this.em = context.getEntityManagerByManagedType(KayttoOikeusRyhma.class);
+    }
+
+    private JPAQueryFactory jpa() {
+        return new JPAQueryFactory(this.em);
+    }
 
     private QBean<KayttoOikeusRyhmaDto> KayttoOikeusRyhmaDtoBean() {
         QKayttoOikeusRyhma kayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
@@ -30,7 +46,8 @@ public class KayttoOikeusRyhmaRepositoryImpl extends BaseRepositoryImpl<KayttoOi
                 kayttoOikeusRyhma.nimi.id.as("nimiId"),
                 kayttoOikeusRyhma.kuvaus.id.as("kuvausId"),
                 kayttoOikeusRyhma.passivoitu.as("passivoitu"),
-                kayttoOikeusRyhma.ryhmaRestriction.as("ryhmaRestriction"));
+                kayttoOikeusRyhma.ryhmaRestriction.as("ryhmaRestriction"),
+                kayttoOikeusRyhma.sallittuKayttajatyyppi.as("sallittuKayttajatyyppi"));
     }
 
     @Override
@@ -64,10 +81,12 @@ public class KayttoOikeusRyhmaRepositoryImpl extends BaseRepositoryImpl<KayttoOi
     @Override
     public Boolean ryhmaNameFiExists(String ryhmaNameFi) {
         QKayttoOikeusRyhma kayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
-        return exists(jpa().from(kayttoOikeusRyhma)
+        return jpa().from(kayttoOikeusRyhma)
                 .where(kayttoOikeusRyhma.nimi.texts.any().lang.eq("FI"),
                         kayttoOikeusRyhma.nimi.texts.any().text.eq(ryhmaNameFi))
-                .select(kayttoOikeusRyhma));
+                .select(kayttoOikeusRyhma)
+                .limit(1)
+                .fetchCount() > 0;
     }
 
     @Override
