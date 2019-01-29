@@ -177,7 +177,7 @@ public class KayttoOikeusRyhmaRepositoryTest extends AbstractRepositoryTest {
         kor.setNimi(textGroup);
         kor.getKayttoOikeus().add(oikeus);
         kor.setRooliRajoite("roolirajoite");
-        kor = kayttoOikeusRyhmaRepository.persist(kor);
+        kor = kayttoOikeusRyhmaRepository.save(kor);
 
         ryhmas = kayttoOikeusRyhmaRepository.listAll();
         assertEquals(1, ryhmas.size());

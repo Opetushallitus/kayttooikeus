@@ -26,7 +26,8 @@ public class KayttoOikeusRyhmaConverter extends CustomConverter<KayttoOikeusRyhm
                 .organisaatioViite(source.getOrganisaatioViite().stream().map(organisaatioViite -> OrganisaatioViiteDto.builder()
                         .id(organisaatioViite.getId())
                         .organisaatioTyyppi(organisaatioViite.getOrganisaatioTyyppi())
-                        .build()).collect(Collectors.toList()));
+                        .build()).collect(Collectors.toList()))
+                .sallittuKayttajatyyppi(source.getSallittuKayttajatyyppi());
 
         if (source.getKuvaus() != null) {
             destinationBuilder.kuvaus(new TextGroupDto(source.getKuvaus().getId()));

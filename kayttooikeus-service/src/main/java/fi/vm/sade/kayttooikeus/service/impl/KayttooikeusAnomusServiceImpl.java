@@ -309,7 +309,7 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
 
         kayttoOikeusRyhmas.forEach(k -> {
             if (!k.isSallittuKayttajatyypilla(anoja.getKayttajaTyyppi())) {
-                throw new IllegalStateException(String.format("Käyttöikeusryhmää %d ei ole sallittu henkilön %s käyttäjätyypille %s", k.getId(), anoja.getOidHenkilo(), anoja.getKayttajaTyyppi()));
+                throw new IllegalStateException(String.format("Käyttöoikeusryhmää %d ei ole sallittu henkilön %s käyttäjätyypille %s", k.getId(), anoja.getOidHenkilo(), anoja.getKayttajaTyyppi()));
             }
             HaettuKayttoOikeusRyhma h = new HaettuKayttoOikeusRyhma();
             h.setKayttoOikeusRyhma(k);

@@ -247,7 +247,7 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
                                     .orElseThrow(() -> new NotFoundException("palvelu not found"))
                     )))).collect(toList()));
 
-        kayttoOikeusRyhma = kayttoOikeusRyhmaRepository.persist(kayttoOikeusRyhma);
+        kayttoOikeusRyhma = kayttoOikeusRyhmaRepository.save(kayttoOikeusRyhma);
 
         // Organization limitation must be set only if the Organizatio OIDs are defined
         if (!isEmpty(uusiRyhma.getOrganisaatioTyypit())) {
