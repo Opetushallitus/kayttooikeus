@@ -9,6 +9,11 @@ import java.util.stream.Stream;
 
 import static fi.vm.sade.kayttooikeus.dto.TextGroupDto.localizeLaterById;
 
+/**
+ * Sisältää käyttöoikeusryhmän tiedot sekä käyttäjän voimassa olevan käyttöoikeuden tiedot jos käyttäjä voi myöntää
+ * tämän käyttöoikeusryhmän.
+ * Tätä käytetään myös vanhojen käyttöoikeuksien listaamiseen annettuun organisaatioon.
+ */
 @Setter
 @Getter
 @ToString
@@ -30,9 +35,11 @@ public class MyonnettyKayttoOikeusDto implements LocalizableDto, Serializable{
     private LocalDateTime kasitelty;
     private String kasittelijaOid;
     private String kasittelijaNimi;
+    // Voiko käyttäjä myöntää tämän käyttöoikeuden (ryhmaId) tähän organisaatioon (organisaatioOid)
     private boolean selected;
     private boolean removed;
     private String muutosSyy;
+    private KayttajaTyyppi sallittuKayttajatyyppi;
 
     public void setRyhmaNamesId(Long ryhmaNamesId) {
         this.ryhmaNames = localizeLaterById(ryhmaNamesId);

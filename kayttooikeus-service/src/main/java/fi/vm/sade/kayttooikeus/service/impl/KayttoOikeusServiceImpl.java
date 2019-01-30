@@ -129,34 +129,38 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
     @Override
     @Transactional(readOnly = true)
     public List<MyonnettyKayttoOikeusDto> listMyonnettyKayttoOikeusRyhmasMergedWithHenkilos(String henkiloOid, String organisaatioOid, String myontajaOid) {
+        // Käyttöoikeusryhmät jotka käyttäjä voi myöntää annettuun organisaatioon
         List<KayttoOikeusRyhmaDto> allRyhmas = getGrantableRyhmasWithoutOrgLimitations(organisaatioOid, myontajaOid);
         if (allRyhmas.isEmpty()){
             return Collections.emptyList();
         }
 
+        // Käyttäjän oikeudet annettuun organisaatioon
         List<MyonnettyKayttoOikeusDto> kayttoOikeusForHenkilo = myonnettyKayttoOikeusRyhmaTapahtumaRepository.findByHenkiloInOrganisaatio(henkiloOid, organisaatioOid);
         List<MyonnettyKayttoOikeusDto> all = allRyhmas.stream()
                 .map(kayttoOikeusRyhmaDto -> {
-            MyonnettyKayttoOikeusDto dto = new MyonnettyKayttoOikeusDto();
-            dto.setRyhmaId(kayttoOikeusRyhmaDto.getId());
-            dto.setRyhmaTunniste(kayttoOikeusRyhmaDto.getTunniste());
-            if (kayttoOikeusRyhmaDto.getNimi() != null) {
-                dto.setRyhmaNamesId(kayttoOikeusRyhmaDto.getNimi().getId());
-            }
-            if (kayttoOikeusRyhmaDto.getKuvaus() != null) {
-                dto.setRyhmaKuvausId(kayttoOikeusRyhmaDto.getKuvaus().getId());
-            }
-            dto.setSelected(false);
-            kayttoOikeusForHenkilo.stream()
-                    .filter(myonnettyKayttoOikeusDto -> myonnettyKayttoOikeusDto.getRyhmaId().equals(dto.getRyhmaId()))
-                    .findFirst().ifPresent(myonnettyKayttoOikeusDto -> {
-                        dto.setMyonnettyTapahtumaId(myonnettyKayttoOikeusDto.getMyonnettyTapahtumaId());
-                        dto.setAlkuPvm(myonnettyKayttoOikeusDto.getAlkuPvm());
-                        dto.setVoimassaPvm(myonnettyKayttoOikeusDto.getVoimassaPvm());
-                        dto.setSelected(true);
-                    });
-            return dto;
-        }).collect(Collectors.toList());
+                    MyonnettyKayttoOikeusDto dto = new MyonnettyKayttoOikeusDto();
+                    dto.setRyhmaId(kayttoOikeusRyhmaDto.getId());
+                    dto.setRyhmaTunniste(kayttoOikeusRyhmaDto.getTunniste());
+                    if (kayttoOikeusRyhmaDto.getNimi() != null) {
+                        dto.setRyhmaNamesId(kayttoOikeusRyhmaDto.getNimi().getId());
+                    }
+                    if (kayttoOikeusRyhmaDto.getKuvaus() != null) {
+                        dto.setRyhmaKuvausId(kayttoOikeusRyhmaDto.getKuvaus().getId());
+                    }
+                    dto.setSallittuKayttajatyyppi(kayttoOikeusRyhmaDto.getSallittuKayttajatyyppi());
+                    dto.setSelected(false);
+                    kayttoOikeusForHenkilo.stream()
+                            .filter(myonnettyKayttoOikeusDto -> myonnettyKayttoOikeusDto.getRyhmaId().equals(dto.getRyhmaId()))
+                            .findFirst()
+                            .ifPresent(myonnettyKayttoOikeusDto -> {
+                                dto.setMyonnettyTapahtumaId(myonnettyKayttoOikeusDto.getMyonnettyTapahtumaId());
+                                dto.setAlkuPvm(myonnettyKayttoOikeusDto.getAlkuPvm());
+                                dto.setVoimassaPvm(myonnettyKayttoOikeusDto.getVoimassaPvm());
+                                dto.setSelected(true);
+                            });
+                    return dto;
+                }).collect(Collectors.toList());
 
         return localizationService.localize(all);
     }
