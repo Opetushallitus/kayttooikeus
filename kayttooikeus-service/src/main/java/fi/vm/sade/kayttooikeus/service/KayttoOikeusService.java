@@ -26,8 +26,21 @@ public interface KayttoOikeusService {
 
     List<KayttoOikeusRyhmaDto> listPossibleRyhmasByOrganization(String organisaatioOid);
 
+    /**
+     * Listaa käyttöoikeusryhmät jotka käyttäjä voi myöntää annetulle henkilölle annettuun organisaatioon.
+     * @param oid Henkilön jolle mahdolliset käyttöoikeudet voidaan myöntää
+     * @param organisaatioOid Organisaatio johon mahdolliset käyttöoikeudet voidaan myöntää
+     * @param currentUserOid Käyttäjä, joka myöntää oikeudet
+     * @return Lista myönnettäviä käyttöoikeusryhmiä
+     */
     List<MyonnettyKayttoOikeusDto> listMyonnettyKayttoOikeusRyhmasMergedWithHenkilos(String oid, String organisaatioOid, String currentUserOid);
 
+    /**
+     * Listaa kaikki käyttöoikeusryhmät, mukaanlukien vanhat oikeudet, annetulle henkilölle kyseiseen organisaatioon
+     * @param oid Henkilön oid jonka oikeuksia palautetaan
+     * @param organisaatioOid Organisaation oid johon rajataan palautettavat oikeudet
+     * @return Lista käyttäjän oikeuksia
+     */
     List<MyonnettyKayttoOikeusDto> listMyonnettyKayttoOikeusRyhmasByHenkiloAndOrganisaatio(String oid, String organisaatioOid);
 
     KayttoOikeusRyhmaDto findKayttoOikeusRyhma(long id);
