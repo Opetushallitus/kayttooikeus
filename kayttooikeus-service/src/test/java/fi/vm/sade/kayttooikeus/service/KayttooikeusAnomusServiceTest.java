@@ -45,8 +45,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.util.Maps.newHashMap;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
@@ -379,6 +378,35 @@ public class KayttooikeusAnomusServiceTest {
         assertThat(kayttoOikeusRyhmaTapahtumaHistoria.getSyy()).isEqualTo("Oikeuksien lisäys");
 
     }
+    @Test
+    @WithMockUser("1.2.3.4.1")
+    public void kayttooikeudenMyontaminenEpaonnistuuVaaralleKayttajatyypille() {
+        given(this.permissionCheckerService.notOwnData(anyString())).willReturn(true);
+        given(this.permissionCheckerService.checkRoleForOrganisation(any(), anyMap())).willReturn(true);
+        KayttoOikeusRyhma kayttoOikeusRyhma = createKayttoOikeusRyhmaWithViite(2001L);
+        kayttoOikeusRyhma.setSallittuKayttajatyyppi(KayttajaTyyppi.PALVELU);
+        given(this.kayttooikeusryhmaDataRepository.findById(2001L)).willReturn(Optional.of(kayttoOikeusRyhma));
+        given(this.henkiloDataRepository.findByOidHenkilo("1.2.3.4.5")).willReturn(Optional.of(createHenkilo("1.2.3.4.5")));
+        given(this.henkiloDataRepository.findByOidHenkilo("1.2.3.4.1"))
+                .willReturn(Optional.of(createHenkiloWithOrganisaatio("1.2.3.4.5", "1.2.0.0.1", false)));
+        given(this.permissionCheckerService.getCurrentUserOid()).willReturn("1.2.3.4.1");
+        given(this.permissionCheckerService.organisaatioLimitationCheck(eq("1.2.0.0.1"), anySet())).willReturn(true);
+        given(this.organisaatioHenkiloRepository.findByHenkiloOidHenkilo("1.2.3.4.1"))
+                .willReturn(Lists.newArrayList(OrganisaatioHenkilo.builder().organisaatioOid("1.2.0.0.1").build()));
+        given(this.permissionCheckerService.organisaatioViiteLimitationsAreValid(2001L)).willReturn(true);
+        given(this.permissionCheckerService.kayttooikeusMyontoviiteLimitationCheck(2001L)).willReturn(true);
+        given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findMyonnettyTapahtuma(2001L,
+                "1.2.0.0.1", "1.2.3.4.5"))
+                .willReturn(Optional.empty());
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any())).willReturn(Optional.of(organisaatio));
+
+        GrantKayttooikeusryhmaDto grantKayttooikeusryhmaDto = createGrantKayttooikeusryhmaDto(2001L,
+                LocalDate.now().plusYears(1));
+        assertThatThrownBy(() -> this.kayttooikeusAnomusService.grantKayttooikeusryhma("1.2.3.4.5", "1.2.0.0.1", Lists.newArrayList(grantKayttooikeusryhmaDto)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Yritetään myöntää käyttöoikeutta väärälle käyttäjätyypille");
+    }
 
     @Test
     @WithMockUser("1.2.3.4.1")
@@ -498,8 +526,6 @@ public class KayttooikeusAnomusServiceTest {
     public void updateHaettuKayttooikeusryhmaMyonnetty() {
         HaettuKayttoOikeusRyhma haettuKayttoOikeusRyhma = createHaettuKayttoOikeusRyhma("1.2.3.4.5", "1.2.3.4.1",
                 "1.2.0.0.1", "devaaja", "Haluan devata", 2001L);
-        // this has it's own test
-        doNothing().when(this.kayttooikeusAnomusService).grantKayttooikeusryhma(any(), anyString(), anyList());
         given(this.haettuKayttooikeusRyhmaRepository.findById(1L))
                 .willReturn(Optional.of(haettuKayttoOikeusRyhma));
         given(this.kayttooikeusryhmaDataRepository.findById(2001L)).willReturn(Optional.of(haettuKayttoOikeusRyhma.getKayttoOikeusRyhma()));
@@ -533,11 +559,71 @@ public class KayttooikeusAnomusServiceTest {
 
     @Test
     @WithMockUser("1.2.3.4.1")
+    public void vainPalvelulleSallitunKayttoikeusRyhmanMyontaminenEiOnnistu() {
+        HaettuKayttoOikeusRyhma haettuKayttoOikeusRyhma = createHaettuKayttoOikeusRyhma("1.2.3.4.5", "1.2.3.4.1",
+                "1.2.0.0.1", "devaaja", "Haluan devata", 2001L);
+        haettuKayttoOikeusRyhma.getKayttoOikeusRyhma().setSallittuKayttajatyyppi(KayttajaTyyppi.PALVELU);
+        given(this.haettuKayttooikeusRyhmaRepository.findById(1L))
+                .willReturn(Optional.of(haettuKayttoOikeusRyhma));
+        given(this.kayttooikeusryhmaDataRepository.findById(2001L)).willReturn(Optional.of(haettuKayttoOikeusRyhma.getKayttoOikeusRyhma()));
+        given(this.permissionCheckerService.checkRoleForOrganisation(anyList(), anyMap()))
+                .willReturn(true);
+        given(this.permissionCheckerService.getCurrentUserOid()).willReturn("1.2.3.4.1");
+        given(this.permissionCheckerService.organisaatioLimitationCheck(eq("1.2.0.0.1"), anySet())).willReturn(true);
+        given(this.organisaatioHenkiloRepository.findByHenkiloOidHenkilo("1.2.3.4.1"))
+                .willReturn(Lists.newArrayList(OrganisaatioHenkilo.builder().organisaatioOid("1.2.0.0.1").build()));
+        given(this.permissionCheckerService.organisaatioViiteLimitationsAreValid(2001L)).willReturn(true);
+        given(this.permissionCheckerService.kayttooikeusMyontoviiteLimitationCheck(2001L)).willReturn(true);
+        given(this.permissionCheckerService.notOwnData("1.2.3.4.5")).willReturn(true);
+        given(this.henkiloDataRepository.findByOidHenkilo("1.2.3.4.5")).willReturn(Optional.of(createHenkilo("1.2.3.4.5")));
+        given(this.henkiloDataRepository.findByOidHenkilo("1.2.3.4.1")).willReturn(Optional.of(createHenkilo("1.2.3.4.1")));
+        given(this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findMyonnettyTapahtuma(2001L,
+                "1.2.0.0.1", "1.2.3.4.5"))
+                .willReturn(Optional.of(createMyonnettyKayttoOikeusRyhmaTapahtuma(3001L, 2001L)));
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any())).willReturn(Optional.of(organisaatio));
+
+        UpdateHaettuKayttooikeusryhmaDto updateHaettuKayttooikeusryhmaDto = createUpdateHaettuKayttooikeusryhmaDto(1L,
+                "MYONNETTY", LocalDate.now().plusYears(1));
+        assertThatThrownBy(() -> this.kayttooikeusAnomusService.updateHaettuKayttooikeusryhma(updateHaettuKayttooikeusryhmaDto))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Yritetään myöntää käyttöoikeutta väärälle käyttäjätyypille");
+    }
+
+    @Test
+    @WithMockUser("1.2.3.4.1")
     public void updateHaettuKayttooikeusryhmaHylatty() {
         HaettuKayttoOikeusRyhma haettuKayttoOikeusRyhma = createHaettuKayttoOikeusRyhma("1.2.3.4.5", "1.2.3.4.1",
                 "1.2.0.0.1", "devaaja", "Haluan devata", 2001L);
-        // this has it's own test
-        doNothing().when(this.kayttooikeusAnomusService).grantKayttooikeusryhma(any(), anyString(), anyList());
+        given(this.haettuKayttooikeusRyhmaRepository.findById(1L))
+                .willReturn(Optional.of(haettuKayttoOikeusRyhma));
+        given(this.kayttooikeusryhmaDataRepository.findById(2001L)).willReturn(Optional.of(haettuKayttoOikeusRyhma.getKayttoOikeusRyhma()));
+        given(this.permissionCheckerService.checkRoleForOrganisation(anyList(), anyMap()))
+                .willReturn(true);
+        given(this.permissionCheckerService.getCurrentUserOid()).willReturn("1.2.3.4.1");
+        given(this.permissionCheckerService.organisaatioLimitationCheck(eq("1.2.0.0.1"), anySet())).willReturn(true);
+        given(this.organisaatioHenkiloRepository.findByHenkiloOidHenkilo("1.2.3.4.1"))
+                .willReturn(Lists.newArrayList(OrganisaatioHenkilo.builder().organisaatioOid("1.2.0.0.1").build()));
+        given(this.permissionCheckerService.organisaatioViiteLimitationsAreValid(2001L)).willReturn(true);
+        given(this.permissionCheckerService.kayttooikeusMyontoviiteLimitationCheck(2001L)).willReturn(true);
+        given(this.permissionCheckerService.notOwnData("1.2.3.4.5")).willReturn(true);
+        given(this.henkiloDataRepository.findByOidHenkilo("1.2.3.4.5")).willReturn(Optional.of(createHenkilo("1.2.3.4.5")));
+        given(this.henkiloDataRepository.findByOidHenkilo("1.2.3.4.1")).willReturn(Optional.of(createHenkilo("1.2.3.4.1")));
+
+        UpdateHaettuKayttooikeusryhmaDto updateHaettuKayttooikeusryhmaDto = createUpdateHaettuKayttooikeusryhmaDto(1L,
+                "HYLATTY", LocalDate.now().plusYears(1));
+        this.kayttooikeusAnomusService.updateHaettuKayttooikeusryhma(updateHaettuKayttooikeusryhmaDto);
+
+        assertThat(haettuKayttoOikeusRyhma.getAnomus().getAnomuksenTila()).isEqualByComparingTo(AnomuksenTila.HYLATTY);
+        assertThat(haettuKayttoOikeusRyhma.getAnomus().getAnomusTyyppi()).isEqualByComparingTo(AnomusTyyppi.UUSI);
+    }
+
+    @Test
+    @WithMockUser("1.2.3.4.1")
+    public void vainPalvelulleSallitunKayttoikeusRyhmanHylkaaminenOnnistuu() {
+        HaettuKayttoOikeusRyhma haettuKayttoOikeusRyhma = createHaettuKayttoOikeusRyhma("1.2.3.4.5", "1.2.3.4.1",
+                "1.2.0.0.1", "devaaja", "Haluan devata", 2001L);
+        haettuKayttoOikeusRyhma.getKayttoOikeusRyhma().setSallittuKayttajatyyppi(KayttajaTyyppi.PALVELU);
         given(this.haettuKayttooikeusRyhmaRepository.findById(1L))
                 .willReturn(Optional.of(haettuKayttoOikeusRyhma));
         given(this.kayttooikeusryhmaDataRepository.findById(2001L)).willReturn(Optional.of(haettuKayttoOikeusRyhma.getKayttoOikeusRyhma()));
@@ -570,8 +656,6 @@ public class KayttooikeusAnomusServiceTest {
         HaettuKayttoOikeusRyhma anotherHaettuKayttoOikeusRyhma = createHaettuKayttoOikeusRyhma("1.2.3.4.5", "1.2.3.4.1",
                 "1.2.0.0.1", "devaaja", "Haluan devata", 2002L);
         haettuKayttoOikeusRyhma.getAnomus().addHaettuKayttoOikeusRyhma(anotherHaettuKayttoOikeusRyhma);
-        // this has it's own test
-        doNothing().when(this.kayttooikeusAnomusService).grantKayttooikeusryhma(any(), anyString(), anyList());
         given(this.haettuKayttooikeusRyhmaRepository.findById(1L))
                 .willReturn(Optional.of(haettuKayttoOikeusRyhma));
         given(this.permissionCheckerService.organisaatioViiteLimitationsAreValid(2001L)).willReturn(true);

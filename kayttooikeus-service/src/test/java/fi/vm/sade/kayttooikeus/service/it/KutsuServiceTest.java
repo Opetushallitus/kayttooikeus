@@ -13,6 +13,7 @@ import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloRepository;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KutsuCriteria;
 import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
 import fi.vm.sade.kayttooikeus.repositories.populate.*;
+import fi.vm.sade.kayttooikeus.service.KayttooikeusAnomusService;
 import fi.vm.sade.kayttooikeus.service.KutsuService;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioService;
 import fi.vm.sade.kayttooikeus.service.exception.ForbiddenException;
@@ -24,8 +25,11 @@ import fi.vm.sade.oppijanumerorekisteri.dto.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -52,6 +56,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -68,6 +73,9 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
 
     @Autowired
     private OrganisaatioHenkiloRepository organisaatioHenkiloRepository;
+
+    @SpyBean
+    private KayttooikeusAnomusService kayttooikeusAnomusService;
     
     @MockBean
     private OrganisaatioClient organisaatioClient;
@@ -83,6 +91,9 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
 
     @MockBean
     private OrganisaatioService organisaatioService;
+
+    @Captor
+    private ArgumentCaptor<Collection<KayttoOikeusRyhma>> kayttooikeusRyhmaCollectionCaptor;
 
     @Before
     public void setup() {
@@ -539,7 +550,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         Henkilo henkilo = populate(HenkiloPopulator.henkilo("1.2.3.4.5"));
         populate(HenkiloPopulator.henkilo("1.2.3.4.1"));
         doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).createHenkilo(any(HenkiloCreateDto.class));
-        doReturn(Optional.ofNullable(null)).when(this.oppijanumerorekisteriClient).getHenkiloByHetu(any());
+        doReturn(Optional.empty()).when(this.oppijanumerorekisteriClient).getHenkiloByHetu(any());
         doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).getOidByHetu("hetu");
         HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
                 new KielisyysDto("fi", null), "arpauser", "stronkPassword1!");
@@ -567,6 +578,34 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         assertThat(kutsu.getLuotuHenkiloOid()).isEqualTo(henkilo.getOidHenkilo());
         assertThat(kutsu.getTemporaryToken()).isNull();
         assertThat(kutsu.getTila()).isEqualTo(KutsunTila.KAYTETTY);
+    }
+
+    @Test
+    public void kutsunVainPalvelulleSallittuKayttooikeusRyhmaOhitetaan() {
+        given(this.oppijanumerorekisteriClient.getHenkilonPerustiedot(eq("1.2.3.4.1")))
+                .willReturn(Optional.of(HenkiloPerustietoDto.builder().hetu("valid hetu").build()));
+        populate(KutsuPopulator.kutsu("arpa", "kuutio", "arpa@kuutio.fi")
+                .temporaryToken("123")
+                .hetu("hetu")
+                .kutsuja("1.2.3.4.1")
+                .organisaatio(KutsuOrganisaatioPopulator.kutsuOrganisaatio("1.2.0.0.1")
+                        .ryhma(KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma("ryhma")
+                                .withNimi(text("FI", "Kuvaus"))
+                                .withSallittu(KayttajaTyyppi.PALVELU))
+                ));
+        populate(HenkiloPopulator.henkilo("1.2.3.4.5"));
+        populate(HenkiloPopulator.henkilo("1.2.3.4.1"));
+        doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).createHenkilo(any(HenkiloCreateDto.class));
+        doReturn(Optional.empty()).when(this.oppijanumerorekisteriClient).getHenkiloByHetu(any());
+        doReturn("1.2.3.4.5").when(this.oppijanumerorekisteriClient).getOidByHetu("hetu");
+        HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
+                new KielisyysDto("fi", null), "arpauser", "stronkPassword1!");
+
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any())).willReturn(Optional.of(organisaatio));
+        this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);
+        verify(this.kayttooikeusAnomusService).grantPreValidatedKayttooikeusryhma(anyString(), anyString(), any(), this.kayttooikeusRyhmaCollectionCaptor.capture(), anyString());
+        assertThat(this.kayttooikeusRyhmaCollectionCaptor.getValue()).isEmpty();
     }
 
     @Test
