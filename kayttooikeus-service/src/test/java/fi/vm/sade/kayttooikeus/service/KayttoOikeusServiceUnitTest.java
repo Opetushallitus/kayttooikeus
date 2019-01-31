@@ -3,6 +3,7 @@ package fi.vm.sade.kayttooikeus.service;
 import com.google.common.collect.Lists;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
+import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import fi.vm.sade.kayttooikeus.dto.MyonnettyKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.model.QMyonnettyKayttoOikeusRyhmaTapahtuma;
 import fi.vm.sade.kayttooikeus.model.QOrganisaatioHenkilo;
@@ -73,6 +74,7 @@ public class KayttoOikeusServiceUnitTest extends AbstractServiceIntegrationTest 
                 .build();
         MyonnettyKayttoOikeusDto myonnettyKayttoOikeusDto = MyonnettyKayttoOikeusDto.builder()
                 .kasittelijaOid("1.2.3.4.1")
+                .sallittuKayttajatyyppi(KayttajaTyyppi.PALVELU)
                 .build();
         MyonnettyKayttoOikeusDto myonnettyKayttoOikeusDto2 = MyonnettyKayttoOikeusDto.builder()
                 .kasittelijaOid("1.2.3.4.2")
@@ -88,7 +90,7 @@ public class KayttoOikeusServiceUnitTest extends AbstractServiceIntegrationTest 
         List<MyonnettyKayttoOikeusDto> myonnettyKayttooikeusList = this.kayttoOikeusService
                 .listMyonnettyKayttoOikeusRyhmasByHenkiloAndOrganisaatio("1.2.3.4.5", null);
         assertThat(myonnettyKayttooikeusList)
-                .extracting(MyonnettyKayttoOikeusDto::getKasittelijaOid, MyonnettyKayttoOikeusDto::getKasittelijaNimi)
-                .containsExactlyInAnyOrder(tuple("1.2.3.4.1", "arpa kuutio"), tuple("1.2.3.4.2", "1.2.3.4.2"));
+                .extracting(MyonnettyKayttoOikeusDto::getKasittelijaOid, MyonnettyKayttoOikeusDto::getKasittelijaNimi, MyonnettyKayttoOikeusDto::getSallittuKayttajatyyppi)
+                .containsExactlyInAnyOrder(tuple("1.2.3.4.1", "arpa kuutio", KayttajaTyyppi.PALVELU), tuple("1.2.3.4.2", "1.2.3.4.2", null));
     }
 }

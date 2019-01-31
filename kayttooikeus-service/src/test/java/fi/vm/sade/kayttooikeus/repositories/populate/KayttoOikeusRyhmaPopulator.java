@@ -1,5 +1,6 @@
 package fi.vm.sade.kayttooikeus.repositories.populate;
 
+import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import fi.vm.sade.kayttooikeus.model.KayttoOikeus;
 import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhma;
 import fi.vm.sade.kayttooikeus.model.OrganisaatioViite;
@@ -17,6 +18,7 @@ public class KayttoOikeusRyhmaPopulator implements Populator<KayttoOikeusRyhma> 
     private Populator<TextGroup> kuvaus = Populator.constant(new TextGroup());
     private String rooliRajoite;
     private boolean ryhmaRestriction;
+    private KayttajaTyyppi sallittu;
 
     public KayttoOikeusRyhmaPopulator(String tunniste) {
         this.tunniste = tunniste;
@@ -29,6 +31,11 @@ public class KayttoOikeusRyhmaPopulator implements Populator<KayttoOikeusRyhma> 
     
     public KayttoOikeusRyhmaPopulator withOikeus(Populator<KayttoOikeus> oikeus) {
         this.oikeus.add(oikeus);
+        return this;
+    }
+
+    public KayttoOikeusRyhmaPopulator withSallittu(KayttajaTyyppi sallittu) {
+        this.sallittu = sallittu;
         return this;
     }
     
@@ -80,10 +87,13 @@ public class KayttoOikeusRyhmaPopulator implements Populator<KayttoOikeusRyhma> 
             r.setPassivoitu(passivoitu);
             r.setRooliRajoite(rooliRajoite);
             r.setRyhmaRestriction(ryhmaRestriction);
+            r.setSallittuKayttajatyyppi(sallittu);
             entityManager.persist(r);
             return r;
         });
-        
+
+        ryhma.setSallittuKayttajatyyppi(sallittu);
+
         oikeus.forEach(o -> {
             KayttoOikeus kayttoOikeus = o.apply(entityManager);
             ryhma.addKayttooikeus(kayttoOikeus);
