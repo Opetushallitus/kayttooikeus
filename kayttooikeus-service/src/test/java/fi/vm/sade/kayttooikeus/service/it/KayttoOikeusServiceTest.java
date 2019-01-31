@@ -2,16 +2,14 @@ package fi.vm.sade.kayttooikeus.service.it;
 
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
-import fi.vm.sade.kayttooikeus.model.KayttoOikeus;
-import fi.vm.sade.kayttooikeus.model.MyonnettyKayttoOikeusRyhmaTapahtuma;
-import fi.vm.sade.kayttooikeus.model.OrganisaatioHenkilo;
-import fi.vm.sade.kayttooikeus.model.Palvelu;
+import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.dto.ExpiringKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaPopulator;
 import fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloPopulator;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
+import org.assertj.core.groups.Tuple;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +22,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.henkilo;
@@ -230,11 +229,13 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
         Long id = populate(kayttoOikeusRyhma("RYHMA2").withNimi(text("FI", "Koodistonhallinta")
                 .put("EN", "Code management"))
                 .withViite(viite(kayttoOikeusRyhma("RYHMA1"), "TYYPPI"))
-                .withOikeus(oikeus("KOODISTO", "CRUD"))).getId();
+                .withOikeus(oikeus("KOODISTO", "CRUD"))
+                .withSallittu(KayttajaTyyppi.PALVELU)).getId();
 
         KayttoOikeusRyhmaDto ryhma = kayttoOikeusService.findKayttoOikeusRyhma(id);
         assertNotNull(ryhma);
         assertEquals("RYHMA2", ryhma.getName());
+        assertEquals(KayttajaTyyppi.PALVELU, ryhma.getSallittuKayttajatyyppi());
     }
 
 
@@ -336,6 +337,7 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
                         .build()))
                 .organisaatioTyypit(singletonList("org tyyppi"))
                 .ryhmaRestriction(false)
+                .sallittuKayttajatyyppi(KayttajaTyyppi.PALVELU)
                 .build();
 
         long createdRyhmaId = kayttoOikeusService.createKayttoOikeusRyhma(ryhma);
@@ -348,17 +350,20 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
         assertEquals(1, createdRyhma.getOrganisaatioViite().size());
         assertEquals("org tyyppi", createdRyhma.getOrganisaatioViite().get(0).getOrganisaatioTyyppi());
         assertFalse(createdRyhma.isRyhmaRestriction());
+        assertEquals(KayttajaTyyppi.PALVELU, createdRyhma.getSallittuKayttajatyyppi());
 
         ryhma.setNimi(new TextGroupDto().put("FI", "uusi nimi"));
         ryhma.setKuvaus(new TextGroupDto().put("FI", "uusi kuvaus"));
         ryhma.setRooliRajoite("uusi rajoite");
         ryhma.setOrganisaatioTyypit(singletonList("uusi org tyyppi"));
+        ryhma.setSallittuKayttajatyyppi(null);
         kayttoOikeusService.updateKayttoOikeusForKayttoOikeusRyhma(createdRyhmaId, ryhma);
 
         createdRyhma = kayttoOikeusService.findKayttoOikeusRyhma(createdRyhmaId);
         assertTrue(createdRyhma.getDescription().get("FI").contentEquals("uusi nimi"));
         assertTrue(createdRyhma.getKuvaus().get("FI").contentEquals("uusi kuvaus"));
         assertTrue(createdRyhma.getOrganisaatioViite().get(0).getOrganisaatioTyyppi().contentEquals("uusi org tyyppi"));
+        assertNull(createdRyhma.getSallittuKayttajatyyppi());
     }
 
     @Test
@@ -384,18 +389,30 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
     @Test
     @WithMockUser(username = "1.2.3.4.5")
     public void listMyonnettyKayttoOikeusRyhmasMergedWithHenkilos(){
-        populate(myonnettyKayttoOikeus(
+        MyonnettyKayttoOikeusRyhmaTapahtuma mkrt = populate(myonnettyKayttoOikeus(
                 organisaatioHenkilo(henkilo("1.2.3.4.5"), "3.4.5.6.7"),
                 kayttoOikeusRyhma("RYHMA2").withNimi(text("FI", "Koodistonhallinta")
                         .put("EN", "Code management"))
                         .withViite(viite(kayttoOikeusRyhma("dummy"), "123.123.123"))
-                        .withViite(viite(kayttoOikeusRyhma("dummy"), "3.4.5.6.7"))
+                        .withViite(viite(kayttoOikeusRyhma("dummy").withSallittu(KayttajaTyyppi.PALVELU), "3.4.5.6.7"))
                         .withOikeus(oikeus("KOODISTO", "CRUD"))
         ));
+        Optional<Long> id = mkrt.getKayttoOikeusRyhma().getOrganisaatioViite().stream()
+                .map(OrganisaatioViite::getKayttoOikeusRyhma)
+                .filter(ryhma -> ryhma.getSallittuKayttajatyyppi() != null)
+                .map(IdentifiableAndVersionedEntity::getId)
+                .findFirst();
         populate(kayttoOikeusRyhma("RYHMA1"));
 
         List<MyonnettyKayttoOikeusDto> list = kayttoOikeusService.listMyonnettyKayttoOikeusRyhmasMergedWithHenkilos("1.2.3.4.5", "3.4.5.6.7", "1.2.3.4.5");
         assertEquals(1, list.size());
+        // Ei aseteta sallittuKayttajatyyppi kenttää koska käyttäjällä ei ole voimassa olevia oikeuksia joten käyttöoikeusryhmän
+        // tietoja oteta mukaan
+        assertThat(list)
+                .extracting(myonnettyKayttoOikeus -> Optional.ofNullable(myonnettyKayttoOikeus.getRyhmaId()),
+                        MyonnettyKayttoOikeusDto::isSelected,
+                        MyonnettyKayttoOikeusDto::getSallittuKayttajatyyppi)
+                .containsExactly(Tuple.tuple(id, false, KayttajaTyyppi.PALVELU));
 
         list = kayttoOikeusService.listMyonnettyKayttoOikeusRyhmasMergedWithHenkilos("1.2.3.4.5", "3.4.5.6.madeup", "1.2.3.4.5");
         assertEquals(0, list.size());
@@ -418,16 +435,16 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
                 kayttoOikeusRyhma("RYHMA3").withNimi(text("FI", "Koodistonhallinta")
                         .put("EN", "Code management"))
                         .withViite(viite(kayttoOikeusRyhma("RYHMA1"), "3.4.5.6.7"))
-                        .withOikeus(oikeus("KOODISTO", "CRUD"))
-        ));
+                        .withOikeus(oikeus("KOODISTO", "CRUD")
+        ).withSallittu(KayttajaTyyppi.PALVELU)));
 
         populate(kayttoOikeusRyhmaMyontoViite(mko.getKayttoOikeusRyhma().getId(), mko2.getKayttoOikeusRyhma().getId()));
 
         List<MyonnettyKayttoOikeusDto> list = kayttoOikeusService.listMyonnettyKayttoOikeusRyhmasMergedWithHenkilos("1.2.3.4.5", "3.4.5.6.7", "1.2.3.4.5");
         assertThat(list)
                 .hasSize(1)
-                .extracting(MyonnettyKayttoOikeusDto::getRyhmaTunniste, MyonnettyKayttoOikeusDto::getTyyppi)
-                .containsExactly(tuple("RYHMA3", "KORyhma"));
+                .extracting(MyonnettyKayttoOikeusDto::getRyhmaTunniste, MyonnettyKayttoOikeusDto::getTyyppi, MyonnettyKayttoOikeusDto::getSallittuKayttajatyyppi)
+                .containsExactly(tuple("RYHMA3", "KORyhma", KayttajaTyyppi.PALVELU));
         assertThat(list)
                 .extracting(MyonnettyKayttoOikeusDto::getRyhmaNames)
                 .flatExtracting(TextGroupDto::getTexts)
