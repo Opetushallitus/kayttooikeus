@@ -30,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -308,12 +309,16 @@ public class PermissionCheckerTest {
     @Test
     @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD","ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG1,
             "ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG2,})
-    public void testThatPermissionIsDeniedWhenExternalServiceDeniesAccess() throws IOException {
+    public void testThatPermissionIsDeniedWhenExternalServiceDeniesAccess() {
         Henkilo henkilo = new Henkilo();
-        henkilo.setOrganisaatioHenkilos(singleton(new OrganisaatioHenkilo()));
+        henkilo.setOrganisaatioHenkilos(singleton(OrganisaatioHenkilo.builder().organisaatioOid(ORG1).build()));
         when(henkiloDataRepositoryMock.findByOidHenkilo(eq("callingPerson"))).thenReturn(Optional.of(henkilo));
-        Set<String> organisaatioOids = Stream.of(ORG1, ORG2, ORG2 + ".child1", ORG2 + ".child1.child1", ORG2 + ".child2").collect(Collectors.toSet());
-        doReturn(organisaatioOids).when(this.organisaatioClient).listWithChildOids(any(), any());
+
+        Set<String> organisaatioOidsWithChildren = Stream.of(ORG1, ORG2, ORG2 + ".child1", ORG2 + ".child1.child1", ORG2 + ".child2").collect(Collectors.toSet());
+        doReturn(organisaatioOidsWithChildren).when(this.organisaatioClient).listWithChildOids(any(), any());
+        List<String> organisaatioOidsWithParent = Stream.of(ORG1).collect(Collectors.toList());
+        doReturn(organisaatioOidsWithParent).when(this.organisaatioClient).getActiveParentOids(eq(ORG1));
+
         when(externalPermissionClient.getPermission(any(), any())).thenReturn(PermissionCheckResponseDto.denied());
         when(this.henkiloDataRepositoryMock.findByOidHenkilo(eq("testPerson"))).thenReturn(Optional.empty());
         assertThat(this.permissionChecker.isAllowedToAccessPerson("testPerson", Collections.singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD")),
@@ -333,10 +338,14 @@ public class PermissionCheckerTest {
             "ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG2,})
     public void testThatPermissionIsAllowedWhenExternalServiceAllowsAccess() throws IOException {
         Henkilo henkilo = new Henkilo();
-        henkilo.setOrganisaatioHenkilos(singleton(new OrganisaatioHenkilo()));
+        henkilo.setOrganisaatioHenkilos(singleton(OrganisaatioHenkilo.builder().organisaatioOid(ORG1).build()));
         when(henkiloDataRepositoryMock.findByOidHenkilo(eq("callingPerson"))).thenReturn(Optional.of(henkilo));
+
         Set<String> organisaatioOids = Stream.of(ORG1, ORG2, ORG2 + ".child1", ORG2 + ".child1.child1", ORG2 + ".child2").collect(Collectors.toSet());
         doReturn(organisaatioOids).when(this.organisaatioClient).listWithChildOids(any(), any());
+        List<String> organisaatioOidsWithParent = Stream.of(ORG1).collect(Collectors.toList());
+        doReturn(organisaatioOidsWithParent).when(this.organisaatioClient).getActiveParentOids(eq(ORG1));
+
         when(externalPermissionClient.getPermission(any(), any())).thenReturn(PermissionCheckResponseDto.denied());
         when(this.henkiloDataRepositoryMock.findByOidHenkilo(eq("testPerson"))).thenReturn(Optional.empty());
         when(externalPermissionClient.getPermission(any(), any())).thenReturn(PermissionCheckResponseDto.allowed());
@@ -357,7 +366,7 @@ public class PermissionCheckerTest {
     @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD","ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG1,
             "ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG2,})
     public void testThatHasRoleForOrganizationReturnsFalseWhenUserNotAssociatedWithOrg() {
-        assertThat(permissionChecker.hasRoleForOrganisation("orgThatLoggedInUserIsNotAssociatedWith",
+        assertThat(permissionChecker.checkRoleForOrganisation(singletonList("orgThatLoggedInUserIsNotAssociatedWith"),
                 singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD", "READ"))))
                 .isFalse();
     }
@@ -369,7 +378,7 @@ public class PermissionCheckerTest {
         "ROLE_APP_PALVELU1_OIKEUS1_" + ORG2,
     })
     public void hasRoleForOrganisationShouldReturnFalseWhenUserNotAssociatedWithOrg() {
-        assertThat(permissionChecker.hasRoleForOrganisation("orgThatLoggedInUserIsNotAssociatedWith",
+        assertThat(permissionChecker.checkRoleForOrganisation(singletonList("orgThatLoggedInUserIsNotAssociatedWith"),
                 singletonMap("PALVELU1", singletonList("OIKEUS1"))))
                 .isFalse();
     }
@@ -380,7 +389,7 @@ public class PermissionCheckerTest {
     public void testThatHasRoleForOrganizationReturnsTrueWhenUserIsAssociatedWithOrg() {
         Mockito.when(organisaatioClient.getActiveParentOids(anyString()))
                 .thenReturn(Lists.newArrayList(ORG2, "parent1", "parent2", "parent3"));
-        assertThat(permissionChecker.hasRoleForOrganisation(ORG1, singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD", "READ", "REKISTERINPITAJA")))).isTrue();
+        assertThat(permissionChecker.checkRoleForOrganisation(singletonList(ORG1), singletonMap(PALVELU_KAYTTOOIKEUS, Lists.newArrayList("CRUD", "READ", "REKISTERINPITAJA")))).isTrue();
     }
 
     @Test
@@ -392,7 +401,7 @@ public class PermissionCheckerTest {
     public void hasRoleForOrganisationShouldReturnTrueWhenUserIsAssociatedWithOrg() {
         Mockito.when(organisaatioClient.getActiveParentOids(anyString()))
                 .thenReturn(Lists.newArrayList(ORG2, "parent1", "parent2", "parent3"));
-        assertThat(permissionChecker.hasRoleForOrganisation(ORG1, singletonMap("PALVELU1", asList("OIKEUS1")))).isTrue();
+        assertThat(permissionChecker.checkRoleForOrganisation(singletonList(ORG1), singletonMap("PALVELU1", singletonList("OIKEUS1")))).isTrue();
     }
 
     @Test
@@ -684,14 +693,10 @@ public class PermissionCheckerTest {
                 .willReturn(Lists.newArrayList("1.2.3.4.100"));
         given(this.organisaatioClient.getActiveParentOids("1.2.3.4.200"))
                 .willReturn(Lists.newArrayList("1.2.3.4.200"));
-        boolean hasInternalAccess = this.permissionChecker.hasInternalAccess("1.2.3.4.5",
-                Lists.newArrayList("READ"),
-                Sets.newHashSet("ROLE_APP_KAYTTOOIKEUS_READ", "ROLE_APP_KAYTTOOIKEUS_READ_1.2.3.4.100"));
+        Boolean hasInternalAccess = ReflectionTestUtils.invokeMethod(this.permissionChecker, "hasInternalAccess", "1.2.3.4.5", singletonMap(PALVELU_KAYTTOOIKEUS, singletonList("READ")), new HashSet<>(Arrays.asList("ROLE_APP_KAYTTOOIKEUS_READ", "ROLE_APP_KAYTTOOIKEUS_READ_1.2.3.4.100")));
         assertThat(hasInternalAccess).isTrue();
         verify(this.organisaatioClient, Mockito.times(1)).getActiveParentOids(eq("1.2.3.4.100"));
-                hasInternalAccess = this.permissionChecker.hasInternalAccess("1.2.3.4.5",
-                Lists.newArrayList("READ"),
-                Sets.newHashSet("ROLE_APP_KAYTTOOIKEUS_READ", "ROLE_APP_KAYTTOOIKEUS_READ_READ_1.2.3.4.200"));
+        hasInternalAccess = ReflectionTestUtils.invokeMethod(this.permissionChecker, "hasInternalAccess", "1.2.3.4.5", singletonMap(PALVELU_KAYTTOOIKEUS, singletonList("READ")), new HashSet<>(Arrays.asList("ROLE_APP_KAYTTOOIKEUS_READ", "ROLE_APP_KAYTTOOIKEUS_READ_READ_1.2.3.4.200")));
         assertThat(hasInternalAccess).isFalse();
         verify(this.organisaatioClient, Mockito.times(2)).getActiveParentOids(eq("1.2.3.4.100"));
     }

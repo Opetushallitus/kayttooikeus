@@ -1,6 +1,5 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
@@ -106,16 +105,22 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     @Transactional(readOnly = true)
     public boolean isAllowedToAccessPerson(PermissionCheckDto permissionCheckDto) {
         return isAllowedToAccessPerson(permissionCheckDto.getCallingUserOid(),
-                permissionCheckDto.getUserOid(), permissionCheckDto.getAllowedPalveluRooli(),
-                permissionCheckDto.getExternalPermissionService(), permissionCheckDto.getCallingUserRoles());
+                permissionCheckDto.getUserOid(),
+                permissionCheckDto.getAllowedPalveluRooli(),
+                permissionCheckDto.getExternalPermissionService(),
+                permissionCheckDto.getCallingUserRoles()
+        );
     }
 
     /*
      * Check internally and externally whether currentuser has any of the palvelu/rooli pair combination given in allowedPalveluRooli
      * that grants access to the given user (personOidToAccess)
      */
-    private boolean isAllowedToAccessPerson(String callingUserOid, String personOidToAccess, Map<String, List<String>> allowedPalveluRooli,
-                                          ExternalPermissionService permissionCheckService, Set<String> callingUserRoles) {
+    private boolean isAllowedToAccessPerson(String callingUserOid,
+                                            String personOidToAccess,
+                                            Map<String, List<String>> allowedPalveluRooli,
+                                            ExternalPermissionService permissionCheckService,
+                                            Set<String> callingUserRoles) {
         if (this.hasInternalAccess(personOidToAccess, allowedPalveluRooli, callingUserRoles)) {
             return true;
         }
@@ -138,6 +143,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
                 henkilo.getOrganisaatioHenkilos().stream()
                         .filter(OrganisaatioHenkilo::isAktiivinen)
                         .map(OrganisaatioHenkilo::getOrganisaatioOid)
+                        .filter(organisaatioOid -> this.hasRoleForOrganisation(organisaatioOid, allowedPalveluRooli, callingUserRoles))
                         .flatMap(organisaatioOid -> organisaatioClient
                                 .listWithChildOids(organisaatioOid, organisaatioMyontoPredicate).stream())
                         .collect(Collectors.toSet()))
@@ -174,16 +180,6 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
         }
 
         return response.isAccessAllowed();
-    }
-
-    /**
-     * Checks if the logged in user has KAYTTOOIKEUS roles that
-     * grants access to the wanted person (personOid)
-    */
-    @Override
-    @Transactional(readOnly = true)
-    public boolean hasInternalAccess(String personOid, List<String> allowedRolesWithoutPrefix, Set<String> callingUserRoles) {
-        return hasInternalAccess(personOid, singletonMap(PALVELU_KAYTTOOIKEUS, allowedRolesWithoutPrefix), callingUserRoles);
     }
 
     /**
@@ -279,7 +275,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     @Transactional(readOnly = true)
     public boolean checkRoleForOrganisation(@NotNull List<String> orgOidList, List<String> allowedRolesWithoutPrefix) {
         for(String oid : orgOidList) {
-            if (!this.hasRoleForOrganisation(oid, singletonMap(PALVELU_KAYTTOOIKEUS, allowedRolesWithoutPrefix))) {
+            if (!this.hasRoleForOrganisation(oid, singletonMap(PALVELU_KAYTTOOIKEUS, allowedRolesWithoutPrefix), this.getCasRoles())) {
                 return false;
             }
         }
@@ -289,7 +285,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     @Override
     public boolean checkRoleForOrganisation(List<String> orgOidList, Map<String, List<String>> allowedRoles) {
         for(String oid : orgOidList) {
-            if (!this.hasRoleForOrganisation(oid, allowedRoles)) {
+            if (!this.hasRoleForOrganisation(oid, allowedRoles, this.getCasRoles())) {
                 return false;
             }
         }
@@ -300,8 +296,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
         return rolesWithoutPrefix.stream().map(prefix::concat).collect(Collectors.toSet());
     }
 
-    @Override
-    public boolean hasRoleForOrganisation(String orgOid, Map<String, List<String>> allowedRolesAsMap) {
+    private boolean hasRoleForOrganisation(String orgOid, Map<String, List<String>> allowedRolesAsMap, Set<String> userRoles) {
         if (this.isCurrentUserAdmin()) {
             return true;
         }
@@ -314,15 +309,12 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
             return false;
         }
 
-        Set<Set<String>> candidateRolesByOrg = orgAndParentOids.stream()
-                .map(orgOrParentOid -> allowedRoles.stream()
-                        .map(role -> role.concat("_" + orgOrParentOid))
-                        .collect(Collectors.toCollection(HashSet::new)))
+        Set<String> flattenedCandidateRolesByOrg = orgAndParentOids.stream()
+                .flatMap(orgOrParentOid -> allowedRoles.stream()
+                        .map(role -> role.concat("_" + orgOrParentOid)))
                 .collect(Collectors.toCollection(HashSet::new));
 
-        Set<String> flattenedCandidateRolesByOrg = Sets.newHashSet(Iterables.concat(candidateRolesByOrg));
-
-        return CollectionUtils.containsAny(flattenedCandidateRolesByOrg, this.getCasRoles());
+        return CollectionUtils.containsAny(flattenedCandidateRolesByOrg, userRoles);
     }
 
     @Override

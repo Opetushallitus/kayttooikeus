@@ -15,6 +15,7 @@ import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;

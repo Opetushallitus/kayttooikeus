@@ -27,14 +27,10 @@ public interface PermissionCheckerService {
 
     boolean checkRoleForOrganisation(List<String> orgOidList, Map<String, List<String>> allowedRoles);
 
-    boolean hasInternalAccess(String personOid, List<String> allowedRolesWithoutPrefix, Set<String> callingUserRoles);
-
     @Deprecated
     boolean hasRoleForOrganisations(List<Object> organisaatioHenkiloDtoList, List<String> allowedRolesWithoutPrefix);
 
     boolean hasRoleForOrganisations(List<Object> organisaatioHenkiloDtoList, Map<String, List<String>> allowedRoles);
-
-    boolean hasRoleForOrganisation(String orgOid, Map<String, List<String>> allowedRoles);
 
     @Deprecated
     Set<String> getCurrentUserOrgnisationsWithPalveluRole(String palvelu, String role);
