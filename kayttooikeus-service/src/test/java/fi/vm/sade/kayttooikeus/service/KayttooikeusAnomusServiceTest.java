@@ -48,12 +48,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.util.Maps.newHashMap;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -739,6 +734,75 @@ public class KayttooikeusAnomusServiceTest {
         verify(emailService).sendNewRequisitionNotificationEmails(henkiloOidsCaptor.capture());
         Set<String> henkilot = henkiloOidsCaptor.getValue();
         assertThat(henkilot).containsExactlyInAnyOrder("user2", "user3");
+    }
+
+    @Test
+    public void adminTilaamaKayttooikeusLahetetaanNormaalienLisaksi() {
+        KayttoOikeusRyhma tilattuRyhma = KayttoOikeusRyhma.builder().tunniste("tilatturyhmä").build();
+        tilattuRyhma.setId(99L);
+        Anomus anomus = Anomus.builder()
+                .henkilo(Henkilo.builder().oidHenkilo("user1").build())
+                .organisaatioOid("rootOid")
+                .haettuKayttoOikeusRyhmas(Stream.of(
+                        HaettuKayttoOikeusRyhma.builder().kayttoOikeusRyhma(tilattuRyhma).build()
+                ).collect(toSet()))
+                .build();
+        Henkilo adminUser = Henkilo.builder()
+                .oidHenkilo("adminTilatullaRyhmällä")
+                .anomusilmoitus(singleton(tilattuRyhma))
+                .build();
+        when(this.henkiloDataRepository.findByAnomusilmoitusIsNotNull()).thenReturn(Stream.of(adminUser));
+        when(anomusRepository.findBy(any()))
+                .thenReturn(Collections.singletonList(anomus));
+        when(kayttoOikeusRyhmaMyontoViiteRepository.getMasterIdsBySlaveIds(any()))
+                .thenReturn(Stream.of(1L, 2L).collect(toSet()));
+        when(henkiloHibernateRepository.findByKayttoOikeusRyhmatAndOrganisaatiot(Stream.of(1L, 2L).collect(toSet()), Collections.singleton("rootOid")))
+                .thenReturn(Arrays.asList(
+                        Henkilo.builder().oidHenkilo("user2").build(),
+                        Henkilo.builder().oidHenkilo("user3").build()
+                ));
+
+        kayttooikeusAnomusService.lahetaUusienAnomuksienIlmoitukset(LocalDate.now());
+
+        verifyZeroInteractions(organisaatioClient);
+        verify(henkiloHibernateRepository).findByKayttoOikeusRyhmatAndOrganisaatiot(
+                eq(Stream.of(1L, 2L).collect(toSet())), eq(singleton("rootOid"))
+        );
+        verify(emailService).sendNewRequisitionNotificationEmails(henkiloOidsCaptor.capture());
+        Set<String> henkilot = henkiloOidsCaptor.getValue();
+        assertThat(henkilot).containsExactlyInAnyOrder("adminTilatullaRyhmällä", "user2", "user3");
+    }
+
+    @Test
+    public void adminTilaamaKayttooikeusLahetetaan() {
+        KayttoOikeusRyhma tilattuRyhma = KayttoOikeusRyhma.builder().tunniste("tilatturyhmä").build();
+        tilattuRyhma.setId(99L);
+        Anomus anomus = Anomus.builder()
+                .henkilo(Henkilo.builder().oidHenkilo("user1").build())
+                .organisaatioOid("rootOid")
+                .haettuKayttoOikeusRyhmas(Stream.of(
+                        HaettuKayttoOikeusRyhma.builder().kayttoOikeusRyhma(tilattuRyhma).build()
+                ).collect(toSet()))
+                .build();
+        Henkilo adminUser = Henkilo.builder()
+                .oidHenkilo("adminTilatullaRyhmällä")
+                .anomusilmoitus(singleton(tilattuRyhma))
+                .build();
+        when(this.henkiloDataRepository.findByAnomusilmoitusIsNotNull()).thenReturn(Stream.of(adminUser));
+        when(anomusRepository.findBy(any()))
+                .thenReturn(Collections.singletonList(anomus));
+        when(kayttoOikeusRyhmaMyontoViiteRepository.getMasterIdsBySlaveIds(any()))
+                .thenReturn(new HashSet<>());
+        when(henkiloHibernateRepository.findByKayttoOikeusRyhmatAndOrganisaatiot(any(), any()))
+                .thenReturn(new ArrayList<>());
+
+        kayttooikeusAnomusService.lahetaUusienAnomuksienIlmoitukset(LocalDate.now());
+
+        verifyZeroInteractions(organisaatioClient);
+        verifyZeroInteractions(henkiloHibernateRepository);
+        verify(emailService).sendNewRequisitionNotificationEmails(henkiloOidsCaptor.capture());
+        Set<String> henkilot = henkiloOidsCaptor.getValue();
+        assertThat(henkilot).containsExactly("adminTilatullaRyhmällä");
     }
 
     @Test

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Transactional(propagation = Propagation.MANDATORY)
 @Repository
@@ -22,6 +23,6 @@ public interface HenkiloDataRepository extends JpaRepository<Henkilo, Long>, Hen
     @EntityGraph("henkilohaku")
     List<Henkilo> readByOidHenkiloIn(List<String> oidHenkilo);
 
-    List<Henkilo> findByAnomusilmoitusIsTrue();
+    Stream<Henkilo> findByAnomusilmoitusIsNotNull();
 
 }

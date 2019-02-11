@@ -3,6 +3,7 @@ package fi.vm.sade.kayttooikeus.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import java.util.Set;
 @Getter @Setter
 @NoArgsConstructor
 @Table(name = "kayttooikeus", uniqueConstraints=@UniqueConstraint(columnNames={"palvelu_id", "textgroup_id"}))
+@BatchSize(size = 10)
 public class KayttoOikeus extends IdentifiableAndVersionedEntity {
 
     @Column(name = "rooli", nullable = false)

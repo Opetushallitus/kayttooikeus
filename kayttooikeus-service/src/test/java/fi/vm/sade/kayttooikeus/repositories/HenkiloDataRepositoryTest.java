@@ -3,6 +3,7 @@ package fi.vm.sade.kayttooikeus.repositories;
 import fi.vm.sade.kayttooikeus.dto.HenkiloLinkitysDto;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.HenkiloVarmentaja;
+import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhma;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import org.junit.Test;
@@ -15,13 +16,16 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
-@Transactional(readOnly = true)
+@Transactional(readOnly = false)
 public class HenkiloDataRepositoryTest {
     @Autowired
     private HenkiloDataRepository henkiloDataRepository;
@@ -96,5 +100,36 @@ public class HenkiloDataRepositoryTest {
 
         Optional<HenkiloLinkitysDto> olematonHenkilo = this.henkiloDataRepository.findLinkityksetByOid("ei löydy kannasta", true);
         assertThat(olematonHenkilo).isEmpty();
+    }
+
+    @Test
+    public void anomusilmoitusLoytyy() {
+        KayttoOikeusRyhma kayttoOikeusRyhma = KayttoOikeusRyhma.builder()
+                .tunniste("nimi")
+                .passivoitu(false)
+                .ryhmaRestriction(false)
+                .build();
+        this.testEntityManager.persistAndFlush(kayttoOikeusRyhma);
+        Henkilo henkilo = Henkilo.builder()
+                .oidHenkilo("1.2.3.4.5")
+                .anomusilmoitus(Collections.singleton(kayttoOikeusRyhma))
+                .build();
+        this.testEntityManager.persistAndFlush(henkilo);
+
+        Henkilo henkiloTyhjaAnomusilmoitus = Henkilo.builder()
+                .oidHenkilo("1.2.3.4.6")
+                .anomusilmoitus(new HashSet<>())
+                .build();
+        this.testEntityManager.persistAndFlush(henkiloTyhjaAnomusilmoitus);
+
+        Henkilo henkiloNullAnomusilmoitus = Henkilo.builder()
+                .oidHenkilo("1.2.3.4.7")
+                .anomusilmoitus(null)
+                .build();
+        this.testEntityManager.persistAndFlush(henkiloNullAnomusilmoitus);
+
+        Stream<Henkilo> henkiloCollection = this.henkiloDataRepository.findByAnomusilmoitusIsNotNull();
+        assertThat(henkiloCollection).extracting(Henkilo::getOidHenkilo).containsExactly("1.2.3.4.5");
+
     }
 }

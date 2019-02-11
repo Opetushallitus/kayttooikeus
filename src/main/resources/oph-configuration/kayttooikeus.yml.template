@@ -37,6 +37,7 @@ host:
   host-virkailija: {{host_virkailija}}
   host-cas: {{host_cas}}
   host-shibboleth: {{host_tunnistus}}
+  host-varda: {{host_varda}}
 
 service-users:
   viestinta:

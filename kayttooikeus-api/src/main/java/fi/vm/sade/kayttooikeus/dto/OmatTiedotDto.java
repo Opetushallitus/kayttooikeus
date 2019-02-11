@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -12,5 +15,5 @@ import lombok.Setter;
 public class OmatTiedotDto extends KayttooikeusPerustiedotDto {
     Boolean isAdmin;
     Boolean isMiniAdmin;
-    Boolean anomusilmoitus;
+    Collection<Long> anomusilmoitus = new HashSet<>();
 }

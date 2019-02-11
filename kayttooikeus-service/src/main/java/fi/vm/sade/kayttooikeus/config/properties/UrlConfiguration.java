@@ -15,6 +15,7 @@ public class UrlConfiguration extends OphProperties {
         addOverride("host-cas", environment.getRequiredProperty("host.host-cas"));
         addOverride("host-virkailija", environment.getRequiredProperty("host.host-virkailija"));
         addOverride("host-shibboleth", environment.getRequiredProperty("host.host-shibboleth"));
+        addOverride("host-varda", environment.getRequiredProperty("host.host-varda"));
         if (!StringUtils.isEmpty(environment.getProperty("front.lokalisointi.baseUrl"))) {
             frontProperties.put("lokalisointi.baseUrl", environment.getProperty("front.lokalisointi.baseUrl"));
         }

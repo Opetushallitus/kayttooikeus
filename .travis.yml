@@ -35,7 +35,7 @@ script:
 
 deploy:
   - provider: script
-    script: mvn deploy -pl kayttooikeus-api -DskipTests --settings ci-tools/common/maven-settings.xml
+    script: mvn deploy -pl fi.vm.sade.kayttooikeus:kayttooikeuspalvelu,kayttooikeus-api -DskipTests --settings ci-tools/common/maven-settings.xml
     skip_cleanup: true
     on:
       branch: master

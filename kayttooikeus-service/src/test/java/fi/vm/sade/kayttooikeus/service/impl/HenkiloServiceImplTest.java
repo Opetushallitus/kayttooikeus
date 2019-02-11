@@ -69,7 +69,8 @@ public class HenkiloServiceImplTest {
     private IdentificationService identificationServiceMock;
     @Mock
     private OphProperties ophPropertiesMock;
-
+    @Mock
+    private KayttoOikeusRyhmaRepository kayttoOikeusRyhmaRepository;
 
     @Before
     public void setup() {
@@ -82,6 +83,7 @@ public class HenkiloServiceImplTest {
                 myonnettyKayttoOikeusRyhmaTapahtumaRepositoryMock,
                 henkiloDataRepositoryMock,
                 kayttajatiedotRepositoryMock,
+                kayttoOikeusRyhmaRepository,
                 commonPropertiesMock,
                 oppijanumerorekisteriClientMock,
                 mapper,

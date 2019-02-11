@@ -232,11 +232,10 @@ public class HenkiloController {
 
     @PutMapping("/{oid}/anomusilmoitus")
     @ApiOperation("Anomusilmoitus asetuksen muuttaminen")
-    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
-    public void updateAnomusilmoitus(@PathVariable String oid, @RequestBody boolean anomusilmoitus) {
-        this.henkiloService.updateAnomusilmoitus(oid, anomusilmoitus);
+    @PreAuthorize("@permissionCheckerServiceImpl.isCurrentUserAdmin()")
+    public void updateAnomusilmoitus(@PathVariable String oid,
+                                     @ApiParam("Lista käyttöoikeusryhmä ID:itä. Formaatti: [id1, id2,...]") @RequestBody Set<Long> anomusilmoitusKayttooikeusRyhmat) {
+        this.henkiloService.updateAnomusilmoitus(oid, anomusilmoitusKayttooikeusRyhmat);
     }
-
-
 
 }

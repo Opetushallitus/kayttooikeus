@@ -12,7 +12,7 @@ import java.util.Set;
 public class PermissionCheckRequestDto {
 
     private List<String> personOidsForSamePerson;
-    private List<String> organisationOids = new ArrayList<String>();
+    private List<String> organisationOids = new ArrayList<>();
     private Set<String> loggedInUserRoles;
-
+    private String loggedInUserOid;
 }

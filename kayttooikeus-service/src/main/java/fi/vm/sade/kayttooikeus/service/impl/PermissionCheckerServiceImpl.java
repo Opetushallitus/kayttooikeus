@@ -159,6 +159,7 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
         permissionCheckRequestDto.setPersonOidsForSamePerson(Lists.newArrayList(personOidsForSamePerson));
         permissionCheckRequestDto.setOrganisationOids(Lists.newArrayList(flattedOrgs));
         permissionCheckRequestDto.setLoggedInUserRoles(callingUserRoles);
+        permissionCheckRequestDto.setLoggedInUserOid(callingUserOid);
 
         PermissionCheckResponseDto response = externalPermissionClient.getPermission(permissionCheckService,  permissionCheckRequestDto);
 
@@ -176,7 +177,22 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
         }
 
         if (!response.isAccessAllowed()) {
-            LOG.error("Insufficient roles. permission check done from external service:"+ permissionCheckService + " Logged in user:" + callingUserOid + " accessed personId:" + personOidToAccess + " loginuser orgs:" + flattedOrgs.stream().collect(Collectors.joining(",")) + " palveluroles needed:" + getPrefixedRolesByPalveluRooli(allowedPalveluRooli).stream().collect(Collectors.joining(",")), " user cas roles:" + callingUserRoles.stream().collect(Collectors.joining(",")) + " personOidsForSamePerson:" + personOidsForSamePerson.stream().collect(Collectors.joining(",")) + " external service error message:" + response.getErrorMessage());
+            LOG.error("Insufficient roles. permission check done from external service: {} " +
+                    "Logged in user: {} " +
+                    "Accessed personId: {} " +
+                    "Loginuser orgs: {} " +
+                    "Palveluroles needed: {} " +
+                    "User cas roles: {} " +
+                    "PersonOidsForSamePerson: {} " +
+                    "External service error message: {}",
+                    permissionCheckService,
+                    callingUserOid,
+                    personOidToAccess,
+                    String.join(", ", flattedOrgs),
+                    String.join(", ", getPrefixedRolesByPalveluRooli(allowedPalveluRooli)),
+                    String.join(", ", callingUserRoles),
+                    String.join(", ", personOidsForSamePerson),
+                    response.getErrorMessage());
         }
 
         return response.isAccessAllowed();

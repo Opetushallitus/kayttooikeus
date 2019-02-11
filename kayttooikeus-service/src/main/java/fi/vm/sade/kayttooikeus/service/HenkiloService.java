@@ -4,13 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.enumeration.LogInRedirectType;
 import fi.vm.sade.kayttooikeus.enumeration.OrderByHenkilohaku;
-import fi.vm.sade.kayttooikeus.repositories.dto.HenkilohakuResultDto;
 import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
+import fi.vm.sade.kayttooikeus.repositories.dto.HenkilohakuResultDto;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface HenkiloService {
 
@@ -65,7 +64,12 @@ public interface HenkiloService {
      */
     OmatTiedotDto getOmatTiedot();
 
-    void updateAnomusilmoitus(String oid, boolean anomusilmoitus);
+    /**
+     * Päivittää henkilön anomusilmoitusten tilauksen käyttöoikeusryhmiin
+     * @param oid Henkilön oid
+     * @param anomusilmoitusKayttooikeusRyhmat Käyttöoikeusryhmien ID:t joiden anomuksiin tilaus kohdistuu
+     */
+    void updateAnomusilmoitus(String oid, Set<Long> anomusilmoitusKayttooikeusRyhmat);
 
     /**
      * Hakee henkilön linkitykset muihin henkilöihin käyttöoikeuspalvelussa

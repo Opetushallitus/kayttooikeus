@@ -40,7 +40,8 @@ import java.util.stream.StreamSupport;
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.appending;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.*;
 
 @Service
@@ -329,34 +330,36 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                 .anomuksenTilat(EnumSet.of(AnomuksenTila.ANOTTU))
                 .build();
         List<Anomus> anomukset = anomusRepository.findBy(criteria.createEmailSendCondition(this.organisaatioClient));
-
+        Collection<Henkilo> adminHyvaksyjat = this.henkiloDataRepository.findByAnomusilmoitusIsNotNull().collect(toSet());
         Set<String> hyvaksyjat = anomukset.stream()
-                .map(this::getAnomuksenHyvaksyjat)
+                .map(anomus -> this.getAnomuksenHyvaksyjat(anomus, adminHyvaksyjat))
                 .flatMap(Collection::stream)
                 .collect(toSet());
-
-        List<Anomus> ophAdminAnomukset = this.anomusRepository.getOphAdminAnomukset().stream().
-                filter(a -> a.getAnottuPvm() != null && a.getAnottuPvm().isAfter(alkuPvm) && a.getAnottuPvm().isBefore(loppuPvm))
-            .collect(Collectors.toList());
-        if(ophAdminAnomukset.size() > 0) {
-            Set<String> ophAdminAnomusVastaanottajat = this.henkiloDataRepository.findByAnomusilmoitusIsTrue()
-                    .stream().map(h -> h.getOidHenkilo()).collect(toSet());
-            hyvaksyjat.addAll(ophAdminAnomusVastaanottajat);
-        }
 
         emailService.sendNewRequisitionNotificationEmails(hyvaksyjat);
     }
 
-    private Set<String> getAnomuksenHyvaksyjat(Anomus anomus) {
-        Set<Long> kayttoOikeusRyhmaIds = getHyvaksyjaKayttoOikeusRyhmat(anomus);
+    private Set<String> getAnomuksenHyvaksyjat(Anomus anomus, Collection<Henkilo> adminHyvaksyjat) {
+        Set<KayttoOikeusRyhma> anomuksenKayttooikeusryhmat = anomus.getHaettuKayttoOikeusRyhmas().stream()
+                .map(HaettuKayttoOikeusRyhma::getKayttoOikeusRyhma)
+                .collect(toSet());
+        Set<String> adminTilaatajaOidit = adminHyvaksyjat.stream()
+                // Ei ilmoiteta omista anomuksista
+                .filter(adminTilaaja -> !adminTilaaja.getOidHenkilo().equals(anomus.getHenkilo().getOidHenkilo()))
+                .filter(admin -> admin.getAnomusilmoitus().stream()
+                        .anyMatch(anomuksenKayttooikeusryhmat::contains))
+                .map(Henkilo::getOidHenkilo)
+                .collect(toSet());
+
+        Set<Long> kayttoOikeusRyhmaIds = getHyvaksyjaKayttoOikeusRyhmat(anomuksenKayttooikeusryhmat);
         if (kayttoOikeusRyhmaIds.isEmpty()) {
             logger.info("Ei löytynyt käyttöoikeusryhmiä, jotka voisivat hyväksyä anomuksen {}", anomus.getId());
-            return emptySet();
+            return adminTilaatajaOidit;
         }
         Set<String> organisaatioOids = getHyvaksyjaOrganisaatiot(anomus);
         if (organisaatioOids.isEmpty()) {
             logger.info("Ei löytynyt organisaatioita, jotka voisivat hyväksyä anomuksen {}", anomus.getId());
-            return emptySet();
+            return adminTilaatajaOidit;
         }
         Set<String> henkiloOids = henkiloHibernateRepository.findByKayttoOikeusRyhmatAndOrganisaatiot(kayttoOikeusRyhmaIds, organisaatioOids)
                 .stream()
@@ -367,12 +370,13 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         if (henkiloOids.isEmpty()) {
             logger.info("Anomuksella {} ei ole hyväksyjiä", anomus.getId());
         }
+        henkiloOids.addAll(adminTilaatajaOidit);
         return henkiloOids;
     }
 
-    private Set<Long> getHyvaksyjaKayttoOikeusRyhmat(Anomus anomus) {
-        Set<Long> slaveIds = anomus.getHaettuKayttoOikeusRyhmas().stream()
-                .map(t -> t.getKayttoOikeusRyhma().getId())
+    private Set<Long> getHyvaksyjaKayttoOikeusRyhmat(Set<KayttoOikeusRyhma> anomuksenKayttooikeusryhmat) {
+        Set<Long> slaveIds = anomuksenKayttooikeusryhmat.stream()
+                .map(IdentifiableAndVersionedEntity::getId)
                 .collect(toSet());
         return kayttoOikeusRyhmaMyontoViiteRepository.getMasterIdsBySlaveIds(slaveIds);
     }
