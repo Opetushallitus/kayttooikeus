@@ -79,14 +79,14 @@ public class CasController {
 
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation("Palauttaa uri:n johon käyttäjä tulee ohjata kirjautumisen yhteydessä, tai null jos uudelleenohjausta ei tarvita")
-    @RequestMapping(value = "/auth/henkilo/{oidHenkilo}/logInRedirect")
+    @RequestMapping(value = "/auth/henkilo/{oidHenkilo}/logInRedirect", method = RequestMethod.GET)
     public LogInRedirectType logInRedirectByOidHenkilo(@PathVariable("oidHenkilo") String oidHenkilo) {
         return this.henkiloService.logInRedirectByOidhenkilo(oidHenkilo);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation("Palauttaa uri:n johon käyttäjä tulee ohjata kirjautumisen yhteydessä, tai null jos uudelleenohjausta ei tarvita")
-    @RequestMapping(value = "/auth/henkilo/username/{username}/logInRedirect")
+    @RequestMapping(value = "/auth/henkilo/username/{username}/logInRedirect", method = RequestMethod.GET)
     public LogInRedirectType logInRedirectByUsername(@PathVariable("username") String username) {
         return this.henkiloService.logInRedirectByUsername(username);
     }

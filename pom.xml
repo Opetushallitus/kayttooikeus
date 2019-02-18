@@ -39,7 +39,7 @@
 
         <oppijanumerorekisteri.version>0.1.2-SNAPSHOT</oppijanumerorekisteri.version>
         <organisaatio.version>2016-9-SNAPSHOT</organisaatio.version>
-        <ryhmasahkoposti.version>14.7</ryhmasahkoposti.version>
+        <ryhmasahkoposti.version>14.8-SNAPSHOT</ryhmasahkoposti.version>
 
         <!-- Sade utils -->
         <auditlog.api.version>7.2.0-SNAPSHOT</auditlog.api.version>
@@ -262,7 +262,7 @@ buildTtime=${maven.build.timestamp}
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <version>[3.1.0,3.6.0)</version>
+                                    <version>[3.1.0,3.7.0)</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
                                     <version>[1.8,1.9)</version>
