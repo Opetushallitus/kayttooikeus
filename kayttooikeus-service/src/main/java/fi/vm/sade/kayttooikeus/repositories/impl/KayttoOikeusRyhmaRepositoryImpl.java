@@ -67,15 +67,17 @@ public class KayttoOikeusRyhmaRepositoryImpl implements KayttoOikeusRyhmaReposit
     }
 
     @Override
-    public Optional<KayttoOikeusRyhma> findByRyhmaId(Long id) {
+    public Optional<KayttoOikeusRyhma> findByRyhmaId(Long id, boolean naytaPassivoitu) {
         QKayttoOikeusRyhma kayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
-        return Optional.ofNullable(jpa()
+        JPAQuery<KayttoOikeusRyhma> query = jpa()
                 .select(kayttoOikeusRyhma)
                 .from(kayttoOikeusRyhma)
-                .where(kayttoOikeusRyhma.passivoitu.eq(false)
-                        .and(kayttoOikeusRyhma.id.eq(id)))
-                .distinct()
-                .fetchFirst());
+                .where(kayttoOikeusRyhma.id.eq(id))
+                .distinct();
+        if (!naytaPassivoitu) {
+            query.where(kayttoOikeusRyhma.passivoitu.eq(false));
+        }
+        return Optional.ofNullable(query.fetchFirst());
     }
 
     @Override
@@ -90,14 +92,16 @@ public class KayttoOikeusRyhmaRepositoryImpl implements KayttoOikeusRyhmaReposit
     }
 
     @Override
-    public List<KayttoOikeusRyhmaDto> listAll() {
+    public List<KayttoOikeusRyhmaDto> listAll(boolean naytaPassivoidut) {
         QKayttoOikeusRyhma kayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
-        return jpa().from(kayttoOikeusRyhma)
+        JPAQuery<KayttoOikeusRyhmaDto> query = jpa().from(kayttoOikeusRyhma)
                 .leftJoin(kayttoOikeusRyhma.nimi)
-                .where(kayttoOikeusRyhma.passivoitu.eq(false))
                 .orderBy(kayttoOikeusRyhma.id.asc())
-                .select(KayttoOikeusRyhmaDtoBean())
-                .fetch();
+                .select(KayttoOikeusRyhmaDtoBean());
+        if (!naytaPassivoidut) {
+            query.where(kayttoOikeusRyhma.passivoitu.eq(false));
+        }
+        return query.fetch();
     }
 
     @Override

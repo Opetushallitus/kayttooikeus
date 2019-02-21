@@ -33,8 +33,8 @@ public class KayttoOikeusRyhmaController {
     @PreAuthorize("isAuthenticated()")
     @ApiOperation(value = "Listaa kaikki käyttöoikeusryhmät.",
             notes = "Listaa kaikki käyttöoikeusryhmät, jotka on tallennettu henkilöhallintaan.")
-    public List<KayttoOikeusRyhmaDto> listKayttoOikeusRyhma() {
-        return kayttoOikeusService.listAllKayttoOikeusRyhmas();
+    public List<KayttoOikeusRyhmaDto> listKayttoOikeusRyhma(@RequestParam(required = false) Boolean passiiviset) {
+        return kayttoOikeusService.listAllKayttoOikeusRyhmas(passiiviset);
     }
 
     @ApiOperation(value = "Hakee henkilön käyttöoikeusryhmät organisaatioittain")
@@ -91,8 +91,9 @@ public class KayttoOikeusRyhmaController {
     @ApiOperation(value = "Hakee käyttöoikeusryhmän tiedot.",
             notes = "Hakee yhden käyttöoikeusryhmän kaikki tiedot "
                     + "annetun käyttöoikeusryhmän ID:n avulla.")
-    public KayttoOikeusRyhmaDto getKayttoOikeusRyhma(@PathVariable("id") Long id) {
-        return kayttoOikeusService.findKayttoOikeusRyhma(id);
+    public KayttoOikeusRyhmaDto getKayttoOikeusRyhma(@PathVariable("id") Long id,
+                                                     @RequestParam(required = false) Boolean passiiviset) {
+        return kayttoOikeusService.findKayttoOikeusRyhma(id, passiiviset);
     }
 
 
@@ -151,7 +152,7 @@ public class KayttoOikeusRyhmaController {
             notes = "Päivittää käyttöoikeusryhmän tiedot annetun DTO:n avulla.")
     public KayttoOikeusRyhmaDto updateKayttoOikeusRyhma(@PathVariable("id") Long id, @RequestBody @Validated KayttoOikeusRyhmaModifyDto ryhmaData) {
         kayttoOikeusService.updateKayttoOikeusForKayttoOikeusRyhma(id, ryhmaData);
-        return kayttoOikeusService.findKayttoOikeusRyhma(id);
+        return kayttoOikeusService.findKayttoOikeusRyhma(id, true);
     }
 
     @RequestMapping(value = "/{id}/passivoi", method = RequestMethod.PUT)

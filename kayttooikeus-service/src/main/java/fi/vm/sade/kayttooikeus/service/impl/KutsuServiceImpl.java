@@ -31,7 +31,8 @@ import java.util.stream.Collectors;
 
 import static fi.vm.sade.kayttooikeus.dto.KutsunTila.AVOIN;
 import static fi.vm.sade.kayttooikeus.model.Identification.HAKA_AUTHENTICATION_IDP;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.*;
+import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
+import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.ROLE_CRUD;
 import static java.util.Arrays.asList;
 
 @Service
@@ -95,17 +96,6 @@ public class KutsuServiceImpl implements KutsuService {
             }
             this.kayttooikeusryhmaLimitationsAreValid(kutsuCreateDto.getOrganisaatiot());
         }
-        Set<Long> eiSallitutKayttooikeusryhmat = kutsuCreateDto.getOrganisaatiot().stream()
-                .flatMap(kutsuOrganisaatioDto -> kutsuOrganisaatioDto.getKayttoOikeusRyhmat().stream())
-                .map(kayttoOikeusRyhmaDto -> this.kayttoOikeusRyhmaRepository.findById(kayttoOikeusRyhmaDto.getId()))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .filter(kayttoOikeusRyhma -> !kayttoOikeusRyhma.isSallittuKayttajatyypilla(KayttajaTyyppi.VIRKAILIJA))
-                .map(KayttoOikeusRyhma::getId)
-                .collect(Collectors.toSet());
-        if (eiSallitutKayttooikeusryhmat.size() > 0) {
-            throw new IllegalArgumentException(String.format("Käyttöoikeusryhmiä %s ei voi myöntää käyttäjätyypille %s", eiSallitutKayttooikeusryhmat.toString(), KayttajaTyyppi.VIRKAILIJA));
-        }
         // This is redundant after every virkailija has been strongly identified
         final String currentUserOid = this.permissionCheckerService.getCurrentUserOid();
         HenkiloDto currentUser = this.oppijanumerorekisteriClient.getHenkiloByOid(currentUserOid);
@@ -114,7 +104,7 @@ public class KutsuServiceImpl implements KutsuService {
         }
 
         final Kutsu newKutsu = mapper.map(kutsuCreateDto, Kutsu.class);
-
+        this.validateKayttooikeusryhmat(newKutsu);
         newKutsu.setId(null);
         newKutsu.setAikaleima(LocalDateTime.now());
         newKutsu.setKutsuja(this.permissionCheckerService.getCurrentUserOid());
@@ -127,6 +117,26 @@ public class KutsuServiceImpl implements KutsuService {
         this.emailService.sendInvitationEmail(persistedNewKutsu);
 
         return persistedNewKutsu.getId();
+    }
+
+    private void validateKayttooikeusryhmat(Kutsu newKutsu) {
+        Set<KayttoOikeusRyhma> myonnettavatKayttooikeusryhmat = newKutsu.getOrganisaatiot().stream()
+                .flatMap(kutsuOrganisaatioDto -> kutsuOrganisaatioDto.getRyhmat().stream())
+                .collect(Collectors.toSet());
+        Object[] passivoidutKayttooikeusryhmat = myonnettavatKayttooikeusryhmat.stream()
+                .filter(KayttoOikeusRyhma::isPassivoitu)
+                .map(KayttoOikeusRyhma::getId)
+                .toArray();
+        if (passivoidutKayttooikeusryhmat.length > 0) {
+            throw new IllegalArgumentException(String.format("Passivoituihin käyttöoikeusryhmiin %s ei voi myöntää oikeuksia", Arrays.toString(passivoidutKayttooikeusryhmat)));
+        }
+        Object[] eiSallitutKayttooikeusryhmat = myonnettavatKayttooikeusryhmat.stream()
+                .filter(kayttoOikeusRyhma -> !kayttoOikeusRyhma.isSallittuKayttajatyypilla(KayttajaTyyppi.VIRKAILIJA))
+                .map(KayttoOikeusRyhma::getId)
+                .toArray();
+        if (eiSallitutKayttooikeusryhmat.length > 0) {
+            throw new IllegalArgumentException(String.format("Käyttöoikeusryhmiä %s ei voi myöntää käyttäjätyypille %s", Arrays.toString(eiSallitutKayttooikeusryhmat), KayttajaTyyppi.VIRKAILIJA));
+        }
     }
 
     private void throwIfNotInHierarchy(KutsuCreateDto kutsuCreateDto) {
@@ -346,9 +356,10 @@ public class KutsuServiceImpl implements KutsuService {
         }
 
         kutsuByToken.getOrganisaatiot().forEach(kutsuOrganisaatio -> {
-            // Filtteröidään ei virkailijoille sallitut käyttöoikeusryhmät. Virkailija voi anoa tarvitsemiaan oikeuksia päästyään palveluun.
+            // Filtteröidään ei sallitut käyttöoikeusryhmät. Virkailija voi anoa tarvitsemiaan oikeuksia päästyään palveluun.
             Set<KayttoOikeusRyhma> kayttooikeusRyhmas = kutsuOrganisaatio.getRyhmat().stream()
                     .filter(kayttoOikeusRyhma -> kayttoOikeusRyhma.isSallittuKayttajatyypilla(KayttajaTyyppi.VIRKAILIJA))
+                    .filter(kayttoOikeusRyhma -> !kayttoOikeusRyhma.isPassivoitu())
                     .collect(Collectors.toSet());
             this.kayttooikeusAnomusService.grantPreValidatedKayttooikeusryhma(
                     henkiloOid,

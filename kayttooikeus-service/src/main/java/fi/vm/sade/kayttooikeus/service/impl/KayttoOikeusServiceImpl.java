@@ -69,8 +69,9 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
 
     @Override
     @Transactional(readOnly = true)
-    public List<KayttoOikeusRyhmaDto> listAllKayttoOikeusRyhmas() {
-        return localizationService.localize(findAllKayttoOikeusRyhmasAsDtos());
+    public List<KayttoOikeusRyhmaDto> listAllKayttoOikeusRyhmas(Boolean passiiviset) {
+        boolean naytaPassiiviset = Boolean.TRUE.equals(passiiviset) && this.permissionCheckerService.isCurrentUserAdmin();
+        return localizationService.localize(findAllKayttoOikeusRyhmasAsDtos(naytaPassiiviset));
     }
 
     @Override
@@ -123,7 +124,7 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
     @Transactional(readOnly = true)
     public List<KayttoOikeusRyhmaDto> listPossibleRyhmasByOrganization(String organisaatioOid) {
         return localizationService.localize(getRyhmasWithoutOrganizationLimitations(
-                organisaatioOid, findAllKayttoOikeusRyhmasAsDtos()));
+                organisaatioOid, findAllKayttoOikeusRyhmasAsDtos(false)));
     }
 
     @Override
@@ -196,9 +197,10 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
 
     @Override
     @Transactional(readOnly = true)
-    public KayttoOikeusRyhmaDto findKayttoOikeusRyhma(long id) {
-        KayttoOikeusRyhma kayttoOikeusRyhma = kayttoOikeusRyhmaRepository.findByRyhmaId(id).orElseThrow(()
-                -> new NotFoundException("kayttooikeusryhma not found"));
+    public KayttoOikeusRyhmaDto findKayttoOikeusRyhma(long id, Boolean passiiviset) {
+        boolean naytaPassiiviset = Boolean.TRUE.equals(passiiviset) && this.permissionCheckerService.isCurrentUserAdmin();
+        KayttoOikeusRyhma kayttoOikeusRyhma = kayttoOikeusRyhmaRepository.findByRyhmaId(id, naytaPassiiviset)
+                .orElseThrow(() -> new NotFoundException("kayttooikeusryhma not found"));
         KayttoOikeusRyhmaDto ryhma = mapper.map(kayttoOikeusRyhma, KayttoOikeusRyhmaDto.class);
         return localizationService.localize(ryhma);
     }
@@ -428,8 +430,8 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
         return new ArrayList<>(byIds.values());
     }
 
-    private List<KayttoOikeusRyhmaDto> findAllKayttoOikeusRyhmasAsDtos() {
-        return addOrganisaatioViitteesToRyhmas(kayttoOikeusRyhmaRepository.listAll());
+    private List<KayttoOikeusRyhmaDto> findAllKayttoOikeusRyhmasAsDtos(boolean naytaPassiiviset) {
+        return addOrganisaatioViitteesToRyhmas(kayttoOikeusRyhmaRepository.listAll(naytaPassiiviset));
     }
 
     private List<KayttoOikeusRyhmaDto> getGrantableRyhmasWithoutOrgLimitations(String organisaatioOid, String myontajaOid) {
@@ -439,7 +441,7 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
 
 
         List<KayttoOikeusRyhmaDto> allRyhmas = (isEmpty(slaveIds) || this.permissionCheckerService.isCurrentUserAdmin()) ?
-                kayttoOikeusRyhmaRepository.listAll() : kayttoOikeusRyhmaRepository.findByIdList(slaveIds);
+                kayttoOikeusRyhmaRepository.listAll(false) : kayttoOikeusRyhmaRepository.findByIdList(slaveIds);
         return getRyhmasWithoutOrganizationLimitations(organisaatioOid,
                 addOrganisaatioViitteesToRyhmas(allRyhmas));
     }

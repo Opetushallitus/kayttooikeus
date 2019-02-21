@@ -66,7 +66,7 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
                 .withViite(viite(kayttoOikeusRyhma("RYHMA1"), "TYYPPI"))
                 .withOikeus(oikeus("KOODISTO", "CRUD")));
         
-        List<KayttoOikeusRyhmaDto> ryhmas = kayttoOikeusService.listAllKayttoOikeusRyhmas();
+        List<KayttoOikeusRyhmaDto> ryhmas = kayttoOikeusService.listAllKayttoOikeusRyhmas(false);
         assertEquals(2, ryhmas.size());
 
     }
@@ -209,7 +209,7 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
                 .containsExactlyInAnyOrder("RYHMA-ORGANISAATIORYHMILLE1", "RYHMA-ORGANISAATIORYHMILLE2");
 
         ryhmat = kayttoOikeusService.listPossibleRyhmasByOrganization("1.2.246.562.10.00000000001");
-        assertThat(ryhmat).hasSize(kayttoOikeusService.listAllKayttoOikeusRyhmas().size());
+        assertThat(ryhmat).hasSize(kayttoOikeusService.listAllKayttoOikeusRyhmas(false).size());
     }
 
     private static OrganisaatioPerustieto oppilaitos(String oid, String oppilaitostyyppi) {
@@ -232,7 +232,7 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
                 .withOikeus(oikeus("KOODISTO", "CRUD"))
                 .withSallittu(KayttajaTyyppi.PALVELU)).getId();
 
-        KayttoOikeusRyhmaDto ryhma = kayttoOikeusService.findKayttoOikeusRyhma(id);
+        KayttoOikeusRyhmaDto ryhma = kayttoOikeusService.findKayttoOikeusRyhma(id, false);
         assertNotNull(ryhma);
         assertEquals("RYHMA2", ryhma.getName());
         assertEquals(KayttajaTyyppi.PALVELU, ryhma.getSallittuKayttajatyyppi());
@@ -341,7 +341,7 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
                 .build();
 
         long createdRyhmaId = kayttoOikeusService.createKayttoOikeusRyhma(ryhma);
-        KayttoOikeusRyhmaDto createdRyhma = kayttoOikeusService.findKayttoOikeusRyhma(createdRyhmaId);
+        KayttoOikeusRyhmaDto createdRyhma = kayttoOikeusService.findKayttoOikeusRyhma(createdRyhmaId, false);
 
         assertNotNull(createdRyhma);
         assertTrue(createdRyhma.getName().startsWith("ryhmäname_"));
@@ -359,7 +359,7 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
         ryhma.setSallittuKayttajatyyppi(null);
         kayttoOikeusService.updateKayttoOikeusForKayttoOikeusRyhma(createdRyhmaId, ryhma);
 
-        createdRyhma = kayttoOikeusService.findKayttoOikeusRyhma(createdRyhmaId);
+        createdRyhma = kayttoOikeusService.findKayttoOikeusRyhma(createdRyhmaId, false);
         assertTrue(createdRyhma.getDescription().get("FI").contentEquals("uusi nimi"));
         assertTrue(createdRyhma.getKuvaus().get("FI").contentEquals("uusi kuvaus"));
         assertTrue(createdRyhma.getOrganisaatioViite().get(0).getOrganisaatioTyyppi().contentEquals("uusi org tyyppi"));

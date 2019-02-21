@@ -35,7 +35,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.appending;
@@ -312,6 +311,9 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
             if (!k.isSallittuKayttajatyypilla(anoja.getKayttajaTyyppi())) {
                 throw new IllegalStateException(String.format("Käyttöoikeusryhmää %d ei ole sallittu henkilön %s käyttäjätyypille %s", k.getId(), anoja.getOidHenkilo(), anoja.getKayttajaTyyppi()));
             }
+            if (k.isPassivoitu()) {
+                throw new IllegalArgumentException(String.format("Passivoituun käyttöoikeusryhmään %d ei voi anoa oikeuksia", k.getId()));
+            }
             HaettuKayttoOikeusRyhma h = new HaettuKayttoOikeusRyhma();
             h.setKayttoOikeusRyhma(k);
             anomus.addHaettuKayttoOikeusRyhma(h);
@@ -406,6 +408,9 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         Optional.of(myonnettavaKayttoOikeusRyhma)
                 .filter(kayttooikeusRyhma -> kayttooikeusRyhma.isSallittuKayttajatyypilla(anoja.getKayttajaTyyppi()))
                 .orElseThrow(() -> new IllegalStateException(String.format("Yritetään myöntää käyttöoikeutta väärälle käyttäjätyypille %s käyttöoikeusryhmään %d kun sallitaan vain %s", anoja.getKayttajaTyyppi(), myonnettavaKayttoOikeusRyhma.getId(), myonnettavaKayttoOikeusRyhma.getSallittuKayttajatyyppi())));
+        if (myonnettavaKayttoOikeusRyhma.isPassivoitu()) {
+            throw new IllegalStateException(String.format("Passivoituun käyttöoikeusryhmään %d ei voi myöntää oikeuksia", myonnettavaKayttoOikeusRyhma.getId()));
+        }
         OrganisaatioHenkilo myonnettavaOrganisaatioHenkilo = this.findOrCreateHaettuOrganisaatioHenkilo(
                 organisaatioOid, anoja, tehtavanimike);
 

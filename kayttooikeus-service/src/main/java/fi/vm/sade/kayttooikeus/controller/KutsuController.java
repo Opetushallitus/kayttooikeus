@@ -1,11 +1,11 @@
 package fi.vm.sade.kayttooikeus.controller;
 
-import fi.vm.sade.kayttooikeus.dto.KutsuUpdateDto;
-import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
 import fi.vm.sade.kayttooikeus.dto.KutsuCreateDto;
 import fi.vm.sade.kayttooikeus.dto.KutsuReadDto;
+import fi.vm.sade.kayttooikeus.dto.KutsuUpdateDto;
 import fi.vm.sade.kayttooikeus.enumeration.KutsuOrganisaatioOrder;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KutsuCriteria;
+import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.KutsuService;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
@@ -108,7 +108,7 @@ public class KutsuController {
                                 @Validated @RequestBody HenkiloCreateByKutsuDto henkiloCreateByKutsuDto) {
         // This needs to be done like this since otherwice KO locks the table row for this henkilo and ONR can't update
         // it until the transaction finishes when ONR request timeouts.
-        HenkiloUpdateDto henkiloUpdateDto =  this.kutsuService.createHenkilo(temporaryToken, henkiloCreateByKutsuDto);
+        HenkiloUpdateDto henkiloUpdateDto = this.kutsuService.createHenkilo(temporaryToken, henkiloCreateByKutsuDto);
         this.oppijanumerorekisteriClient.updateHenkilo(henkiloUpdateDto);
         return this.identificationService.updateIdentificationAndGenerateTokenForHenkiloByOid(henkiloUpdateDto.getOidHenkilo());
     }

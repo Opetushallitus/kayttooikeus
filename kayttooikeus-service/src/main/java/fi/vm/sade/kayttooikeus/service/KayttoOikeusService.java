@@ -12,7 +12,7 @@ import java.util.Map;
 public interface KayttoOikeusService {
     KayttoOikeusDto findKayttoOikeusById(long kayttoOikeusId);
 
-    List<KayttoOikeusRyhmaDto> listAllKayttoOikeusRyhmas();
+    List<KayttoOikeusRyhmaDto> listAllKayttoOikeusRyhmas(Boolean passiiviset);
 
     List<PalveluKayttoOikeusDto> listKayttoOikeusByPalvelu(String palveluName);
 
@@ -43,7 +43,7 @@ public interface KayttoOikeusService {
      */
     List<MyonnettyKayttoOikeusDto> listMyonnettyKayttoOikeusRyhmasByHenkiloAndOrganisaatio(String oid, String organisaatioOid);
 
-    KayttoOikeusRyhmaDto findKayttoOikeusRyhma(long id);
+    KayttoOikeusRyhmaDto findKayttoOikeusRyhma(long id, Boolean passiiviset);
 
     List<KayttoOikeusRyhmaDto> findSubRyhmasByMasterRyhma(long id);
 

@@ -17,9 +17,7 @@ import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.ROLE_REKISTERINPITAJA;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -39,7 +37,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     @Test
     @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_READ")
     public void listKayttoOikeusRyhmaTest() throws Exception {
-        given(this.kayttoOikeusService.listAllKayttoOikeusRyhmas())
+        given(this.kayttoOikeusService.listAllKayttoOikeusRyhmas(isNull()))
             .willReturn(singletonList(KayttoOikeusRyhmaDto.builder()
                     .organisaatioViite(singletonList(OrganisaatioViiteDto.builder()
                             .organisaatioTyyppi("organisaatiotyyppi")
@@ -161,7 +159,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     @Test
     @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_KAYTTOOIKEUSRYHMIEN_LUKU")
     public void getKayttoOikeusRyhmaTest() throws Exception {
-        given(this.kayttoOikeusService.findKayttoOikeusRyhma(44L))
+        given(this.kayttoOikeusService.findKayttoOikeusRyhma(eq(44L), isNull()))
                 .willReturn(buildKayttoOikeusRyhma());
 
         this.mvc.perform(get("/kayttooikeusryhma/44").accept(MediaType.APPLICATION_JSON_UTF8))
@@ -312,7 +310,7 @@ public class KayttoOikeusRyhmaControllerTest extends AbstractControllerTest {
     @Test
     @WithMockUser(username = "1.2.3.4.5", authorities = PALVELU_KAYTTOOIKEUS_PREFIX + ROLE_REKISTERINPITAJA)
     public void updateKayttoOikeusRyhmaTest() throws Exception {
-        given(kayttoOikeusService.findKayttoOikeusRyhma(eq(345L)))
+        given(kayttoOikeusService.findKayttoOikeusRyhma(eq(345L), eq(true)))
                 .willReturn(KayttoOikeusRyhmaDto.builder()
                         .id(345L)
                         .tunniste("kayttooikeusryhmä")
