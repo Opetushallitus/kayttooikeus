@@ -163,6 +163,14 @@ public class KayttoOikeusRyhmaController {
         kayttoOikeusService.passivoiKayttooikeusryhma(id);
     }
 
+    @RequestMapping(value = "/{id}/aktivoi", method = RequestMethod.PUT)
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
+    @ApiOperation(value = "Aktivoi käyttöoikeusryhmän.",
+            notes = "Aktivoi passivoidun käyttöoikeusryhmän.")
+    public void aktivoiKayttoOikeusRyhma(@PathVariable("id") Long id) {
+        this.kayttoOikeusService.aktivoiKayttooikeusryhma(id);
+    }
+
     @RequestMapping(value = "/ryhmasByKayttooikeus", method = RequestMethod.POST)
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_KAYTTOOIKEUSRYHMIEN_LUKU',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")

@@ -359,6 +359,14 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
         return new AuthorizationDataDto(accessRights, groups);
     }
 
+    @Override
+    @Transactional
+    public void aktivoiKayttooikeusryhma(Long id) {
+        KayttoOikeusRyhma kayttoOikeusRyhma = kayttoOikeusRyhmaRepository.findById(id).orElseThrow(()
+                -> new NotFoundException("kayttooikeusryhma not found"));
+        kayttoOikeusRyhma.setPassivoitu(false);
+    }
+
     private void setKayttoOikeusRyhmas(KayttoOikeusRyhmaModifyDto ryhmaData, KayttoOikeusRyhma kayttoOikeusRyhma) {
         Set<KayttoOikeus> givenKOs = new HashSet<>();
         for (PalveluRooliModifyDto prDto : ryhmaData.getPalvelutRoolit()) {
