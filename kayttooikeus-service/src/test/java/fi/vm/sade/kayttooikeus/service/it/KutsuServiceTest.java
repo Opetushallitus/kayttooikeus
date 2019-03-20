@@ -51,12 +51,12 @@ import static fi.vm.sade.kayttooikeus.repositories.populate.KutsuOrganisaatioPop
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloKayttoOikeusPopulator.myonnettyKayttoOikeus;
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloPopulator.organisaatioHenkilo;
 import static fi.vm.sade.kayttooikeus.repositories.populate.TextGroupPopulator.text;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.*;
+import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
+import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.ROLE_CRUD;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -581,7 +581,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    public void kutsunVainPalvelulleSallittuKayttooikeusRyhmaOhitetaan() {
+    public void vainPalvelulleSallittuJaPassivoituKayttooikeusRyhmaOhitetaan() {
         given(this.oppijanumerorekisteriClient.getHenkilonPerustiedot(eq("1.2.3.4.1")))
                 .willReturn(Optional.of(HenkiloPerustietoDto.builder().hetu("valid hetu").build()));
         populate(KutsuPopulator.kutsu("arpa", "kuutio", "arpa@kuutio.fi")
@@ -592,6 +592,9 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                         .ryhma(KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma("ryhma")
                                 .withNimi(text("FI", "Kuvaus"))
                                 .withSallittu(KayttajaTyyppi.PALVELU))
+                        .ryhma(KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma("passivoituryhma")
+                                .withNimi(text("FI", "Kuvaus"))
+                                .asPassivoitu())
                 ));
         populate(HenkiloPopulator.henkilo("1.2.3.4.5"));
         populate(HenkiloPopulator.henkilo("1.2.3.4.1"));

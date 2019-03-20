@@ -20,6 +20,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -364,6 +365,25 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
         assertTrue(createdRyhma.getKuvaus().get("FI").contentEquals("uusi kuvaus"));
         assertTrue(createdRyhma.getOrganisaatioViite().get(0).getOrganisaatioTyyppi().contentEquals("uusi org tyyppi"));
         assertNull(createdRyhma.getSallittuKayttajatyyppi());
+    }
+
+    @Test
+    @WithMockUser(username = "1.2.3.4.5")
+    public void updatePassivoitu() {
+        KayttoOikeusRyhma passivoituKayttoOikeusRyhma = populate(kayttoOikeusRyhma("RYHMA")
+                .withNimi(text("FI", "Käyttäjähallinta")
+                        .put("EN", "User management"))
+                .withOikeus(oikeus("HENKILOHALLINTA", "CRUD"))
+                .withOikeus(oikeus("KOODISTO", "READ"))
+                .asPassivoitu());
+        KayttoOikeusRyhmaModifyDto ryhmaModifyDto = KayttoOikeusRyhmaModifyDto.builder()
+                .nimi(new TextGroupDto()
+                        .put("FI", "Uusi nimi")
+                        .put("SV", "Uusi nimi sv")
+                        .put("EN", "Uusi nimi en"))
+                .palvelutRoolit(new ArrayList<>())
+                .build();
+        this.kayttoOikeusService.updateKayttoOikeusForKayttoOikeusRyhma(passivoituKayttoOikeusRyhma.getId(), ryhmaModifyDto);
     }
 
     @Test

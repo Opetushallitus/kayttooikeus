@@ -2,14 +2,11 @@ package fi.vm.sade.kayttooikeus.service.impl;
 
 import com.google.common.collect.Lists;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
-import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
-import fi.vm.sade.kayttooikeus.config.properties.EmailInvitationProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.model.Anomus;
 import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhma;
 import fi.vm.sade.kayttooikeus.model.Kutsu;
 import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaRepository;
-import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaRepositoryCustom;
 import fi.vm.sade.kayttooikeus.repositories.dto.ExpiringKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.service.EmailService;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
@@ -65,7 +62,6 @@ public class EmailServiceImpl implements EmailService {
     private static final String KAYTTOOIKEUSANOMUSILMOITUS_EMAIL_REPLACEMENT_LINKKI = "linkki";
     private static final String CALLING_PROCESS = "kayttooikeus";
 
-    private final String expirationReminderSenderEmail;
     private final String expirationReminderPersonUrl;
 
     private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
@@ -75,26 +71,21 @@ public class EmailServiceImpl implements EmailService {
     private final KayttoOikeusRyhmaRepository kayttoOikeusRyhmaRepository;
 
     private final OrikaBeanMapper mapper;
-    private final CommonProperties commonProperties;
     private final OphProperties urlProperties;
 
     @Autowired
     public EmailServiceImpl(OppijanumerorekisteriClient oppijanumerorekisteriClient,
                             RyhmasahkopostiClient ryhmasahkopostiClient,
-                            EmailInvitationProperties config,
                             OphProperties ophProperties,
                             KayttoOikeusRyhmaRepository kayttoOikeusRyhmaRepository,
                             OrikaBeanMapper mapper,
-                            CommonProperties commonProperties,
                             OphProperties urlProperties,
                             OrganisaatioClient organisaatioClient) {
         this.oppijanumerorekisteriClient = oppijanumerorekisteriClient;
         this.ryhmasahkopostiClient = ryhmasahkopostiClient;
-        this.expirationReminderSenderEmail = config.getSenderEmail();
         this.expirationReminderPersonUrl = ophProperties.url("henkilo-ui.omattiedot");
         this.kayttoOikeusRyhmaRepository = kayttoOikeusRyhmaRepository;
         this.mapper = mapper;
-        this.commonProperties = commonProperties;
         this.urlProperties = urlProperties;
         this.organisaatioClient = organisaatioClient;
     }
@@ -145,15 +136,8 @@ public class EmailServiceImpl implements EmailService {
 
 
     private EmailMessage generateEmailMessage(String templateName, String languageCode) {
-        return this.generateEmailMessage(languageCode, this.expirationReminderSenderEmail,
-                this.expirationReminderSenderEmail, templateName);
-    }
-
-    private EmailMessage generateEmailMessage(String languageCode, String fromEmail, String replyToEmail, String templateName) {
         EmailMessage message = new EmailMessage();
         message.setCallingProcess(CALLING_PROCESS);
-        message.setFrom(fromEmail);
-        message.setReplyTo(replyToEmail);
         message.setTemplateName(templateName);
         message.setHtml(true);
         message.setLanguageCode(languageCode);
@@ -256,11 +240,8 @@ public class EmailServiceImpl implements EmailService {
         email.setTemplateName(KUTSUTTU_EMAIL_TEMPLATE_NAME);
         email.setLanguageCode(kutsu.getKieliKoodi());
         email.setCallingProcess(CALLING_PROCESS);
-        email.setFrom(this.commonProperties.getInvitationEmail().getFrom());
-        email.setReplyTo(this.commonProperties.getInvitationEmail().getFrom());
         email.setCharset("UTF-8");
         email.setHtml(true);
-        email.setSender(this.commonProperties.getInvitationEmail().getSender());
         emailData.setEmail(email);
 
         EmailRecipient recipient = new EmailRecipient();

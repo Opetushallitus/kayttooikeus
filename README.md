@@ -26,27 +26,43 @@ Käyttöoikeuspalvelu on henkilö-palvelusta eriytetty käyttöoikeusryhmien ja 
 
     mvn clean install
 
+## Tietokanta
+
+    docker run --name kayttooikeus-db -p 5432:5432 -e POSTGRES_USER=oph -e POSTGRES_PASSWORD=oph -e POSTGRES_DB=kayttooikeus -d postgres:10.6
+
 ## Käynnistäminen
 
-### kayttooikeus-service
+    java -jar kayttooikeus-service/target/kayttooikeus-service-1.0.1-SNAPSHOT.jar
 
-Devausta varten kopioi oph-configuraation-hakemistoon
-* security-context-backend-local-testing.properties.template ja nimeä tiedosto security-context.properties
-* kayttooikeus.yml.template, nimeä tiedosto kayttooikeus.yml ja aseta placeholdereiden tilalle kehitysympäristön tiedot
+Ilman parametreja sovellus käyttää [application.yml](kayttooikeus-service/src/main/resources/application.yml)
+-tiedoston mukaisia oletuskonfiguraatioita.
 
+Konfiguraatioiden muuttaminen komentoriviparametreilla (baseUrl-parametrilla määritellään missä osoitteessa muut
+sovelluksen käyttämät palvelut sijaitsevat):
 
-#### Backend-palvelun käynnistäminen CAS kirjautumisella
+    java -jar kayttooikeus-service/target/kayttooikeus-service-0.1.2-SNAPSHOT.jar \
+        -DbaseUrl=http://localhost:8081 \
+        -Dspring.datasource.username=<tietokannan_tunnus> \
+        -Dspring.datasource.password=<tietokannan_salasana> \
+        -Dservice-users.default.username=<oma_virkailija_tunnus> \
+        -Dservice-users.default.password=<oma_virkailija_salasana>
 
-    java -jar -Dspring.config.additional-location=/<path>/<to>/oph-configuration/kayttooikeus.yml kayttooikeus-service/target/kayttooikeus-service-1.0.0-SNAPSHOT.jar
+Kaikki paitsi baseUrl-konfiguraatio on myös mahdollista laittaa erilliseen tiedostoon:
 
-Tämä vaatii CAS-filtterin konfiguroinnin käyttämään localhostia (ei https!)
+```yaml
+spring.datasource.username: <tietokannan_tunnus>
+spring.datasource.password: <tietokannan_salasana>
+service-users.default.username: <oma_virkailija_tunnus>
+service-users.default.password: <oma_virkailija_salasana>
+```
 
-    cas:
-      service: http://localhost:8180/kayttooikeus-service
+...jolloin ajaminen:
 
-Nyt voit käyttää ympäristön CAS-tunnuksiasia kirjautumiseen lokaaliin palveluun.
-    
-**Ensimmäinen kirjautuminen palvelun käynnistyttyä täytyy tehdä suoralla GET kutsulla rajapintaan, ei swaggeristä**
+    java -jar kayttooikeus-service/target/kayttooikeus-service-0.1.2-SNAPSHOT.jar \
+        -DbaseUrl=http://localhost:8081 \
+        -Dspring.config.additional-location=<path/to/configfile>/kayttooikeus.yml
+
+Palvelu löytyy käynnistymisen jälkeen osoitteesta <http://localhost:8080/kayttooikeus-service>.
 
 #### Backend-palvelun käynnistäminen dev-profiililla
 Tämä ei ole kehityksessä tällä hetkellä yleisesti käytetty tapa. Tällöin kirjautuminen lokaaliin palveluun tapahtuu basic authilla koodissa määritellyillä tunnuksilla.

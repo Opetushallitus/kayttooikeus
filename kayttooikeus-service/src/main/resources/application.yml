@@ -3,16 +3,25 @@ logging.level.org:
   hibernate: info
 
 spring:
+  main:
+    banner-mode: "off"
   mandatory-file-encoding: UTF-8
   profiles.active: default
   session:
     store-type: jdbc
-    jdbc:
-      schema: classpath:org/springframework/session/jdbc/schema-postgresql.sql
-      initialize-schema: always
   jackson:
     serialization:
       write-dates-as-timestamps: true
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/kayttooikeus?ApplicationName=kayttooikeus-service
+    username: oph
+    password: oph
+    hikari:
+      maximum-pool-size: 2
+      connection-timeout: 10000
+      max-lifetime: 900000
   flyway:
     enabled: true
     table: schema_table_ko
@@ -22,6 +31,13 @@ spring:
     # If DB is not empty will not run migrations until this version
     baseline-version: 20180419161113283
   jpa:
+    hibernate:
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
+      ddl-auto: validate
+      use-new-id-generator-mappings: true
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQL95Dialect
     properties:
       # https://hibernate.atlassian.net/browse/HHH-12368
       hibernate.jdbc.lob.non_contextual_creation: true
@@ -32,3 +48,41 @@ server:
     session:
       cookie:
         name: JSESSIONID
+  port: 8080
+
+cas:
+  service: http://localhost:${server.port}/kayttooikeus-service
+  send-renew: false
+  key: kayttooikeus-service
+
+host:
+  host-virkailija: localhost:${server.port}
+  host-cas: localhost:${server.port}
+  host-shibboleth: localhost:${server.port}
+  host-varda: localhost:${server.port}
+
+service-users:
+  default:
+    username: kayttooikeus
+    password: kayttooikeus
+  viestinta:
+    username: ${service-users.default.username}
+    password: ${service-users.default.password}
+  oppijanumerorekisteri:
+    username: ${service-users.default.username}
+    password: ${service-users.default.password}
+
+common:
+  root-organization-oid: 1.2.246.562.10.00000000001
+  group-organization-id: 1.2.246.562.28
+  admin-oid: 1.2.246.562.24.00000000001
+
+kayttooikeus:
+  uses-ssl-proxy: false
+  disable-same-site-cookie: false
+  scheduling:
+    enabled: false
+
+auth:
+  crypto-service:
+    static-salt: mock

@@ -8,19 +8,7 @@
 # Aseta vähintään nämä ympäristökohtaiset arvot
 
 spring:
-  main:
-    banner-mode: "off"
-  jpa:
-    hibernate:
-      naming:
-        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
-      ddl-auto: validate
-      use-new-id-generator-mappings: true
-    show-sql: false
-    database-platform: org.hibernate.dialect.PostgreSQL95Dialect
   datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://{{postgresql_kayttooikeus_host}}:{{port_postgresql}}/{{postgresql_kayttooikeus_db | default('authentication')}}?ApplicationName=kayttooikeus-service
     username: {{postgresql_kayttooikeus_user}}
     password: {{postgresql_kayttooikeus_password}}
@@ -30,8 +18,6 @@ spring:
       max-lifetime: {{postgresql_kayttooikeus_max_lifetime | default('900000')}}
 cas:
   service: https://{{host_virkailija}}/kayttooikeus-service
-  send-renew: false
-  key: kayttooikeus-service
 
 host:
   host-virkailija: {{host_virkailija}}
@@ -48,13 +34,7 @@ service-users:
     password: {{authentication_app_password_to_oppijanumerorekisteri}}
 
 common:
-  root-organization-oid: 1.2.246.562.10.00000000001
-  group-organization-id: 1.2.246.562.28
   admin-oid: {{kayttooikeus_admin_oid}}
-  invitation-email:
-    template: kayttooikeus_kutsu
-    sender: opintopolku@oph.fi
-    from: opintopolku@oph.fi
 
 endpoints:
   heapdump:

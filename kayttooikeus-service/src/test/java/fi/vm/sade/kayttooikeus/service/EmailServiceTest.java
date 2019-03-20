@@ -6,7 +6,6 @@ import fi.vm.sade.kayttooikeus.dto.UpdateHaettuKayttooikeusryhmaDto;
 import fi.vm.sade.kayttooikeus.dto.YhteystietojenTyypit;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaRepository;
-import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaRepositoryCustom;
 import fi.vm.sade.kayttooikeus.repositories.dto.ExpiringKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
@@ -166,7 +165,7 @@ public class EmailServiceTest extends AbstractServiceTest {
         assertThat(emailData.getRecipient().get(0).getOidType()).isEqualTo("henkilo");
 
         assertThat(emailData.getEmail().getLanguageCode()).isEqualTo("sv");
-        assertThat(emailData.getEmail().getFrom()).isEqualTo(emailData.getEmail().getReplyTo()).isEqualTo("noreply@oph.fi");
+        assertThat(emailData.getEmail().getFrom()).isNull();
         assertThat(emailData.getEmail().getCallingProcess()).isEqualTo("kayttooikeus");
     }
 
@@ -208,7 +207,7 @@ public class EmailServiceTest extends AbstractServiceTest {
 
         assertThat(emailData.getEmail().getCallingProcess()).isEqualTo("kayttooikeus");
         assertThat(emailData.getEmail().getLanguageCode()).isEqualTo("fi");
-        assertThat(emailData.getEmail().getFrom()).isEqualTo(emailData.getEmail().getReplyTo()).isEqualTo("noreply@oph.fi");
+        assertThat(emailData.getEmail().getFrom()).isNull();
         assertThat(emailData.getEmail().getTemplateName()).isEqualTo("kayttooikeus_kutsu_v2");
     }
 }
