@@ -8,8 +8,10 @@ import fi.vm.sade.auditlog.kayttooikeus.KayttoOikeusOperation;
 import fi.vm.sade.kayttooikeus.dto.KayttajatiedotCreateDto;
 import fi.vm.sade.kayttooikeus.dto.KayttajatiedotUpdateDto;
 import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
+import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -61,9 +63,13 @@ public class HenkiloHelper extends AbstractAuditlogAspectHelper {
 
     void logCreateHenkilo(String temporaryToken, HenkiloCreateByKutsuDto henkiloCreateByKutsuDto, Object result) throws JsonProcessingException {
         KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .kohdeTunniste(temporaryToken)
                 .lisatieto("Henkilön luonti.")
                 .setOperaatio(KayttoOikeusOperation.CREATE_HENKILO_BY_KUTSU);
+        Optional.ofNullable(result)
+                .filter(HenkiloUpdateDto.class::isInstance)
+                .map(HenkiloUpdateDto.class::cast)
+                .map(HenkiloUpdateDto::getOidHenkilo)
+                .ifPresent(logMessage::kohdeTunniste);
         finishLogging(logMessage);
     }
 }
