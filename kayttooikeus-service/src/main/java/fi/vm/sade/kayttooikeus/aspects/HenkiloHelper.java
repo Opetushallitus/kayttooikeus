@@ -63,7 +63,6 @@ public class HenkiloHelper extends AbstractAuditlogAspectHelper {
         KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
                 .kohdeTunniste(temporaryToken)
                 .lisatieto("Henkilön luonti.")
-                .newValue(this.getObjectMapper().writeValueAsString(henkiloCreateByKutsuDto))
                 .setOperaatio(KayttoOikeusOperation.CREATE_HENKILO_BY_KUTSU);
         finishLogging(logMessage);
     }
