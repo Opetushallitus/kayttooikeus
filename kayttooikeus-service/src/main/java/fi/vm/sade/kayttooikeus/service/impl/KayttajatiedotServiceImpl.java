@@ -1,20 +1,14 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
-import fi.vm.sade.kayttooikeus.dto.Constants;
-import fi.vm.sade.kayttooikeus.dto.KayttajatiedotCreateDto;
-import fi.vm.sade.kayttooikeus.dto.KayttajatiedotReadDto;
-import fi.vm.sade.kayttooikeus.dto.KayttajatiedotUpdateDto;
+import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.service.CryptoService;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
-import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
-import fi.vm.sade.kayttooikeus.service.exception.UnauthorizedException;
-import fi.vm.sade.kayttooikeus.service.exception.UsernameAlreadyExistsException;
-import fi.vm.sade.kayttooikeus.service.exception.ValidationException;
+import fi.vm.sade.kayttooikeus.service.exception.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -147,6 +141,16 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
     }
 
     @Override
+    public void throwIfOldPassword(String oidHenkilo, String newPassword) {
+        Kayttajatiedot kayttajatiedot = this.kayttajatiedotRepository.findByHenkiloOidHenkilo(oidHenkilo)
+                .orElseThrow(() -> new ValidationException("Käyttäjätunnus on asetettava ennen salasanaa"));
+
+        if(this.cryptoService.check(newPassword, kayttajatiedot.getPassword(), kayttajatiedot.getSalt())){
+            throw new PasswordException("Salasana on jo käytössä");
+        }
+    }
+
+    @Override
     public KayttajatiedotReadDto getByUsernameAndPassword(String username, String password) {
         return kayttajatiedotRepository.findByUsername(username)
                 .filter(entity -> cryptoService.check(password, entity.getPassword(), entity.getSalt()))
@@ -166,5 +170,4 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
         kayttajatiedot.setSalt(salt);
         kayttajatiedot.setPassword(hash);
     }
-
 }

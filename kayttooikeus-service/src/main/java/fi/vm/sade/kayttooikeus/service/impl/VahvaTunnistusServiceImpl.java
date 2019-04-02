@@ -60,7 +60,10 @@ public class VahvaTunnistusServiceImpl implements VahvaTunnistusService {
 
         Optional.ofNullable(lisatiedotDto.getSalasana())
                 .filter(StringUtils::hasLength)
-                .ifPresent(salasana -> kayttajatiedotService.changePasswordAsAdmin(henkiloOid, salasana));
+                .ifPresent(salasana -> {
+                    kayttajatiedotService.throwIfOldPassword(henkiloOid,    salasana);
+                    kayttajatiedotService.changePasswordAsAdmin(henkiloOid, salasana);
+                });
 
         String authToken = identificationService.consumeLoginToken(tunnistusToken.getLoginToken(), STRONG_AUTHENTICATION_IDP);
         henkiloByLoginToken.setVahvastiTunnistettu(true);

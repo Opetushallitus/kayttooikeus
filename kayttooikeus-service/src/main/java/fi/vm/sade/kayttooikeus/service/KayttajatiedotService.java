@@ -30,5 +30,7 @@ public interface KayttajatiedotService {
 
     void throwIfUsernameIsNotValid(String username);
 
+    void throwIfOldPassword(String oidHenkilo, String password);
+
     KayttajatiedotReadDto getByUsernameAndPassword(String username, String password);
 }
