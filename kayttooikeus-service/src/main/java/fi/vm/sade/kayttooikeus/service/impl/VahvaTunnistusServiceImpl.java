@@ -102,6 +102,11 @@ public class VahvaTunnistusServiceImpl implements VahvaTunnistusService {
             return this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "palvelukayttaja");
         }
 
+        if (tunnistusToken.getHenkilo().getKayttajatiedot() == null) {
+            log.warn("Käyttäjältä {} puuttuu käyttäjätunnus, uudelleenrekisteröinti estetty", tunnistusToken.getHenkilo().getOidHenkilo());
+            return this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "eivirkailija");
+        }
+
         // tarkistetaan että virkailijalla on tämä hetu käytössä
         if (StringUtils.hasLength(henkiloByLoginToken.getHetu()) && !henkiloByLoginToken.getHetu().equals(hetu)) {
             log.error(String.format("Vahvan tunnistuksen henkilötunnus %s on eri kuin virkailijan henkilötunnus %s", hetu, henkiloByLoginToken.getHetu()));
@@ -141,6 +146,10 @@ public class VahvaTunnistusServiceImpl implements VahvaTunnistusService {
         Optional<Henkilo> henkilo = this.henkiloDataRepository.findByOidHenkilo(henkiloDto.get().getOidHenkilo());
         if (!henkilo.isPresent()) {
             log.error(String.format("Virkailijaa ei löytynyt oidilla %s", henkiloDto.get().getOidHenkilo()));
+            return this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "eivirkailija");
+        }
+        if (henkilo.get().getKayttajatiedot() == null) {
+            log.warn("Käyttäjältä {} puuttuu käyttäjätunnus, vahva tunnistautuminen estetty", henkilo.get().getOidHenkilo());
             return this.ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, "eivirkailija");
         }
         if (henkilo.get().getOrganisaatioHenkilos().size() == 0) {
