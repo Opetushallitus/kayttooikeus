@@ -78,7 +78,7 @@ public class CasRestTest {
 
     @Test
     public void tunnistusLoginToken() throws Exception {
-        databaseService.populate(tunnistusToken(henkilo("henkilo123"))
+        databaseService.populate(tunnistusToken(henkilo("henkilo123").withUsername("kayttaja123"))
                 .loginToken("loginToken123")
                 .aikaleima(LocalDateTime.now()));
         when(oppijanumerorekisteriClient.getHenkiloByOid(any())).thenReturn(HenkiloDto.builder()
