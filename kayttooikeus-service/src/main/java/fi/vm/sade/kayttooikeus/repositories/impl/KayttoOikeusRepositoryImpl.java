@@ -100,7 +100,8 @@ public class KayttoOikeusRepositoryImpl extends BaseRepositoryImpl<KayttoOikeus>
                         myonnettyKayttoOikeusRyhmaTapahtuma.id.as("myonnettyTapahtumaId"),
                         myonnettyKayttoOikeusRyhmaTapahtuma.voimassaLoppuPvm.as("voimassaLoppuPvm"),
                         myonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma.tunniste.as("ryhmaName"),
-                        myonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma.nimi.id.as("ryhmaDescriptionId")
+                        myonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma.nimi.id.as("ryhmaDescriptionId"),
+                        myonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma.id.as("kayttoOikeusRyhmaId")
                 ))
                 .where(myonnettyKayttoOikeusRyhmaTapahtuma.voimassaLoppuPvm.goe(now)
                         .and(expireConditions))

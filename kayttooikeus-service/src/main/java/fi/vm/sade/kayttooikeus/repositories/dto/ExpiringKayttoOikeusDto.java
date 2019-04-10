@@ -19,6 +19,7 @@ import static fi.vm.sade.kayttooikeus.dto.TextGroupDto.localizeLaterById;
 @AllArgsConstructor
 public class ExpiringKayttoOikeusDto implements Serializable, LocalizableDto {
     private String henkiloOid;
+    private Long kayttoOikeusRyhmaId;
     private Long myonnettyTapahtumaId;
     private LocalDate voimassaLoppuPvm;
     private String ryhmaName;

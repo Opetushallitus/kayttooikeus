@@ -76,10 +76,12 @@ public class EmailServiceTest extends AbstractServiceTest {
         given(oppijanumerorekisteriClient.getHenkiloByOid("1.2.3.4.5")).willReturn(henkiloDto);
         given(ryhmasahkopostiClient.sendRyhmasahkoposti(any(EmailData.class)))
                 .willReturn("");
+
         emailService.sendExpirationReminder("1.2.3.4.5", asList(
                 ExpiringKayttoOikeusDto.builder()
                     .henkiloOid("1.2.3.4.5")
                     .myonnettyTapahtumaId(1L)
+                    .kayttoOikeusRyhmaId(1L)
                     .ryhmaName("RYHMA")
                     .ryhmaDescription(new TextGroupDto(2L).put("FI", "Kuvaus")
                             .put("EN", "Desc"))
@@ -88,6 +90,7 @@ public class EmailServiceTest extends AbstractServiceTest {
                 ExpiringKayttoOikeusDto.builder()
                     .henkiloOid("1.2.3.4.5")
                     .myonnettyTapahtumaId(3L)
+                    .kayttoOikeusRyhmaId(3L)
                     .ryhmaName("RYHMA2")
                     .ryhmaDescription(new TextGroupDto(3L).put("FI", "Kuvaus2")
                             .put("EN", "Desc2"))
