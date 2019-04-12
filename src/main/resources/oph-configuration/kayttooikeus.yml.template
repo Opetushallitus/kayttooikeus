@@ -36,26 +36,6 @@ service-users:
 common:
   admin-oid: {{kayttooikeus_admin_oid}}
 
-endpoints:
-  heapdump:
-    enabled: false
-  env:
-    enabled: false
-  autoconfig:
-    enabled: false
-  beans:
-    enabled: false
-  flyway:
-    enabled: false
-  configprops:
-    enabled: false
-  dump:
-    enabled: false
-  liquibase:
-    enabled: false
-  shutdown:
-    enabled: false
-
 kayttooikeus:
   uses-ssl-proxy: true
   disable-same-site-cookie: {{kayttooikeus_disable_same_site_cookie | default('false')}}

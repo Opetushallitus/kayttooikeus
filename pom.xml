@@ -123,16 +123,6 @@
             </dependency>
 
             <dependency>
-                <groupId>io.rest-assured</groupId>
-                <artifactId>rest-assured</artifactId>
-                <version>${rest-assured.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.rest-assured</groupId>
-                <artifactId>json-schema-validator</artifactId>
-                <version>${rest-assured.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>net.jadler</groupId>
                 <artifactId>jadler-all</artifactId>
                 <version>${jadler.version}</version>
