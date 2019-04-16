@@ -98,20 +98,12 @@ public class CasController {
         return this.identificationService.createLoginToken(oidHenkilo, salasananVaihto, null);
     }
 
-    // Palomuurilla rajoitettu pääsy vain verkon sisältä
+    @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Hakee henkilön identiteetitiedot.",
             notes = "Hakee henkilön identieettitiedot annetun autentikointitokenin avulla ja invalidoi autentikointitokenin.")
     @RequestMapping(value = "/auth/token/{token}", method = RequestMethod.GET)
     public IdentifiedHenkiloTypeDto getIdentityByAuthToken(@PathVariable("token") String authToken) throws IOException {
         return identificationService.findByTokenAndInvalidateToken(authToken);
-    }
-
-    // Palomuurilla rajoitettu pääsy vain verkon sisältä
-    @ApiOperation(value = "Luo tai päivittää henkilön identiteetitiedot ja palauttaa kertakäyttöisen autentikointitokenin.",
-            notes = "Luo tai päivittää henkilön identiteetitiedot hetun mukaan ja palauttaa kertakäyttöisen autentikointitokenin.")
-    @RequestMapping(value = "/henkilo/{hetu}", method = RequestMethod.GET)
-    public String updateIdentificationAndGenerateTokenForHenkiloByHetu(@PathVariable("hetu") String hetu) throws IOException {
-        return identificationService.updateIdentificationAndGenerateTokenForHenkiloByHetu(hetu);
     }
 
     // Palomuurilla rajoitettu pääsy vain verkon sisältä

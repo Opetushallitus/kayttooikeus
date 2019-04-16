@@ -4,8 +4,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import fi.vm.sade.kayttooikeus.dto.AccessRightTypeDto;
-import fi.vm.sade.kayttooikeus.dto.GroupTypeDto;
 import fi.vm.sade.kayttooikeus.dto.MyonnettyKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioPalveluRooliDto;
 import fi.vm.sade.kayttooikeus.model.*;
@@ -19,11 +17,8 @@ import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.List;
 
-import static fi.vm.sade.kayttooikeus.model.QKayttoOikeus.kayttoOikeus;
-import static fi.vm.sade.kayttooikeus.model.QKayttoOikeusRyhma.kayttoOikeusRyhma;
 import static fi.vm.sade.kayttooikeus.model.QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
 import static fi.vm.sade.kayttooikeus.model.QOrganisaatioHenkilo.organisaatioHenkilo;
-import static fi.vm.sade.kayttooikeus.model.QPalvelu.palvelu;
 
 @Repository
 public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryImpl implements MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryCustom {
@@ -86,41 +81,6 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryImpl implements Myonne
                 ))
                 .where(booleanBuilder)
                 .orderBy(myonnettyKayttoOikeusRyhmaTapahtuma.id.asc()).fetch();
-    }
-
-    @Override
-    public List<AccessRightTypeDto> findValidAccessRightsByOid(String oid) {
-        BooleanBuilder criteria = getValidKayttoOikeusRyhmaCriteria(oid);
-
-        return jpa()
-                .from(myonnettyKayttoOikeusRyhmaTapahtuma)
-                .leftJoin(myonnettyKayttoOikeusRyhmaTapahtuma.organisaatioHenkilo, organisaatioHenkilo)
-                .leftJoin(myonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma, kayttoOikeusRyhma)
-                .leftJoin(kayttoOikeusRyhma.kayttoOikeus, kayttoOikeus)
-                .leftJoin(kayttoOikeus.palvelu, palvelu)
-                .select(Projections.bean(AccessRightTypeDto.class,
-                        myonnettyKayttoOikeusRyhmaTapahtuma.organisaatioHenkilo.organisaatioOid.as("organisaatioOid"),
-                        kayttoOikeus.palvelu.name.as("palvelu"),
-                        kayttoOikeus.rooli.as("rooli")))
-                .where(criteria)
-                .distinct()
-                .fetch();
-    }
-
-    @Override
-    public List<GroupTypeDto> findValidGroupsByHenkilo(String oid) {
-        BooleanBuilder criteria = getValidKayttoOikeusRyhmaCriteria(oid);
-
-        return jpa()
-                .from(myonnettyKayttoOikeusRyhmaTapahtuma)
-                .leftJoin(myonnettyKayttoOikeusRyhmaTapahtuma.organisaatioHenkilo, organisaatioHenkilo)
-                .leftJoin(myonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma, kayttoOikeusRyhma)
-                .select(Projections.bean(GroupTypeDto.class,
-                        myonnettyKayttoOikeusRyhmaTapahtuma.organisaatioHenkilo.organisaatioOid.as("organisaatioOid"),
-                        myonnettyKayttoOikeusRyhmaTapahtuma.kayttoOikeusRyhma.tunniste.as("nimi")))
-                .where(criteria)
-                .distinct()
-                .fetch();
     }
 
     @Override

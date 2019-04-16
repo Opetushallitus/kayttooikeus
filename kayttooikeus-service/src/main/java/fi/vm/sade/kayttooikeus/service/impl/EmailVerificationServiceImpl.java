@@ -19,8 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import static fi.vm.sade.kayttooikeus.model.Identification.CAS_AUTHENTICATION_IDP;
 
@@ -74,7 +72,7 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     @Override
     @Transactional(readOnly = true)
     public HenkiloDto getHenkiloByLoginToken(String loginToken) {
-        TunnistusToken tunnistusToken = tunnistusTokenDataRepository.findByLoginToken(loginToken)
+        TunnistusToken tunnistusToken = tunnistusTokenDataRepository.findByValidLoginToken(loginToken)
                 .orElseThrow(() -> new NotFoundException(String.format("Login tokenia %s ei löytynyt", loginToken)));
         String oid = tunnistusToken.getHenkilo().getOidHenkilo();
         return this.oppijanumerorekisteriClient.getHenkiloByOid(oid);

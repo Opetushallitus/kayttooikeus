@@ -5,7 +5,6 @@ import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.dto.ExpiringKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaPopulator;
-import fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloPopulator;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
@@ -21,10 +20,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.henkilo;
 import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusPopulator.oikeus;
@@ -495,61 +492,5 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
 
         ryhmas = kayttoOikeusService.findKayttoOikeusRyhmasByKayttoOikeusList(emptyMap());
         assertEquals(0, ryhmas.size());
-    }
-
-    @Test
-    @WithMockUser(username = "1.2.3.4.5")
-    public void findAuthorizationDataByOidTest() throws Exception {
-        OrganisaatioHenkiloPopulator orgHenkilo = organisaatioHenkilo(henkilo("1.2.3.4.5"), "3.4.5.6.7");
-        populate(myonnettyKayttoOikeus(orgHenkilo, kayttoOikeusRyhma("RYHMA2")
-                .withOikeus(oikeus("KOODISTO", "READ"))
-                .withOikeus(oikeus("KOODISTO", "CRUD"))));
-
-        OrganisaatioHenkilo organisaatioHenkilo = populate(myonnettyKayttoOikeus(orgHenkilo, kayttoOikeusRyhma("RYHMA3")
-                .withOikeus(oikeus("KOODISTO", "CRUD"))
-                .withOikeus(oikeus("HENKILOHALLINTA", "CRUD")))).getOrganisaatioHenkilo();
-
-        populate(myonnettyKayttoOikeus(orgHenkilo, kayttoOikeusRyhma("RYHMA4")
-                .withOikeus(oikeus("HENKILOHALLINTA", "READ2")))
-                .voimassaAlkaen(LocalDate.now().plusDays(1))
-                .voimassaPaattyen(LocalDate.now().plusDays(2)));
-
-        populate(myonnettyKayttoOikeus(orgHenkilo, kayttoOikeusRyhma("RYHMA4")
-                .withOikeus(oikeus("HENKILOHALLINTA", "READ3")))
-                .voimassaAlkaen(LocalDate.now().minusDays(2))
-                .voimassaPaattyen(LocalDate.now().minusDays(1)));
-
-        AuthorizationDataDto authData = kayttoOikeusService.findAuthorizationDataByOid("1.2.3.4.5");
-        List<AccessRightTypeDto> accessRights = authData.getAccessrights().getAccessRight();
-        assertEquals(3, accessRights.size());
-        List<AccessRightTypeDto> koodistoList = accessRights.stream()
-                .filter(dto -> dto.getPalvelu().equals("KOODISTO"))
-                .collect(Collectors.toList());
-        assertEquals(2, koodistoList.size());
-        assertTrue(koodistoList.stream().allMatch(dto -> Arrays.asList("CRUD", "READ").contains(dto.getRooli())));
-
-        List<AccessRightTypeDto> henkilohallinta = accessRights.stream()
-                .filter(dto -> dto.getPalvelu().equals("HENKILOHALLINTA"))
-                .collect(Collectors.toList());
-        assertEquals(1, henkilohallinta.size());
-        assertEquals("CRUD", henkilohallinta.get(0).getRooli());
-
-        List<GroupTypeDto> group = authData.getGroups().getGroup();
-        assertEquals(2, group.size());
-        assertTrue(group.stream().allMatch(dto -> Arrays.asList("RYHMA2", "RYHMA3").contains(dto.getNimi())));
-
-        organisaatioHenkilo.setPassivoitu(true);
-        authData = kayttoOikeusService.findAuthorizationDataByOid("1.2.3.4.5");
-        assertEquals(0, authData.getAccessrights().getAccessRight().size());
-        assertEquals(0, authData.getGroups().getGroup().size());
-
-        organisaatioHenkilo.setPassivoitu(false);
-        authData = kayttoOikeusService.findAuthorizationDataByOid("1.2.3.4.5");
-        assertEquals(3, authData.getAccessrights().getAccessRight().size());
-        assertEquals(2, authData.getGroups().getGroup().size());
-
-        authData = kayttoOikeusService.findAuthorizationDataByOid("1.1.1.madeup.1");
-        assertEquals(0, authData.getAccessrights().getAccessRight().size());
-        assertEquals(0, authData.getGroups().getGroup().size());
     }
 }

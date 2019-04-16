@@ -1,8 +1,6 @@
 package fi.vm.sade.kayttooikeus.service.it;
 
 import fi.vm.sade.kayttooikeus.controller.KutsuPopulator;
-import fi.vm.sade.kayttooikeus.dto.AccessRightTypeDto;
-import fi.vm.sade.kayttooikeus.dto.GroupTypeDto;
 import fi.vm.sade.kayttooikeus.dto.IdentifiedHenkiloTypeDto;
 import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import fi.vm.sade.kayttooikeus.model.Identification;
@@ -25,8 +23,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -34,15 +30,10 @@ import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.hen
 import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.virkailija;
 import static fi.vm.sade.kayttooikeus.repositories.populate.IdentificationPopulator.identification;
 import static fi.vm.sade.kayttooikeus.repositories.populate.KayttajatiedotPopulator.kayttajatiedot;
-import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusPopulator.oikeus;
-import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma;
-import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloKayttoOikeusPopulator.myonnettyKayttoOikeus;
-import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloPopulator.organisaatioHenkilo;
-import static fi.vm.sade.kayttooikeus.repositories.populate.PalveluPopulator.palvelu;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 
 @RunWith(SpringRunner.class)
@@ -113,69 +104,10 @@ public class IdentificationServiceTest extends AbstractServiceIntegrationTest {
         kayttajatiedot.setUsername("hakakäyttäjä");
         identification.getHenkilo().setKayttajatiedot(kayttajatiedot);
 
-        populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(virkailija("1.2.3.4.5"), "3.4.5.6.7"),
-                kayttoOikeusRyhma("RYHMA")
-                        .withOikeus(oikeus("HENKILOHALLINTA", "CRUD"))
-                        .withOikeus(oikeus(palvelu("KOODISTO"), "READ"))));
-
-        populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(virkailija("1.2.3.4.5"), "4.5.6.7.8"),
-                kayttoOikeusRyhma("RYHMA2").withOikeus(oikeus("KOODISTO", "CRUD"))));
-
-        YhteystietoDto yhteystieto = YhteystietoDto.builder()
-                .yhteystietoTyyppi(YhteystietoTyyppi.YHTEYSTIETO_SAHKOPOSTI)
-                .yhteystietoArvo("test@test.com")
-                .build();
-        YhteystiedotRyhmaDto yhteystietoRyhma = YhteystiedotRyhmaDto.builder()
-                .yhteystieto(yhteystieto)
-                .build();
-        given(oppijanumerorekisteriClient.getHenkiloByOid("1.2.3.4.5"))
-                .willReturn(HenkiloDto.builder()
-                        .etunimet("Teemu")
-                        .kutsumanimi("Teemu")
-                        .sukunimi("Testi")
-                        .hetu("11111-1111")
-                        .sukupuoli("1")
-                        .passivoitu(false)
-                        .yhteystiedotRyhma(Stream.of(yhteystietoRyhma).collect(toSet()))
-                        .build());
-
         IdentifiedHenkiloTypeDto dto = identificationService.findByTokenAndInvalidateToken("12345");
         assertEquals("1.2.3.4.5", dto.getOidHenkilo());
         assertEquals(KayttajaTyyppi.VIRKAILIJA, dto.getHenkiloTyyppi());
-        assertEquals("haka", dto.getIdpEntityId());
-        assertEquals("identifier", dto.getIdentifier());
         assertEquals("hakakäyttäjä", dto.getKayttajatiedot().getUsername());
-        assertFalse(dto.isPassivoitu());
-        assertEquals("Teemu", dto.getKutsumanimi());
-        assertEquals("Teemu", dto.getEtunimet());
-        assertEquals("Testi", dto.getSukunimi());
-        assertEquals("11111-1111", dto.getHetu());
-        assertEquals("MIES", dto.getSukupuoli());
-        assertEquals("test@test.com", dto.getEmail());
-
-        List<AccessRightTypeDto> accessRights = dto.getAuthorizationData().getAccessrights().getAccessRight();
-        assertEquals(3, accessRights.size());
-
-        List<AccessRightTypeDto> rights = accessRights.stream().filter(right -> right.getPalvelu().equals("HENKILOHALLINTA")).collect(toList());
-        assertEquals(1, rights.size());
-        assertEquals("CRUD", rights.get(0).getRooli());
-        assertEquals("3.4.5.6.7", rights.get(0).getOrganisaatioOid());
-        rights = accessRights.stream().filter(right -> right.getPalvelu().equals("KOODISTO")).collect(toList());
-        assertEquals(2, rights.size());
-        assertTrue(rights.stream().map(AccessRightTypeDto::getRooli).collect(toList()).containsAll(Arrays.asList("READ", "CRUD")));
-        assertTrue(rights.stream().map(AccessRightTypeDto::getOrganisaatioOid).collect(toList()).containsAll(Arrays.asList("3.4.5.6.7", "4.5.6.7.8")));
-
-        List<GroupTypeDto> groups = dto.getAuthorizationData().getGroups().getGroup();
-        assertEquals(2, groups.size());
-        List<GroupTypeDto> group = groups.stream().filter(groupType -> groupType.getNimi().equals("RYHMA")).collect(toList());
-        assertEquals(1, group.size());
-        assertEquals("3.4.5.6.7", group.get(0).getOrganisaatioOid());
-        group = groups.stream().filter(groupType -> groupType.getNimi().equals("RYHMA2")).collect(toList());
-        assertEquals(1, group.size());
-        assertEquals("4.5.6.7.8", group.get(0).getOrganisaatioOid());
-
     }
 
     @Test(expected = NotFoundException.class)
@@ -231,30 +163,6 @@ public class IdentificationServiceTest extends AbstractServiceIntegrationTest {
                 .containsExactly("user1");
 
         assertThat(token2).isNotEqualTo(token1);
-    }
-
-    @Test
-    public void updateIdentificationAndGenerateTokenForHenkiloByHetuTest() throws Exception {
-        populate(kayttajatiedot(henkilo("1.2.3.4.5"), "user1"));
-
-        given(oppijanumerorekisteriClient.getOidByHetu("090689-1393")).willReturn("1.2.3.4.5");
-        //create new
-        String token = identificationService.updateIdentificationAndGenerateTokenForHenkiloByHetu("090689-1393");
-        assertTrue(token.length() > 20);
-        Optional<Identification> identification = identificationRepository.findByAuthtokenIsValid(token);
-        assertTrue(identification.isPresent());
-        assertEquals("vetuma", identification.get().getIdpEntityId());
-        assertEquals("user1", identification.get().getIdentifier());
-        Long id = identification.get().getId();
-
-        //update old
-        token = identificationService.updateIdentificationAndGenerateTokenForHenkiloByHetu("090689-1393");
-        assertTrue(token.length() > 20);
-        identification = identificationRepository.findByAuthtokenIsValid(token);
-        assertTrue(identification.isPresent());
-        assertEquals("vetuma", identification.get().getIdpEntityId());
-        assertEquals("user1", identification.get().getIdentifier());
-        assertEquals(id, identification.get().getId());
     }
 
     @Test

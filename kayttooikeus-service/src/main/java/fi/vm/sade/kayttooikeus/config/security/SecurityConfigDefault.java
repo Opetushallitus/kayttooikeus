@@ -122,8 +122,6 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/buildversion.txt").permitAll()
                 .antMatchers("/actuator/*").permitAll()
-                .antMatchers("/cas/auth/token/*").permitAll()
-                .antMatchers("/cas/henkilo/*").permitAll()
                 .antMatchers("/kutsu/token/*").permitAll()
                 .antMatchers("/cas/tunnistus").permitAll()
                 .antMatchers("/cas/uudelleenrekisterointi").permitAll()

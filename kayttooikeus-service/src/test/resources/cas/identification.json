@@ -1,41 +1,7 @@
 {
-  "id": 44,
   "oidHenkilo": "1.2.3.4.5",
   "henkiloTyyppi": "VIRKAILIJA",
-  "version": 1,
-  "passivoitu": false,
-  "idpEntityId": "idpent",
-  "identifier": "identif",
-  "kutsumanimi": "Teemu",
-  "etunimet": "Teemu",
-  "sukunimi": "Testi",
-  "hetu": "11111-1111",
-  "sukupuoli": "MIES",
-  "email": "myemail@mail.com",
   "kayttajatiedot": {
     "username": "teemuuser"
-  },
-  "authorizationData": {
-    "accessrights": {
-      "accessRight": [
-        {
-          "organisaatioOid": "4.5.6.7.8",
-          "palvelu": "KOODISTO",
-          "rooli": "CRUD"
-        }
-      ]
-    },
-    "groups": {
-      "group": [
-        {
-          "organisaatioOid": "4.5.6.7.8",
-          "nimi": "Groupname"
-        }
-      ]
-    }
-  },
-  "asiointiKieli": {
-    "kieliKoodi": "fi",
-    "kieliTyyppi": "suomi"
   }
 }

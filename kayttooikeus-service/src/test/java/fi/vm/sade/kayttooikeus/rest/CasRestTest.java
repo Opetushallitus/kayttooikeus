@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -48,6 +49,7 @@ public class CasRestTest {
     }
 
     @Test
+    @WithMockUser(roles = "KAYTTOOIKEUS_TUNNISTUS")
     public void tunnistusKutsuToken() throws Exception {
         databaseService.populate(kutsu("etu", "suku", "sahkoposti@example.com")
                 .tila(KutsunTila.AVOIN)
@@ -65,6 +67,7 @@ public class CasRestTest {
     }
 
     @Test
+    @WithMockUser(roles = "KAYTTOOIKEUS_TUNNISTUS")
     public void tunnistusKutsuTokenEiLoydy() throws Exception {
         mockMvc.perform(get("/cas/tunnistus")
                 .param("kutsuToken", "kutsuToken123")
@@ -77,6 +80,7 @@ public class CasRestTest {
     }
 
     @Test
+    @WithMockUser(roles = "KAYTTOOIKEUS_TUNNISTUS")
     public void tunnistusLoginToken() throws Exception {
         databaseService.populate(tunnistusToken(henkilo("henkilo123").withUsername("kayttaja123"))
                 .loginToken("loginToken123")
@@ -97,6 +101,7 @@ public class CasRestTest {
     }
 
     @Test
+    @WithMockUser(roles = "KAYTTOOIKEUS_TUNNISTUS")
     public void tunnistusLoginTokenEiLoydy() throws Exception {
         mockMvc.perform(get("/cas/tunnistus")
                 .param("loginToken", "loginToken123")
@@ -109,6 +114,7 @@ public class CasRestTest {
     }
 
     @Test
+    @WithMockUser(roles = "KAYTTOOIKEUS_TUNNISTUS")
     public void tunnistusLoginTokenOppijanumerorekisteriEiToimi() throws Exception {
         databaseService.populate(tunnistusToken(henkilo("henkilo123"))
                 .loginToken("loginToken123")
@@ -126,6 +132,7 @@ public class CasRestTest {
     }
 
     @Test
+    @WithMockUser(roles = "KAYTTOOIKEUS_TUNNISTUS")
     public void tunnistusVahvaTunnistautuminen() throws Exception {
         databaseService.populate(organisaatioHenkilo(henkilo("henkilo123")
                 .withUsername("kayttaja123"), "organisaatio123"));
@@ -143,6 +150,7 @@ public class CasRestTest {
     }
 
     @Test
+    @WithMockUser(roles = "KAYTTOOIKEUS_TUNNISTUS")
     public void tunnistusVahvaTunnistautuminenHetuEiLoydy() throws Exception {
         when(oppijanumerorekisteriClient.getHenkiloByHetu(any())).thenReturn(Optional.empty());
 

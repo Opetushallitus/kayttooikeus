@@ -350,16 +350,6 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public AuthorizationDataDto findAuthorizationDataByOid(String oid) {
-        AccessRightListTypeDto accessRights = new AccessRightListTypeDto(myonnettyKayttoOikeusRyhmaTapahtumaRepository
-                .findValidAccessRightsByOid(oid));
-        GroupListTypeDto groups = new GroupListTypeDto(myonnettyKayttoOikeusRyhmaTapahtumaRepository
-                .findValidGroupsByHenkilo(oid));
-        return new AuthorizationDataDto(accessRights, groups);
-    }
-
-    @Override
     @Transactional
     public void aktivoiKayttooikeusryhma(Long id) {
         KayttoOikeusRyhma kayttoOikeusRyhma = kayttoOikeusRyhmaRepository.findById(id).orElseThrow(()

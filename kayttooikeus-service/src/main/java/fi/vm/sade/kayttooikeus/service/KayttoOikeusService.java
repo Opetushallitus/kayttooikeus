@@ -65,8 +65,6 @@ public interface KayttoOikeusService {
 
     List<KayttoOikeusRyhmaDto> findKayttoOikeusRyhmasByKayttoOikeusList(Map<String, String> kayttoOikeusList);
 
-    AuthorizationDataDto findAuthorizationDataByOid(String oid);
-
     /**
      * Aktivoi passiivisen käyttöoikeusryhmän
      * @param id Passiivisen käyttöoikeusryhmän ID

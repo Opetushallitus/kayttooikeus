@@ -1,7 +1,8 @@
 package fi.vm.sade.kayttooikeus.repositories;
 
 import com.google.common.collect.Sets;
-import fi.vm.sade.kayttooikeus.dto.*;
+import fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila;
+import fi.vm.sade.kayttooikeus.dto.MyonnettyKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KayttooikeusCriteria;
 import org.junit.Test;
@@ -18,7 +19,8 @@ import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaPop
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloKayttoOikeusPopulator.myonnettyKayttoOikeus;
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloPopulator.organisaatioHenkilo;
 import static fi.vm.sade.kayttooikeus.repositories.populate.TextGroupPopulator.text;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.*;
+import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
+import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.ROLE_CRUD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -108,82 +110,6 @@ public class MyonnettyKayttoOikeusRyhmaTapahtumaRepositoryTest extends AbstractR
 
         list = myonnettyKayttoOikeusRyhmaTapahtumaRepository.findByHenkiloInOrganisaatio("1.2.3.4.5", "3.4.5.6.7");
         assertEquals(1, list.size());
-    }
-
-    @Test
-    public void findValidAccessRightsByOidTest() throws Exception {
-        populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(henkilo("1.2.3.4.5"), "3.4.5.6.7"),
-                kayttoOikeusRyhma("RYHMA")
-                        .withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_CRUD))
-                        .withOikeus(oikeus("KOODISTO", "READ")))
-                .voimassaPaattyen(LocalDate.now().plusMonths(2)));
-
-        populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(henkilo("1.2.3.4.5"), "4.5.6.7.8"),
-                kayttoOikeusRyhma("RYHMA2")
-                        .withOikeus(oikeus("KOODISTO", "WRITE")))
-                .voimassaPaattyen(LocalDate.now().plusMonths(3)));
-
-        //should not find these
-        populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(henkilo("1.2.3.4.5"), "4.5.6.7.10").passivoitu(),
-                kayttoOikeusRyhma("PASSIVOITU").withOikeus(oikeus("KOODISTO", "WRITE")))
-                .voimassaPaattyen(LocalDate.now().plusMonths(3)));
-        populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(henkilo("1.2.3.4.5"), "4.5.6.7.11"),
-                kayttoOikeusRyhma("EIVOIMASSA").withOikeus(oikeus("KOODISTO", "WRITE")))
-                .voimassaPaattyen(LocalDate.now().minusDays(3)));
-        populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(henkilo("1.2.3.4.5"), "4.5.6.7.12"),
-                kayttoOikeusRyhma("EIVOIMASSA2").withOikeus(oikeus("KOODISTO", "WRITE")))
-                .voimassaAlkaen(LocalDate.now().plusDays(3)));
-
-        assertEquals(0, myonnettyKayttoOikeusRyhmaTapahtumaRepository.findValidAccessRightsByOid("1.2.madeup.4").size());
-        List<AccessRightTypeDto> list = myonnettyKayttoOikeusRyhmaTapahtumaRepository.findValidAccessRightsByOid("1.2.3.4.5");
-        assertEquals(3, list.size());
-        assertThat(list).extracting(AccessRightTypeDto::getPalvelu).containsExactlyInAnyOrder(PALVELU_KAYTTOOIKEUS, "KOODISTO", "KOODISTO");
-        assertThat(list).extracting(AccessRightTypeDto::getRooli).containsExactlyInAnyOrder(ROLE_CRUD, "READ", "WRITE");
-        assertThat(list).extracting(AccessRightTypeDto::getOrganisaatioOid).containsExactlyInAnyOrder("3.4.5.6.7", "3.4.5.6.7", "4.5.6.7.8");
-    }
-
-    @Test
-    public void findValidGroupsByHenkiloTest() throws Exception {
-        populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(henkilo("1.2.3.4.5"), "3.4.5.6.7"),
-                kayttoOikeusRyhma("RYHMA")
-                        .withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_CRUD))
-                        .withOikeus(oikeus("KOODISTO", "READ")))
-                .voimassaPaattyen(LocalDate.now().plusMonths(2)));
-
-        populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(henkilo("1.2.3.4.5"), "4.5.6.7.8"),
-                kayttoOikeusRyhma("RYHMA2")
-                        .withOikeus(oikeus("KOODISTO", "WRITE")))
-                .voimassaPaattyen(LocalDate.now().plusMonths(3)));
-
-        //should not find these
-        populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(henkilo("1.2.3.4.5"), "4.5.6.7.10").passivoitu(),
-                kayttoOikeusRyhma("PASSIVOITU").withOikeus(oikeus("KOODISTO", "WRITE")))
-                .voimassaPaattyen(LocalDate.now().plusMonths(3)));
-        populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(henkilo("1.2.3.4.5"), "4.5.6.7.11"),
-                kayttoOikeusRyhma("EIVOIMASSA").withOikeus(oikeus("KOODISTO", "WRITE")))
-                .voimassaPaattyen(LocalDate.now().minusDays(3)));
-        populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(henkilo("1.2.3.4.5"), "4.5.6.7.12"),
-                kayttoOikeusRyhma("EIVOIMASSA2").withOikeus(oikeus("KOODISTO", "WRITE")))
-                .voimassaAlkaen(LocalDate.now().plusDays(3)));
-        populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo(henkilo("1.2.3.4.6"), "4.5.6.7.9"),
-                kayttoOikeusRyhma("PASSIVOITU").withOikeus(oikeus("KOODISTO", "WRITE")))
-                .voimassaPaattyen(LocalDate.now().plusMonths(3)));
-
-        List<GroupTypeDto> list = this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.findValidGroupsByHenkilo("1.2.3.4.5");
-        assertEquals(2, list.size());
-        assertThat(list).extracting(GroupTypeDto::getNimi).containsExactlyInAnyOrder("RYHMA", "RYHMA2");
-        assertThat(list).extracting(GroupTypeDto::getOrganisaatioOid).containsExactlyInAnyOrder("3.4.5.6.7", "4.5.6.7.8");
     }
 
     @Test

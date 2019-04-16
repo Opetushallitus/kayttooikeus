@@ -1,9 +1,7 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
-import fi.vm.sade.kayttooikeus.dto.AsiointikieliDto;
 import fi.vm.sade.kayttooikeus.dto.IdentifiedHenkiloTypeDto;
-import fi.vm.sade.kayttooikeus.dto.YhteystietojenTyypit;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
 import fi.vm.sade.kayttooikeus.repositories.IdentificationRepository;
@@ -16,11 +14,7 @@ import fi.vm.sade.kayttooikeus.service.exception.LoginTokenNotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.ValidationException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
-import fi.vm.sade.kayttooikeus.util.YhteystietoUtil;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoTyyppi;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,30 +81,7 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
                 .orElseThrow(() -> new NotFoundException("identification not found or token is invalid"));
         identification.setAuthtoken(null);
 
-        HenkiloDto perustiedot = oppijanumerorekisteriClient.getHenkiloByOid(identification.getHenkilo().getOidHenkilo());
-        IdentifiedHenkiloTypeDto dto = mapper.map(identification, IdentifiedHenkiloTypeDto.class);
-        dto.setHenkiloTyyppi(identification.getHenkilo().getKayttajaTyyppi());
-        dto.setPassivoitu(perustiedot.isPassivoitu());
-        dto.setAuthorizationData(kayttoOikeusService.findAuthorizationDataByOid(dto.getOidHenkilo()));
-
-        dto.setEtunimet(perustiedot.getEtunimet());
-        dto.setKutsumanimi(perustiedot.getKutsumanimi());
-        dto.setSukunimi(perustiedot.getSukunimi());
-        dto.setHetu(perustiedot.getHetu());
-        if (!StringUtils.isEmpty(perustiedot.getSukupuoli())) {
-            dto.setSukupuoli(perustiedot.getSukupuoli().equals("1") ? "MIES" : "NAINEN");
-        }
-        if (perustiedot.getAsiointiKieli() != null) {
-            dto.setAsiointiKieli(new AsiointikieliDto(perustiedot.getAsiointiKieli().getKieliKoodi(), perustiedot.getAsiointiKieli().getKieliTyyppi()));
-        }
-
-        YhteystietoUtil.getYhteystietoArvo(perustiedot.getYhteystiedotRyhma(),
-                YhteystietoTyyppi.YHTEYSTIETO_SAHKOPOSTI,
-                YhteystietojenTyypit.PRIORITY_ORDER).ifPresent(email -> {
-                    dto.setEmail(email);
-                    identification.setEmail(email);
-                });
-        return dto;
+        return mapper.map(identification, IdentifiedHenkiloTypeDto.class);
     }
 
     @Override
@@ -119,12 +90,6 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
         Henkilo henkilo = this.henkiloDataRepository.findByOidHenkilo(oidHenkilo)
                 .orElseThrow(() -> new NotFoundException("Henkilo not found with oid " + oidHenkilo));
         return generateAuthTokenForHenkilo(henkilo, STRONG_AUTHENTICATION_IDP, henkilo.getKayttajatiedot().getUsername());
-    }
-
-    @Override
-    @Transactional
-    public String updateIdentificationAndGenerateTokenForHenkiloByHetu(String hetu) {
-        return this.updateIdentificationAndGenerateTokenForHenkiloByOid(this.oppijanumerorekisteriClient.getOidByHetu(hetu));
     }
 
     @Override
