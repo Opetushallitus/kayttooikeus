@@ -363,6 +363,40 @@ public class PermissionCheckerTest {
     }
 
     @Test
+    @WithMockUser(value = "user", authorities = {
+            "ROLE_APP_KAYTTOOIKEUS_READ",
+            "ROLE_APP_KAYTTOOIKEUS_READ_" + ORG1,
+            "ROLE_APP_KAYTTOOIKEUS_CRUD",
+            "ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG2,
+    })
+    public void testThatExternalPermissionServiceHasCorrectOrganisaatioOids() throws IOException {
+        Henkilo henkilo = new Henkilo();
+        henkilo.setOrganisaatioHenkilos(Stream.of(ORG1, ORG2).map(oid -> OrganisaatioHenkilo.builder().organisaatioOid(oid).build()).collect(Collectors.toSet()));
+        when(henkiloDataRepositoryMock.findByOidHenkilo(eq("user"))).thenReturn(Optional.of(henkilo));
+
+        doAnswer(invocation -> singleton(invocation.getArgument(0))).when(this.organisaatioClient).listWithChildOids(any(), any());
+        doAnswer(invocation -> singletonList(invocation.getArgument(0))).when(this.organisaatioClient).getActiveParentOids(any());
+
+        when(externalPermissionClient.getPermission(any(), any())).thenReturn(PermissionCheckResponseDto.allowed());
+        when(henkiloDataRepositoryMock.findByOidHenkilo(eq("person"))).thenReturn(Optional.empty());
+
+        boolean allowedToAccessPerson = permissionChecker.isAllowedToAccessPerson("person", singletonMap(PALVELU_KAYTTOOIKEUS, singletonList("CRUD")), ExternalPermissionService.KOSKI);
+
+        assertThat(allowedToAccessPerson).isTrue();
+        ArgumentCaptor<PermissionCheckRequestDto> permissionCheckRequestDtoArgumentCaptor = ArgumentCaptor.forClass(PermissionCheckRequestDto.class);
+        verify(externalPermissionClient).getPermission(any(), permissionCheckRequestDtoArgumentCaptor.capture());
+        PermissionCheckRequestDto permissionCheckRequestDto = permissionCheckRequestDtoArgumentCaptor.getValue();
+        assertThat(permissionCheckRequestDto)
+                .returns(singletonList(ORG2), PermissionCheckRequestDto::getOrganisationOids)
+                .returns(Stream.of(
+                        "ROLE_APP_KAYTTOOIKEUS_READ",
+                        "ROLE_APP_KAYTTOOIKEUS_READ_" + ORG1,
+                        "ROLE_APP_KAYTTOOIKEUS_CRUD",
+                        "ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG2)
+                        .collect(Collectors.toSet()), PermissionCheckRequestDto::getLoggedInUserRoles);
+    }
+
+    @Test
     @WithMockUser(value = "callingPerson", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD","ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG1,
             "ROLE_APP_KAYTTOOIKEUS_CRUD_" + ORG2,})
     public void testThatHasRoleForOrganizationReturnsFalseWhenUserNotAssociatedWithOrg() {

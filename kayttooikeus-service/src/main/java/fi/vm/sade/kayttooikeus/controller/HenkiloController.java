@@ -89,15 +89,6 @@ public class HenkiloController {
         return organisaatioHenkiloService.findOrganisaatioHenkiloByHenkiloAndOrganisaatio(henkiloOid, organisaatioOid);
     }
 
-    @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPerson(#henkiloOid, {'KAYTTOOIKEUS': {'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
-    @ApiOperation(value = "Luo henkilön käyttäjätiedot.",
-            notes = "Luo henkilön käyttäjätiedot.")
-    @RequestMapping(value = "/{oid}/kayttajatiedot", method = RequestMethod.POST)
-    public KayttajatiedotReadDto createKayttajatiedot(@PathVariable("oid") String henkiloOid,
-                                                      @RequestBody @Validated KayttajatiedotCreateDto kayttajatiedot) {
-        return kayttajatiedotService.create(henkiloOid, kayttajatiedot);
-    }
-
     @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#henkiloOid, {'KAYTTOOIKEUS': {'READ', 'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
     @ApiOperation(value = "Hakee henkilön käyttäjätiedot.",
             notes = "Hakee henkilön käyttäjätiedot.")
@@ -107,8 +98,7 @@ public class HenkiloController {
     }
 
     @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPerson(#henkiloOid, {'KAYTTOOIKEUS': {'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
-    @ApiOperation(value = "Päivittää henkilön käyttäjätiedot.", notes = "Päivittää henkilön käyttäjätiedot. Virkailija voi itse vaihtaa käyttäjätietojaan, "
-    + "rekisterinpitäjä ei.")
+    @ApiOperation(value = "Päivittää henkilön käyttäjätiedot.")
     @RequestMapping(value = "/{oid}/kayttajatiedot", method = RequestMethod.PUT)
     public KayttajatiedotReadDto updateKayttajatiedot(@PathVariable("oid") String henkiloOid,
                                                         @RequestBody @Validated KayttajatiedotUpdateDto kayttajatiedot) {

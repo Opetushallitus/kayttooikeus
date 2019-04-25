@@ -91,21 +91,23 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
     @Override
     @Transactional
     public KayttajatiedotReadDto updateKayttajatiedot(String henkiloOid, KayttajatiedotUpdateDto kayttajatiedotUpdateDto) {
-        kayttajatiedotRepository.findByUsername(kayttajatiedotUpdateDto.getUsername()).ifPresent(kayttajatiedot -> {
-            if(!kayttajatiedot.getHenkilo().getOidHenkilo().equals(henkiloOid)) {
-                throw new IllegalArgumentException("Käyttäjänimi on jo käytössä");
-            }
-        });
-
-        KayttajatiedotReadDto kayttajatiedotReadDto = henkiloDataRepository.findByOidHenkilo(henkiloOid)
+        return henkiloDataRepository.findByOidHenkilo(henkiloOid)
                 .map(henkilo -> updateKayttajatiedot(henkilo, kayttajatiedotUpdateDto))
-                .orElseGet(() -> updateKayttajatiedot(new Henkilo(henkiloOid), kayttajatiedotUpdateDto));
-        return kayttajatiedotReadDto;
+                .orElseThrow(() -> new NotFoundException(String.format("Käyttäjää ei löytynyt OID:lla %s", henkiloOid)));
     }
 
     private KayttajatiedotReadDto updateKayttajatiedot(Henkilo henkilo, KayttajatiedotUpdateDto kayttajatiedotUpdateDto) {
-        Kayttajatiedot kayttajatiedot = Optional.ofNullable(henkilo.getKayttajatiedot())
-                .orElseGet(Kayttajatiedot::new);
+        kayttajatiedotRepository.findByUsername(kayttajatiedotUpdateDto.getUsername()).ifPresent(kayttajatiedot -> {
+            if(!kayttajatiedot.getHenkilo().equals(henkilo)) {
+                throw new IllegalArgumentException("Käyttäjänimi on jo käytössä");
+            }
+        });
+        Kayttajatiedot kayttajatiedot = Optional.ofNullable(henkilo.getKayttajatiedot()).orElseGet(() -> {
+            if (!KayttajaTyyppi.PALVELU.equals(henkilo.getKayttajaTyyppi())) {
+                throw new ValidationException("Vain palvelukäyttäjälle voi lisätä käyttäjätunnuksen");
+            }
+            return new Kayttajatiedot();
+        });
         mapper.map(kayttajatiedotUpdateDto, kayttajatiedot);
         return saveKayttajatiedot(henkilo, kayttajatiedot);
     }

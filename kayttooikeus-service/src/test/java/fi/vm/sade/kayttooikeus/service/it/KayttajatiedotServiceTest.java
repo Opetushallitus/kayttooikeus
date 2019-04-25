@@ -1,5 +1,6 @@
 package fi.vm.sade.kayttooikeus.service.it;
 
+import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import fi.vm.sade.kayttooikeus.dto.KayttajatiedotCreateDto;
 import fi.vm.sade.kayttooikeus.dto.KayttajatiedotReadDto;
 import fi.vm.sade.kayttooikeus.dto.KayttajatiedotUpdateDto;
@@ -7,7 +8,9 @@ import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
+import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.UnauthorizedException;
+import fi.vm.sade.kayttooikeus.service.exception.ValidationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +21,7 @@ import java.util.Optional;
 
 import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.henkilo;
 import static fi.vm.sade.kayttooikeus.repositories.populate.KayttajatiedotPopulator.kayttajatiedot;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
@@ -88,8 +89,32 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
-    public void updateShouldCreateHenkiloIfMissing() {
+    public void updateShouldThrowIfHenkiloMissing() {
         String oid = "1.2.3.4.5";
+        KayttajatiedotUpdateDto updateDto = new KayttajatiedotUpdateDto();
+        updateDto.setUsername("user1");
+
+        Throwable throwable = catchThrowable(() -> kayttajatiedotService.updateKayttajatiedot(oid, updateDto));
+
+        assertThat(throwable).isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    public void updateShouldThrowIfVirkailijaWithoutUsername() {
+        String oid = "1.2.3.4.5";
+        populate(henkilo(oid).withTyyppi(KayttajaTyyppi.VIRKAILIJA));
+        KayttajatiedotUpdateDto updateDto = new KayttajatiedotUpdateDto();
+        updateDto.setUsername("user1");
+
+        Throwable throwable = catchThrowable(() -> kayttajatiedotService.updateKayttajatiedot(oid, updateDto));
+
+        assertThat(throwable).isInstanceOf(ValidationException.class);
+    }
+
+    @Test
+    public void updateShouldReturnIfPalveluWithoutUsername() {
+        String oid = "1.2.3.4.5";
+        populate(kayttajatiedot(henkilo(oid).withTyyppi(KayttajaTyyppi.PALVELU), "user1"));
         KayttajatiedotUpdateDto updateDto = new KayttajatiedotUpdateDto();
         updateDto.setUsername("user1");
 

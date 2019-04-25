@@ -1,14 +1,16 @@
 package fi.vm.sade.kayttooikeus.controller;
 
-import fi.vm.sade.kayttooikeus.dto.*;
+import fi.vm.sade.kayttooikeus.dto.HenkiloReadDto;
+import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloTyyppi;
+import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto.OrganisaatioDto;
+import fi.vm.sade.kayttooikeus.dto.TextGroupMapDto;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioHenkiloService;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -17,12 +19,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.LocalDate;
 
 import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -46,27 +47,6 @@ public class HenkiloControllerTest extends AbstractControllerTest {
         this.mvc.perform(get("/henkilo/kayttajatunnus=user1").accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isOk()).andExpect(content().json("{\"oid\":\"oid1\"}"));
         verify(this.henkiloService).getByKayttajatunnus(eq("user1"));
-    }
-
-    @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
-    public void postHenkiloKayttajatiedotShouldReturnOk() throws Exception {
-        mvc.perform(post("/henkilo/{henkiloOid}/kayttajatiedot", "1.2.3.4.5")
-                .content("{\"username\": \"user1\"}").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-        ArgumentCaptor<KayttajatiedotCreateDto> captor = ArgumentCaptor.forClass(KayttajatiedotCreateDto.class);
-        verify(kayttajatiedotService).create(eq("1.2.3.4.5"), captor.capture());
-        KayttajatiedotCreateDto kayttajatiedot = captor.getValue();
-        assertThat(kayttajatiedot.getUsername()).isEqualTo("user1");
-    }
-
-    @Test
-    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
-    public void postHenkiloKayttajatiedotShouldReturnValidationError() throws Exception {
-        mvc.perform(post("/henkilo/{henkiloOid}/kayttajatiedot", "1.2.3.4.5")
-                .content("{\"username\": \"user.1\"}").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().string(containsString("must match")));
-        verifyZeroInteractions(kayttajatiedotService);
     }
 
     @Test
