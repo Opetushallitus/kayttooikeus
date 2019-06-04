@@ -15,12 +15,13 @@ import java.util.Set;
 public class KutsuReadDto {
     private Long id;
     private KutsunTila tila;
+    private String kutsujaOid;
     private String etunimi;
     private String sukunimi;
     private String sahkoposti;
     private LocalDateTime aikaleima;
     private Asiointikieli asiointikieli;
-    private Set<KutsuOrganisaatioDto> organisaatiot = new HashSet<>();
+    private Set<KutsuOrganisaatioReadDto> organisaatiot = new HashSet<>();
     private Boolean hakaIdentifier;
     private String saate;
 
@@ -28,11 +29,11 @@ public class KutsuReadDto {
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class KutsuOrganisaatioDto extends LocalizableOrganisaatio {
-        private Set<KayttoOikeusRyhmaDto> kayttoOikeusRyhmat;
+    public static class KutsuOrganisaatioReadDto extends LocalizableOrganisaatio {
+        private Set<KutsuKayttoOikeusRyhmaReadDto> kayttoOikeusRyhmat;
         private LocalDate voimassaLoppuPvm;
 
-        public KutsuOrganisaatioDto(TextGroupMapDto nimi, String organisaatioOid, Set<KayttoOikeusRyhmaDto> kayttoOikeusRyhmat) {
+        public KutsuOrganisaatioReadDto(TextGroupMapDto nimi, String organisaatioOid, Set<KutsuKayttoOikeusRyhmaReadDto> kayttoOikeusRyhmat) {
             this.nimi = nimi;
             this.organisaatioOid = organisaatioOid;
             this.kayttoOikeusRyhmat = kayttoOikeusRyhmat;
@@ -41,7 +42,7 @@ public class KutsuReadDto {
 
     @Getter
     @Setter
-    public static class KayttoOikeusRyhmaDto {
+    public static class KutsuKayttoOikeusRyhmaReadDto {
         private Long id;
         private TextGroupMapDto nimi;
 

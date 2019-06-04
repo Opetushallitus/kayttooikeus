@@ -1,5 +1,6 @@
 package fi.vm.sade.kayttooikeus.controller;
 
+import fi.vm.sade.kayttooikeus.service.KayttajarooliProvider;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
 import fi.vm.sade.kayttooikeus.service.exception.UnauthorizedException;
 import org.junit.Test;
@@ -21,6 +22,8 @@ public class UserDetailsControllerTest extends AbstractControllerTest {
 
     @MockBean
     private UserDetailsService userDetailsService;
+    @MockBean
+    private KayttajarooliProvider kayttajaRooliProvider;
     @MockBean
     private KayttajatiedotService kayttajatiedotService;
 

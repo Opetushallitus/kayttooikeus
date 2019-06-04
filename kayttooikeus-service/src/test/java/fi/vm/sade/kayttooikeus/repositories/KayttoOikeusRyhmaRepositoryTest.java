@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.henkilo;
 import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusPopulator.oikeus;
 import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma;
-import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaPopulator.viite;
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloKayttoOikeusPopulator.myonnettyKayttoOikeus;
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloPopulator.organisaatioHenkilo;
 import static fi.vm.sade.kayttooikeus.repositories.populate.TextGroupPopulator.text;
@@ -115,7 +114,7 @@ public class KayttoOikeusRyhmaRepositoryTest extends AbstractRepositoryTest {
     public void findByIdTest(){
         Long id = populate(kayttoOikeusRyhma("RYHMÄ")
                 .withNimi(text("FI", "Kuvaus"))
-                .withViite(viite(kayttoOikeusRyhma("RYHMA1"), "TYYPPI"))
+                .withOrganisaatiorajoite("TYYPPI")
                 .withOikeus(oikeus("APP1", "READ"))
                 .withOikeus(oikeus("APP2", "WRITE"))).getId();
 
@@ -129,7 +128,7 @@ public class KayttoOikeusRyhmaRepositoryTest extends AbstractRepositoryTest {
         KayttoOikeusRyhma koRyhma = ryhma.get();
         assertEquals("RYHMÄ", koRyhma.getTunniste());
         assertEquals(1, koRyhma.getOrganisaatioViite().size());
-        assertEquals("RYHMA1", koRyhma.getOrganisaatioViite().iterator().next().getKayttoOikeusRyhma().getTunniste());
+        assertEquals("RYHMÄ", koRyhma.getOrganisaatioViite().iterator().next().getKayttoOikeusRyhma().getTunniste());
         assertEquals("Kuvaus", koRyhma.getNimi().getTexts().stream().filter(text -> text.getLang().equals("FI")).findFirst().get().getText());
         assertEquals(2, koRyhma.getKayttoOikeus().size());
 

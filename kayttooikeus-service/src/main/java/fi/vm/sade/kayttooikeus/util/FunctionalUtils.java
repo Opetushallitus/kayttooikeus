@@ -3,13 +3,9 @@ package fi.vm.sade.kayttooikeus.util;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 import static java.util.Optional.ofNullable;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
-import java.util.function.Consumer;
 
 public class FunctionalUtils {
     private FunctionalUtils() {
@@ -20,6 +16,10 @@ public class FunctionalUtils {
             t.addAll(u);
             return t;
         };
+    }
+
+    public static <T> Predicate<T> not(Predicate<T> predicate) {
+        return predicate.negate();
     }
 
     public static <T> void ifPresentOrElse(Optional<T> optional, Consumer<T> consumer, Runnable runnable) {

@@ -3,6 +3,7 @@ package fi.vm.sade.kayttooikeus.config.security;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioPalveluRooliDto;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaRepository;
+import fi.vm.sade.kayttooikeus.service.KayttajarooliProvider;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ import static java.util.stream.Collectors.toSet;
  */
 @Component
 @RequiredArgsConstructor
-public class UserDetailsServiceImpl implements UserDetailsService {
+public class UserDetailsServiceImpl implements UserDetailsService, KayttajarooliProvider {
 
     private final KayttajatiedotRepository kayttajatiedotRepository;
     private final MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
@@ -35,13 +36,20 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         String oid = kayttajatiedotRepository.findOidByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format("Käyttäjää ei löytynyt käyttäjätunnuksella %s", username)));
-        Set<SimpleGrantedAuthority> roolit = myonnettyKayttoOikeusRyhmaTapahtumaRepository.findOrganisaatioPalveluRooliByOid(oid)
+        Set<GrantedAuthority> roolit = streamRooliByKayttajaOid(oid).map(SimpleGrantedAuthority::new).collect(toSet());
+        return new UserDetailsImpl(oid, roolit);
+    }
+
+    @Override
+    public Set<String> getByKayttajaOid(String kayttajaOid) {
+        return streamRooliByKayttajaOid(kayttajaOid).collect(toSet());
+    }
+
+    private Stream<String> streamRooliByKayttajaOid(String kayttajaOid) {
+        return myonnettyKayttoOikeusRyhmaTapahtumaRepository.findOrganisaatioPalveluRooliByOid(kayttajaOid)
                 .stream()
                 .flatMap(UserDetailsServiceImpl::getRoolit)
-                .map(String::toUpperCase)
-                .map(SimpleGrantedAuthority::new)
-                .collect(toSet());
-        return new UserDetailsImpl(oid, roolit);
+                .map(String::toUpperCase);
     }
 
     private static Stream<String> getRoolit(OrganisaatioPalveluRooliDto dto) {

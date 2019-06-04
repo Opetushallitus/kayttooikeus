@@ -37,7 +37,7 @@ public class KutsuControllerTest extends AbstractControllerTest {
                         .id(1L).aikaleima(LocalDateTime.of(2016,1,1, 0, 0, 0, 0))
                         .sahkoposti("posti@example.com")
                         .organisaatiot(Sets.newHashSet(
-                                new KutsuReadDto.KutsuOrganisaatioDto(new TextGroupMapDto(3L).put("FI", "Oikeus"), "OID", null)
+                                new KutsuReadDto.KutsuOrganisaatioReadDto(new TextGroupMapDto(3L).put("FI", "Oikeus"), "OID", null)
                         ))
                         .build()));
         this.mvc.perform(get("/kutsu").accept(MediaType.APPLICATION_JSON_UTF8))

@@ -16,6 +16,9 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class KutsuCreateDto {
+
+    private String kutsujaOid;
+
     @NotEmpty
     private String etunimi;
     @NotEmpty
@@ -30,23 +33,23 @@ public class KutsuCreateDto {
 
     @Valid
     @NotNull
-    private Set<KutsuOrganisaatioDto> organisaatiot;
+    private Set<KutsuOrganisaatioCreateDto> organisaatiot;
 
     @Getter
     @Setter
-    public static class KutsuOrganisaatioDto {
+    public static class KutsuOrganisaatioCreateDto {
         @NotNull
         private String organisaatioOid;
         @Valid
         @NotNull
-        private Set<KayttoOikeusRyhmaDto> kayttoOikeusRyhmat;
+        private Set<KutsuKayttoOikeusRyhmaCreateDto> kayttoOikeusRyhmat;
         @FutureOrPresent
         private LocalDate voimassaLoppuPvm;
     }
 
     @Getter
     @Setter
-    public static class KayttoOikeusRyhmaDto {
+    public static class KutsuKayttoOikeusRyhmaCreateDto {
         @NotNull
         private Long id;
     }

@@ -84,4 +84,8 @@ public class Henkilo implements Identifiable {
         this.organisaatioHenkilos.add(organisaatioHenkilo);
         return organisaatioHenkilo;
     }
+
+    public boolean isVirkailija() {
+        return KayttajaTyyppi.VIRKAILIJA.equals(kayttajaTyyppi);
+    }
 }

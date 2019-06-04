@@ -13,7 +13,7 @@ import java.util.List;
 public class KayttoOikeusRyhmaPopulator implements Populator<KayttoOikeusRyhma> {
     private final String tunniste;
     private boolean passivoitu;
-    private final List<Populator<OrganisaatioViite>> viitteet = new ArrayList<>();
+    private final List<String> organisaatiorajoitteet = new ArrayList<>();
     private final List<Populator<KayttoOikeus>> oikeus = new ArrayList<>();
     private Populator<TextGroup> kuvaus = Populator.constant(new TextGroup());
     private String rooliRajoite;
@@ -43,9 +43,9 @@ public class KayttoOikeusRyhmaPopulator implements Populator<KayttoOikeusRyhma> 
         this.kuvaus = nimi;
         return this;
     }
-    
-    public KayttoOikeusRyhmaPopulator withViite(Populator<OrganisaatioViite> viite) {
-        this.viitteet.add(viite);
+
+    public KayttoOikeusRyhmaPopulator withOrganisaatiorajoite(String rajoite) {
+        this.organisaatiorajoitteet.add(rajoite);
         return this;
     }
 
@@ -62,18 +62,6 @@ public class KayttoOikeusRyhmaPopulator implements Populator<KayttoOikeusRyhma> 
     public KayttoOikeusRyhmaPopulator asPassivoitu() {
         this.passivoitu = true;
         return this;
-    }
-
-    public static Populator<OrganisaatioViite> viite(Populator<KayttoOikeusRyhma> ryhma, String organisaatioTyyppi) {
-        return em -> {
-            KayttoOikeusRyhma kayttoOikeusRyhma = ryhma.apply(em);
-            OrganisaatioViite viite = new OrganisaatioViite();
-            viite.setKayttoOikeusRyhma(kayttoOikeusRyhma);
-            viite.setOrganisaatioTyyppi(organisaatioTyyppi);
-            kayttoOikeusRyhma.addOrganisaatioViite(viite);
-            em.persist(viite);
-            return viite;
-        };
     }
 
     @Override
@@ -99,7 +87,11 @@ public class KayttoOikeusRyhmaPopulator implements Populator<KayttoOikeusRyhma> 
             ryhma.addKayttooikeus(kayttoOikeus);
             kayttoOikeus.addKayttooikeusRyhma(ryhma);
         });
-        viitteet.forEach(v -> ryhma.getOrganisaatioViite().add(v.apply(entityManager)));
+        organisaatiorajoitteet.forEach(rajoite -> {
+            OrganisaatioViite organisaatioViite = new OrganisaatioViite(ryhma, rajoite);
+            ryhma.addOrganisaatioViite(organisaatioViite);
+            entityManager.persist(organisaatioViite);
+        });
         entityManager.merge(ryhma);
         
         return ryhma;

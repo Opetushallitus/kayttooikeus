@@ -1,6 +1,5 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
@@ -36,9 +35,7 @@ import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.appending;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.*;
@@ -144,9 +141,8 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
 
         // Permission checks for declining requisition (there are separate checks for granting)
         this.notEditingOwnData(anojanAnomus.getHenkilo().getOidHenkilo());
-        this.inSameOrParentOrganisation(anojanAnomus.getOrganisaatioOid());
-        this.organisaatioViiteLimitationsAreValidThrows(anottuKayttoOikeusRyhma.getId());
-        this.kayttooikeusryhmaLimitationsAreValid(anottuKayttoOikeusRyhma.getId());
+        this.organisaatioViiteLimitationsAreValidThrows(anojanAnomus.getOrganisaatioOid(), anottuKayttoOikeusRyhma.getId());
+        this.kayttooikeusryhmaLimitationsAreValid(anojanAnomus.getOrganisaatioOid(), anottuKayttoOikeusRyhma.getId());
 
         // Post validation
         BindException errors = new BindException(haettuKayttoOikeusRyhma, "haettuKayttoOikeusRyhma");
@@ -191,26 +187,16 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         }
     }
 
-    private void inSameOrParentOrganisation(String organisaatioOid) {
-        // User has to be in the same or one of the parent organisations
-        Map<String, List<String>> allowedRoles = Collections.singletonMap(PALVELU_KAYTTOOIKEUS, asList("CRUD"));
-        if (!this.permissionCheckerService.checkRoleForOrganisation(
-                Lists.newArrayList(organisaatioOid),
-                allowedRoles)) {
-            throw new ForbiddenException("No access through organisation hierarchy.");
-        }
-    }
-
-    private void organisaatioViiteLimitationsAreValidThrows(Long kayttooikeusryhmaId) {
-        if (!this.permissionCheckerService.organisaatioViiteLimitationsAreValid(kayttooikeusryhmaId)) {
+    private void organisaatioViiteLimitationsAreValidThrows(String organisaatioOid, Long kayttooikeusryhmaId) {
+        if (!this.permissionCheckerService.organisaatioViiteLimitationsAreValid(organisaatioOid, kayttooikeusryhmaId)) {
             throw new ForbiddenException("Target organization has invalid organization type");
         }
     }
 
-    private void kayttooikeusryhmaLimitationsAreValid(Long kayttooikeusryhmaId) {
+    private void kayttooikeusryhmaLimitationsAreValid(String organisaatioOid, Long kayttooikeusryhmaId) {
         // The granting person's limitations must be checked always since there there shouldn't be a situation where the
         // the granting person doesn't have access rights limitations (except admin users who have full access)
-        if (!this.permissionCheckerService.kayttooikeusMyontoviiteLimitationCheck(kayttooikeusryhmaId)) {
+        if (!this.permissionCheckerService.kayttooikeusMyontoviiteLimitationCheck(organisaatioOid, kayttooikeusryhmaId)) {
             throw new ForbiddenException("User doesn't have access rights to grant this group");
         }
     }
@@ -259,10 +245,9 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                                        List<GrantKayttooikeusryhmaDto> updateHaettuKayttooikeusryhmaDtoList) {
         // Permission checks
         this.notEditingOwnData(anojaOid);
-        this.inSameOrParentOrganisation(organisaatioOid);
         updateHaettuKayttooikeusryhmaDtoList.forEach(updateHaettuKayttooikeusryhmaDto -> {
-            this.organisaatioViiteLimitationsAreValidThrows(updateHaettuKayttooikeusryhmaDto.getId());
-            this.kayttooikeusryhmaLimitationsAreValid(updateHaettuKayttooikeusryhmaDto.getId());
+            this.organisaatioViiteLimitationsAreValidThrows(organisaatioOid, updateHaettuKayttooikeusryhmaDto.getId());
+            this.kayttooikeusryhmaLimitationsAreValid(organisaatioOid, updateHaettuKayttooikeusryhmaDto.getId());
         });
 
         updateHaettuKayttooikeusryhmaDtoList.forEach(haettuKayttooikeusryhmaDto ->
@@ -478,9 +463,8 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
     public void removePrivilege(String oidHenkilo, Long kayttooikeusryhmaId, String organisaatioOid) {
         // Permission checks
         this.notEditingOwnData(oidHenkilo);
-        this.inSameOrParentOrganisation(organisaatioOid);
-        this.organisaatioViiteLimitationsAreValidThrows(kayttooikeusryhmaId);
-        this.kayttooikeusryhmaLimitationsAreValid(kayttooikeusryhmaId);
+        this.organisaatioViiteLimitationsAreValidThrows(organisaatioOid, kayttooikeusryhmaId);
+        this.kayttooikeusryhmaLimitationsAreValid(organisaatioOid, kayttooikeusryhmaId);
 
         Henkilo kasittelija = this.henkiloDataRepository.findByOidHenkilo(UserDetailsUtil.getCurrentUserOid())
                 .orElseThrow(() -> new NotFoundException("Current user not found with oid " + UserDetailsUtil.getCurrentUserOid()));
@@ -558,7 +542,7 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         // Organisaatioviite (pystyykö tästä KOR myöntämään tähän organisaatioon)
         kayttooikeusByOrganisation.replaceAll((organisaatioOid, kayttooikeusryhmaIdList) ->
                 kayttooikeusryhmaIdList.stream()
-                        .filter(this.permissionCheckerService::organisaatioViiteLimitationsAreValid)
+                        .filter(kayttooikeusryhmaId -> this.permissionCheckerService.organisaatioViiteLimitationsAreValid(organisaatioOid, kayttooikeusryhmaId))
                         .collect(Collectors.toSet()));
     }
 

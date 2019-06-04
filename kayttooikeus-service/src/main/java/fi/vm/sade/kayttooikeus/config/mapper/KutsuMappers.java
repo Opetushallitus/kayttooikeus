@@ -31,12 +31,14 @@ public class KutsuMappers {
             @Override
             public void mapAtoB(Kutsu kutsu, KutsuReadDto kutsuReadDto, MappingContext context) {
                 super.mapAtoB(kutsu, kutsuReadDto, context);
+                kutsuReadDto.setKutsujaOid(kutsu.getKutsuja());
                 kutsuReadDto.setAsiointikieli(Asiointikieli.valueOf(kutsu.getKieliKoodi()));
                 kutsuReadDto.setHakaIdentifier(StringUtils.hasLength(kutsu.getHakaIdentifier()));
             }
             @Override
             public void mapBtoA(KutsuReadDto kutsuReadDto, Kutsu kutsu, MappingContext context) {
                 super.mapBtoA(kutsuReadDto, kutsu, context);
+                kutsu.setKutsuja(kutsuReadDto.getKutsujaOid());
                 kutsu.setKieliKoodi(kutsuReadDto.getAsiointikieli().name());
             }
         };

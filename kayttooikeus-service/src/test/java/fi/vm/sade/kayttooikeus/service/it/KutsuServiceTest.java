@@ -43,16 +43,16 @@ import java.util.stream.Stream;
 
 import static fi.vm.sade.kayttooikeus.controller.KutsuPopulator.kutsu;
 import static fi.vm.sade.kayttooikeus.model.Identification.HAKA_AUTHENTICATION_IDP;
+import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.palvelukayttaja;
+import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.virkailija;
 import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusPopulator.oikeus;
 import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaMyontoViitePopulator.kayttoOikeusRyhmaMyontoViite;
 import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma;
-import static fi.vm.sade.kayttooikeus.repositories.populate.KayttoOikeusRyhmaPopulator.viite;
 import static fi.vm.sade.kayttooikeus.repositories.populate.KutsuOrganisaatioPopulator.kutsuOrganisaatio;
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloKayttoOikeusPopulator.myonnettyKayttoOikeus;
 import static fi.vm.sade.kayttooikeus.repositories.populate.OrganisaatioHenkiloPopulator.organisaatioHenkilo;
 import static fi.vm.sade.kayttooikeus.repositories.populate.TextGroupPopulator.text;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.PALVELU_KAYTTOOIKEUS;
-import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.ROLE_CRUD;
+import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toSet;
@@ -147,12 +147,12 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         assertEquals("b@eaxmple.com", kutsus.get(0).getSahkoposti());
         assertEquals(2, kutsus.get(0).getOrganisaatiot().size());
         assertThat(kutsus).flatExtracting(KutsuReadDto::getOrganisaatiot)
-                .extracting(KutsuReadDto.KutsuOrganisaatioDto::getOrganisaatioOid)
+                .extracting(KutsuReadDto.KutsuOrganisaatioReadDto::getOrganisaatioOid)
                 .containsExactlyInAnyOrder("1.2.3.4.5", "1.2.3.4.6");
         assertThat(kutsus).extracting(KutsuReadDto::getEtunimi).containsExactlyInAnyOrder("Matti");
         assertThat(kutsus).extracting(KutsuReadDto::getSukunimi).containsExactlyInAnyOrder("Meikäläinen");
         assertThat(kutsus).flatExtracting(KutsuReadDto::getOrganisaatiot)
-                .extracting(KutsuReadDto.KutsuOrganisaatioDto::getNimi)
+                .extracting(KutsuReadDto.KutsuOrganisaatioReadDto::getNimi)
                 .extracting(TextGroupMapDto::getTexts)
                 .extracting(map -> map.get("fi"))
                 .containsExactlyInAnyOrder("Nimi1", "Nimi2");
@@ -182,7 +182,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 null);
         assertThat(kutsuList)
                 .flatExtracting(KutsuReadDto::getOrganisaatiot)
-                .flatExtracting(KutsuReadDto.KutsuOrganisaatioDto::getOrganisaatioOid)
+                .flatExtracting(KutsuReadDto.KutsuOrganisaatioReadDto::getOrganisaatioOid)
                 .containsExactly("1.2.246.562.10.00000000001");
     }
 
@@ -210,8 +210,8 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 null);
         assertThat(kutsuList)
                 .flatExtracting(KutsuReadDto::getOrganisaatiot)
-                .flatExtracting(KutsuReadDto.KutsuOrganisaatioDto::getKayttoOikeusRyhmat)
-                .extracting(KutsuReadDto.KayttoOikeusRyhmaDto::getId)
+                .flatExtracting(KutsuReadDto.KutsuOrganisaatioReadDto::getKayttoOikeusRyhmat)
+                .extracting(KutsuReadDto.KutsuKayttoOikeusRyhmaReadDto::getId)
                 .containsExactly(myonnettyKayttoOikeusRyhmaTapahtuma.getKayttoOikeusRyhma().getId());
     }
 
@@ -245,7 +245,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 null);
         assertThat(kutsuList)
                 .flatExtracting(KutsuReadDto::getOrganisaatiot)
-                .flatExtracting(KutsuReadDto.KutsuOrganisaatioDto::getOrganisaatioOid)
+                .flatExtracting(KutsuReadDto.KutsuOrganisaatioReadDto::getOrganisaatioOid)
                 .containsExactly("1.2.3.4.5");
     }
 
@@ -280,12 +280,12 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 null);
         assertThat(kutsuList)
                 .flatExtracting(KutsuReadDto::getOrganisaatiot)
-                .flatExtracting(KutsuReadDto.KutsuOrganisaatioDto::getOrganisaatioOid)
+                .flatExtracting(KutsuReadDto.KutsuOrganisaatioReadDto::getOrganisaatioOid)
                 .containsExactly("1.2.3.4.5");
         assertThat(kutsuList)
                 .flatExtracting(KutsuReadDto::getOrganisaatiot)
-                .flatExtracting(KutsuReadDto.KutsuOrganisaatioDto::getKayttoOikeusRyhmat)
-                .extracting(KutsuReadDto.KayttoOikeusRyhmaDto::getId)
+                .flatExtracting(KutsuReadDto.KutsuOrganisaatioReadDto::getKayttoOikeusRyhmat)
+                .extracting(KutsuReadDto.KutsuKayttoOikeusRyhmaReadDto::getId)
                 .containsExactly(myonnettyKayttoOikeusRyhmaTapahtuma.getKayttoOikeusRyhma().getId());
     }
 
@@ -308,12 +308,12 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 .willReturn(Optional.of(org1));
         
         MyonnettyKayttoOikeusRyhmaTapahtuma tapahtuma = populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo("1.2.4", "1.2.246.562.10.00000000001"),
+                organisaatioHenkilo(virkailija("1.2.4"), "1.2.246.562.10.00000000001"),
                 kayttoOikeusRyhma("kayttoOikeusRyhma")
                         .withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_CRUD))
                         .withNimi(text("fi", "Käyttöoikeusryhmä"))));
         Long kayttoOikeusRyhmaId = tapahtuma.getKayttoOikeusRyhma().getId();
-        KutsuCreateDto.KayttoOikeusRyhmaDto kutsuKayttoOikeusRyhma = new KutsuCreateDto.KayttoOikeusRyhmaDto();
+        KutsuCreateDto.KutsuKayttoOikeusRyhmaCreateDto kutsuKayttoOikeusRyhma = new KutsuCreateDto.KutsuKayttoOikeusRyhmaCreateDto();
         kutsuKayttoOikeusRyhma.setId(kayttoOikeusRyhmaId);
 
         KutsuCreateDto kutsu = new KutsuCreateDto();
@@ -322,7 +322,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         kutsu.setSahkoposti("example@example.com");
         kutsu.setAsiointikieli(Asiointikieli.fi);
         kutsu.setOrganisaatiot(new LinkedHashSet<>());
-        KutsuCreateDto.KutsuOrganisaatioDto kutsuOrganisaatio = new KutsuCreateDto.KutsuOrganisaatioDto();
+        KutsuCreateDto.KutsuOrganisaatioCreateDto kutsuOrganisaatio = new KutsuCreateDto.KutsuOrganisaatioCreateDto();
         kutsuOrganisaatio.setOrganisaatioOid("1.2.246.562.10.00000000001");
         kutsuOrganisaatio.setKayttoOikeusRyhmat(Stream.of(kutsuKayttoOikeusRyhma).collect(toSet()));
         kutsu.getOrganisaatiot().add(kutsuOrganisaatio);
@@ -333,9 +333,9 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         assertThat(tallennettu.getAsiointikieli()).isEqualByComparingTo(Asiointikieli.fi);
         assertThat(tallennettu.getOrganisaatiot())
                 .hasSize(1)
-                .flatExtracting(KutsuReadDto.KutsuOrganisaatioDto::getKayttoOikeusRyhmat)
+                .flatExtracting(KutsuReadDto.KutsuOrganisaatioReadDto::getKayttoOikeusRyhmat)
                 .hasSize(1)
-                .extracting(KutsuReadDto.KayttoOikeusRyhmaDto::getNimi)
+                .extracting(KutsuReadDto.KutsuKayttoOikeusRyhmaReadDto::getNimi)
                 .flatExtracting(TextGroupMapDto::getTexts)
                 .extracting("fi")
                 .containsExactly("Käyttöoikeusryhmä");
@@ -364,25 +364,25 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         given(this.organisaatioClient.listWithParentsAndChildren(eq("1.2.3.4.1"), any()))
                 .willReturn(asList(org1));
         OrganisaatioPerustieto org2 = new OrganisaatioPerustieto();
-        org1.setOid("1.2.3.4.5");
-        org1.setNimi(new TextGroupMapDto().put("FI", "Käyttäjän organisaatio").asMap());
+        org2.setOid("1.2.3.4.5");
+        org2.setNimi(new TextGroupMapDto().put("FI", "Käyttäjän organisaatio").asMap());
         given(this.organisaatioClient.getOrganisaatioPerustiedotCached(eq("1.2.3.4.5")))
                 .willReturn(Optional.of(org2));
         given(this.organisaatioClient.listWithParentsAndChildren(eq("1.2.3.4.5"), any()))
                 .willReturn(asList(org2));
 
-        MyonnettyKayttoOikeusRyhmaTapahtuma tapahtuma = populate(myonnettyKayttoOikeus(
-                organisaatioHenkilo("1.2.4", "1.2.3.4.5"),
+        MyonnettyKayttoOikeusRyhmaTapahtuma myonnetty = populate(myonnettyKayttoOikeus(
+                organisaatioHenkilo(virkailija("1.2.4"), "1.2.3.4.5"),
                 kayttoOikeusRyhma("kayttoOikeusRyhma")
                         .withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_CRUD))));
-        OrganisaatioViite organisaatioViite = populate(viite(kayttoOikeusRyhma("RYHMA2")
-                        .withNimi(text("fi", "Käyttöoikeusryhmä")),
-                "1.2.3.4.5"));
-        populate(kayttoOikeusRyhmaMyontoViite(tapahtuma.getKayttoOikeusRyhma().getId(),
-                organisaatioViite.getKayttoOikeusRyhma().getId()));
+        KayttoOikeusRyhma myonnettava = populate(kayttoOikeusRyhma("RYHMA2")
+                .withOrganisaatiorajoite("1.2.3.4.1")
+                .withNimi(text("fi", "Käyttöoikeusryhmä")));
+        populate(kayttoOikeusRyhmaMyontoViite(myonnetty.getKayttoOikeusRyhma().getId(),
+                myonnettava.getId()));
 
-        KutsuCreateDto.KayttoOikeusRyhmaDto kutsuKayttoOikeusRyhma = new KutsuCreateDto.KayttoOikeusRyhmaDto();
-        kutsuKayttoOikeusRyhma.setId(organisaatioViite.getKayttoOikeusRyhma().getId());
+        KutsuCreateDto.KutsuKayttoOikeusRyhmaCreateDto kutsuKayttoOikeusRyhma = new KutsuCreateDto.KutsuKayttoOikeusRyhmaCreateDto();
+        kutsuKayttoOikeusRyhma.setId(myonnettava.getId());
         given(this.organisaatioClient.listWithChildOids(eq("1.2.3.4.5"), any()))
                 .willReturn(Stream.of("1.2.3.4.5", "1.2.3.4.1").collect(toSet()));
 
@@ -392,7 +392,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         kutsu.setSahkoposti("example@example.com");
         kutsu.setAsiointikieli(Asiointikieli.fi);
         kutsu.setOrganisaatiot(new LinkedHashSet<>());
-        KutsuCreateDto.KutsuOrganisaatioDto kutsuOrganisaatio = new KutsuCreateDto.KutsuOrganisaatioDto();
+        KutsuCreateDto.KutsuOrganisaatioCreateDto kutsuOrganisaatio = new KutsuCreateDto.KutsuOrganisaatioCreateDto();
         kutsuOrganisaatio.setOrganisaatioOid("1.2.3.4.1");
         kutsuOrganisaatio.setKayttoOikeusRyhmat(Stream.of(kutsuKayttoOikeusRyhma).collect(toSet()));
         kutsu.getOrganisaatiot().add(kutsuOrganisaatio);
@@ -403,9 +403,88 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         assertThat(tallennettu.getAsiointikieli()).isEqualByComparingTo(Asiointikieli.fi);
         assertThat(tallennettu.getOrganisaatiot())
                 .hasSize(1)
-                .flatExtracting(KutsuReadDto.KutsuOrganisaatioDto::getKayttoOikeusRyhmat)
+                .flatExtracting(KutsuReadDto.KutsuOrganisaatioReadDto::getKayttoOikeusRyhmat)
                 .hasSize(1)
-                .extracting(KutsuReadDto.KayttoOikeusRyhmaDto::getNimi)
+                .extracting(KutsuReadDto.KutsuKayttoOikeusRyhmaReadDto::getNimi)
+                .flatExtracting(TextGroupMapDto::getTexts)
+                .extracting("fi")
+                .containsExactly("Käyttöoikeusryhmä");
+
+        Kutsu entity = this.em.find(Kutsu.class, id);
+        assertThat(entity.getSalaisuus()).isNotEmpty();
+    }
+
+    @Test
+    @WithMockUser(username = "1.2.3", authorities = {"ROLE_APP_KAYTTOOIKEUS_KUTSU_CRUD", "ROLE_APP_KAYTTOOIKEUS_KUTSU_CRUD_1.2.3.4.5"})
+    public void createKutsuAsPalvelukayttaja() {
+        given(this.ryhmasahkopostiClient.sendRyhmasahkoposti(any())).willReturn("12345");
+        doReturn(HenkiloDto.builder()
+                .kutsumanimi("kutsun")
+                .sukunimi("kutsuja")
+                .yksiloityVTJ(true)
+                .hetu("valid hetu")
+                .build())
+                .when(this.oppijanumerorekisteriClient).getHenkiloByOid(anyString());
+
+        OrganisaatioPerustieto org1 = new OrganisaatioPerustieto();
+        org1.setOid("1.2.3.4.1");
+        org1.setNimi(new TextGroupMapDto().put("FI", "Kutsuttu organisaatio").asMap());
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(eq("1.2.3.4.1")))
+                .willReturn(Optional.of(org1));
+        given(this.organisaatioClient.listWithParentsAndChildren(eq("1.2.3.4.1"), any()))
+                .willReturn(asList(org1));
+        OrganisaatioPerustieto org2 = new OrganisaatioPerustieto();
+        org2.setOid("1.2.3.4.5");
+        org2.setNimi(new TextGroupMapDto().put("FI", "Käyttäjän organisaatio").asMap());
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(eq("1.2.3.4.5")))
+                .willReturn(Optional.of(org2));
+        given(this.organisaatioClient.listWithParentsAndChildren(eq("1.2.3.4.5"), any()))
+                .willReturn(asList(org2));
+
+        populate(myonnettyKayttoOikeus(
+                organisaatioHenkilo(palvelukayttaja("1.2.3"), "1.2.3.4.5"),
+                kayttoOikeusRyhma("RYHMA3")
+                        .withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_KUTSU_CRUD))));
+        MyonnettyKayttoOikeusRyhmaTapahtuma myonnetty = populate(myonnettyKayttoOikeus(
+                organisaatioHenkilo(virkailija("1.2.4"), "1.2.3.4.5"),
+                kayttoOikeusRyhma("kayttoOikeusRyhma")
+                        .withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_CRUD))));
+        KayttoOikeusRyhma myonnettava = populate(kayttoOikeusRyhma("RYHMA2")
+                .withOrganisaatiorajoite("1.2.3.4.1")
+                .withNimi(text("fi", "Käyttöoikeusryhmä")));
+        populate(kayttoOikeusRyhmaMyontoViite(myonnetty.getKayttoOikeusRyhma().getId(),
+                myonnettava.getId()));
+
+        KutsuCreateDto.KutsuKayttoOikeusRyhmaCreateDto kutsuKayttoOikeusRyhma = new KutsuCreateDto.KutsuKayttoOikeusRyhmaCreateDto();
+        kutsuKayttoOikeusRyhma.setId(myonnettava.getId());
+        given(this.organisaatioClient.getActiveParentOids(eq("1.2.3.4.1")))
+                .willReturn(asList("1.2.3.4.1", "1.2.3.4.5"));
+        given(this.organisaatioClient.listWithChildOids(eq("1.2.3.4.5"), any()))
+                .willReturn(Stream.of("1.2.3.4.5", "1.2.3.4.1").collect(toSet()));
+
+        KutsuCreateDto kutsu = new KutsuCreateDto();
+        kutsu.setKutsujaOid("1.2.4");
+        kutsu.setEtunimi("Etu");
+        kutsu.setSukunimi("Suku");
+        kutsu.setSahkoposti("example@example.com");
+        kutsu.setAsiointikieli(Asiointikieli.fi);
+        kutsu.setOrganisaatiot(new LinkedHashSet<>());
+        KutsuCreateDto.KutsuOrganisaatioCreateDto kutsuOrganisaatio = new KutsuCreateDto.KutsuOrganisaatioCreateDto();
+        kutsuOrganisaatio.setOrganisaatioOid("1.2.3.4.1");
+        kutsuOrganisaatio.setKayttoOikeusRyhmat(Stream.of(kutsuKayttoOikeusRyhma).collect(toSet()));
+        kutsu.getOrganisaatiot().add(kutsuOrganisaatio);
+
+        long id = kutsuService.createKutsu(kutsu);
+        KutsuReadDto tallennettu = kutsuService.getKutsu(id);
+
+        assertThat(tallennettu)
+                .returns(Asiointikieli.fi, KutsuReadDto::getAsiointikieli)
+                .returns("1.2.4", KutsuReadDto::getKutsujaOid);
+        assertThat(tallennettu.getOrganisaatiot())
+                .hasSize(1)
+                .flatExtracting(KutsuReadDto.KutsuOrganisaatioReadDto::getKayttoOikeusRyhmat)
+                .hasSize(1)
+                .extracting(KutsuReadDto.KutsuKayttoOikeusRyhmaReadDto::getNimi)
                 .flatExtracting(TextGroupMapDto::getTexts)
                 .extracting("fi")
                 .containsExactly("Käyttöoikeusryhmä");
@@ -422,6 +501,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 .sukunimi("kutsuja")
                 .build())
                 .when(this.oppijanumerorekisteriClient).getHenkiloByOid(anyString());
+        populate(virkailija("1.2.4"));
         // This kind of kutsu is not actually allowed on api.
         this.kutsuService.createKutsu(KutsuCreateDto.builder().organisaatiot(new HashSet<>()).build());
     }

@@ -39,6 +39,7 @@ public class KutsuController {
             notes = "Haun tulos riippuu käyttäjän oikeuksista (rekisterinpitäjä, Oph-virkailija, normaali käyttäjä)")
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_READ',"
             + "'ROLE_APP_KAYTTOOIKEUS_CRUD',"
+            + "'ROLE_APP_KAYTTOOIKEUS_KUTSU_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     public List<KutsuReadDto> listKutsus(
             KutsuCriteria kutsuCriteria,
@@ -52,6 +53,7 @@ public class KutsuController {
     @RequestMapping(method = RequestMethod.POST)
     @ApiOperation("Uuden kutsun luominen. Vaatii samat oikeudet kuin uuden käyttöoikeuden myöntäminen.")
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_CRUD',"
+            + "'ROLE_APP_KAYTTOOIKEUS_KUTSU_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     public ResponseEntity<Long> create(@Validated @RequestBody KutsuCreateDto kutsu) {
         long id = kutsuService.createKutsu(kutsu);
@@ -61,6 +63,7 @@ public class KutsuController {
     
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_CRUD',"
+            + "'ROLE_APP_KAYTTOOIKEUS_KUTSU_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     public KutsuReadDto read(@PathVariable Long id) {
         return kutsuService.getKutsu(id);
@@ -68,6 +71,7 @@ public class KutsuController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_CRUD',"
+            + "'ROLE_APP_KAYTTOOIKEUS_KUTSU_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     public void delete(@PathVariable Long id) {
         kutsuService.deleteKutsu(id);
@@ -76,6 +80,7 @@ public class KutsuController {
     @RequestMapping(value = "/{id}/renew", method = RequestMethod.PUT)
     @ApiOperation("Kutsun uusiminen muuttamatta kutsun sisältöä eikä uusimisesta jää tietoa")
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_CRUD',"
+            + "'ROLE_APP_KAYTTOOIKEUS_KUTSU_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     public void renew(@PathVariable Long id) {
         this.kutsuService.renewKutsu(id);

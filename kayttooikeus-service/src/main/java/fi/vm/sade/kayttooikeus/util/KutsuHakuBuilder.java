@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static fi.vm.sade.kayttooikeus.service.impl.PermissionCheckerServiceImpl.*;
-import static java.util.Collections.singletonList;
+import static java.util.Arrays.asList;
 
 @RequiredArgsConstructor
 public class KutsuHakuBuilder {
@@ -52,7 +52,7 @@ public class KutsuHakuBuilder {
         if (this.permissionCheckerService.isCurrentUserAdmin()) {
             return this.prepareForAdmin();
         }
-        else if (this.permissionCheckerService.isCurrentUserMiniAdmin(PALVELU_KAYTTOOIKEUS, ROLE_CRUD)) {
+        else if (this.permissionCheckerService.isCurrentUserMiniAdmin(PALVELU_KAYTTOOIKEUS, ROLE_CRUD, ROLE_KUTSU_CRUD)) {
             return prepareForMiniAdmin();
         }
         return prepareForNormalUser();
@@ -76,7 +76,7 @@ public class KutsuHakuBuilder {
         Set<String> organisaatioOidLimit;
 
         Map<String, List<String>> palveluRoolit = new HashMap<>();
-        palveluRoolit.put(PALVELU_KAYTTOOIKEUS, singletonList(ROLE_CRUD));
+        palveluRoolit.put(PALVELU_KAYTTOOIKEUS, asList(ROLE_CRUD, ROLE_KUTSU_CRUD));
 
         if (!CollectionUtils.isEmpty(this.kutsuCriteria.getOrganisaatioOids())) {
             organisaatioOidLimit = this.permissionCheckerService
