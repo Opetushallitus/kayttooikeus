@@ -19,6 +19,7 @@ import org.springframework.util.CollectionUtils;
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,7 +52,7 @@ public class KayttoOikeusRyhmaRepositoryImpl implements KayttoOikeusRyhmaReposit
     }
 
     @Override
-    public List<KayttoOikeusRyhmaDto> findByIdList(List<Long> idList) {
+    public List<KayttoOikeusRyhmaDto> findByIdList(Collection<Long> idList) {
         QKayttoOikeusRyhma kayttoOikeusRyhma = QKayttoOikeusRyhma.kayttoOikeusRyhma;
         if (CollectionUtils.isEmpty(idList)){
             return new ArrayList<>();

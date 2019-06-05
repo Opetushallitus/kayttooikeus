@@ -7,6 +7,7 @@ import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KayttooikeusCriteria;
+import fi.vm.sade.kayttooikeus.repositories.criteria.MyontooikeusCriteria;
 import fi.vm.sade.kayttooikeus.repositories.dto.ExpiringKayttoOikeusDto;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.LocalizationService;
@@ -433,15 +434,20 @@ public class KayttoOikeusServiceImpl extends AbstractService implements KayttoOi
     }
 
     private List<KayttoOikeusRyhmaDto> getGrantableRyhmasWithoutOrgLimitations(String organisaatioOid, String myontajaOid) {
-        // Get all master ids for current user and use them to get a list of all slave ids
-        List<Long> slaveIds = kayttoOikeusRyhmaMyontoViiteRepository.getSlaveIdsByMasterIds(
-                myonnettyKayttoOikeusRyhmaTapahtumaRepository.findMasterIdsByHenkilo(myontajaOid));
-
-
-        List<KayttoOikeusRyhmaDto> allRyhmas = (isEmpty(slaveIds) || this.permissionCheckerService.isCurrentUserAdmin()) ?
-                kayttoOikeusRyhmaRepository.listAll(false) : kayttoOikeusRyhmaRepository.findByIdList(slaveIds);
+        List<KayttoOikeusRyhmaDto> allRyhmas = this.permissionCheckerService.isCurrentUserAdmin()
+                ? kayttoOikeusRyhmaRepository.listAll(false) : getKayttooikeusryhmaByMyoontoikeus(organisaatioOid, myontajaOid);
         return getRyhmasWithoutOrganizationLimitations(organisaatioOid,
                 addOrganisaatioViitteesToRyhmas(allRyhmas));
+    }
+
+    private List<KayttoOikeusRyhmaDto> getKayttooikeusryhmaByMyoontoikeus(String organisaatioOid, String myontajaOid) {
+        Map<String, Set<Long>> myontooikeudet = kayttoOikeusRyhmaMyontoViiteRepository
+                .getSlaveIdsByMasterHenkiloOid(myontajaOid, MyontooikeusCriteria.oletus());
+        Set<Long> slaveIds = myontooikeudet.getOrDefault(organisaatioOid, Collections.emptySet());
+        if (slaveIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return kayttoOikeusRyhmaRepository.findByIdList(slaveIds);
     }
 
     private void checkAndInsertSlaveGroups(KayttoOikeusRyhmaModifyDto ryhmaData, KayttoOikeusRyhma koRyhma) {

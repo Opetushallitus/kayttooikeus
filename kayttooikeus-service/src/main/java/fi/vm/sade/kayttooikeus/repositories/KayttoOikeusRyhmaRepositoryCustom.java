@@ -4,11 +4,12 @@ import com.querydsl.core.Tuple;
 import fi.vm.sade.kayttooikeus.dto.KayttoOikeusRyhmaDto;
 import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhma;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface KayttoOikeusRyhmaRepositoryCustom {
-    List<KayttoOikeusRyhmaDto> findByIdList(List<Long> idList);
+    List<KayttoOikeusRyhmaDto> findByIdList(Collection<Long> idList);
 
     Optional<KayttoOikeusRyhma> findByRyhmaId(Long id, boolean naytaPassivoitu);
 

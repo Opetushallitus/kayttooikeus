@@ -415,7 +415,7 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
                         .withOrganisaatiorajoite("123.123.123")
                         .withOrganisaatiorajoite("3.4.5.6.7")
                         .withSallittu(KayttajaTyyppi.PALVELU)
-                        .withOikeus(oikeus("KOODISTO", "CRUD"))
+                        .withOikeus(oikeus("KAYTTOOIKEUS", "CRUD"))
         ));
         Optional<Long> id = mkrt.getKayttoOikeusRyhma().getOrganisaatioViite().stream()
                 .map(OrganisaatioViite::getKayttoOikeusRyhma)
@@ -423,6 +423,7 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
                 .map(IdentifiableAndVersionedEntity::getId)
                 .findFirst();
         populate(kayttoOikeusRyhma("RYHMA1"));
+        populate(kayttoOikeusRyhmaMyontoViite(mkrt.getKayttoOikeusRyhma().getId(), mkrt.getKayttoOikeusRyhma().getId()));
 
         List<MyonnettyKayttoOikeusDto> list = kayttoOikeusService.listMyonnettyKayttoOikeusRyhmasMergedWithHenkilos("1.2.3.4.5", "3.4.5.6.7", "1.2.3.4.5");
         assertEquals(1, list.size());
@@ -447,7 +448,7 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
                 kayttoOikeusRyhma("RYHMA2").withNimi(text("FI", "Koodistonhallinta")
                         .put("EN", "Code management"))
                         .withOrganisaatiorajoite("TYYPPI")
-                        .withOikeus(oikeus("KOODISTO", "CRUD"))
+                        .withOikeus(oikeus("KAYTTOOIKEUS", "CRUD"))
         ));
 
         MyonnettyKayttoOikeusRyhmaTapahtuma mko2 = populate(myonnettyKayttoOikeus(
@@ -455,7 +456,7 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
                 kayttoOikeusRyhma("RYHMA3").withNimi(text("FI", "Koodistonhallinta")
                         .put("EN", "Code management"))
                         .withOrganisaatiorajoite("3.4.5.6.7")
-                        .withOikeus(oikeus("KOODISTO", "CRUD")
+                        .withOikeus(oikeus("KAYTTOOIKEUS", "CRUD")
         ).withSallittu(KayttajaTyyppi.PALVELU)));
 
         populate(kayttoOikeusRyhmaMyontoViite(mko.getKayttoOikeusRyhma().getId(), mko2.getKayttoOikeusRyhma().getId()));
