@@ -1,23 +1,22 @@
 package fi.vm.sade.kayttooikeus.aspects;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fi.vm.sade.auditlog.Audit;
-import fi.vm.sade.auditlog.kayttooikeus.KayttoOikeusLogMessage;
-import fi.vm.sade.auditlog.kayttooikeus.KayttoOikeusOperation;
+import fi.vm.sade.auditlog.Changes;
+import fi.vm.sade.auditlog.Target;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-public class OrganisaatioHelper extends AbstractAuditlogAspectHelper {
+@RequiredArgsConstructor
+public class OrganisaatioHelper {
 
-    public OrganisaatioHelper(Audit audit, ObjectMapper mapper) {
-        super(audit, mapper);
-    }
+    private final AuditLogger auditLogger;
 
     void logUpdateOrganisationCache() {
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .lisatieto("Päivitetty organisaatiovälimuisti.")
-                .setOperaatio(KayttoOikeusOperation.UPDATE_ORGANISAATIO_CACHE);
-        finishLogging(logMessage);
+        Target target = new Target.Builder()
+                .build();
+        Changes changes = new Changes.Builder()
+                .build();
+        auditLogger.log(KayttooikeusOperation.UPDATE_ORGANISAATIO_CACHE, target, changes);
     }
 
 }

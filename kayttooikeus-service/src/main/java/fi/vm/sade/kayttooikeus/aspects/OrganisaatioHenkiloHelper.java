@@ -1,52 +1,59 @@
 package fi.vm.sade.kayttooikeus.aspects;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fi.vm.sade.auditlog.Audit;
-import fi.vm.sade.auditlog.kayttooikeus.KayttoOikeusLogMessage;
-import fi.vm.sade.auditlog.kayttooikeus.KayttoOikeusOperation;
+import fi.vm.sade.auditlog.Changes;
+import fi.vm.sade.auditlog.Target;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloCreateDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloUpdateDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import static java.util.stream.Collectors.toList;
+
+import static java.util.stream.Collectors.joining;
 
 @Component
-public class OrganisaatioHenkiloHelper extends AbstractAuditlogAspectHelper {
+@RequiredArgsConstructor
+public class OrganisaatioHenkiloHelper {
 
-    public OrganisaatioHenkiloHelper(Audit audit, ObjectMapper mapper) {
-        super(audit, mapper);
-    }
+    private final AuditLogger auditLogger;
 
     void logCreateOrUpdateOrganisaatioHenkilo(String henkiloOid, List<OrganisaatioHenkiloUpdateDto> organisaatioHenkiloDtoList,
                                               Object result) {
-        List<String> organisaatioOids = organisaatioHenkiloDtoList.stream()
+        String organisaatioOids = organisaatioHenkiloDtoList.stream()
                 .map(OrganisaatioHenkiloUpdateDto::getOrganisaatioOid)
-                .collect(toList());
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .kohdeTunniste(henkiloOid)
-                .lisatieto(String.format("Päivitetty henkilölle organisaatiot %s.", organisaatioOids))
-                .setOperaatio(KayttoOikeusOperation.CREATE_OR_UPDATE_ORGANISAATIO_HENKILO);
-        finishLogging(logMessage);
+                .collect(joining(";"));
+
+        Target target = new Target.Builder()
+                .setField("oid", henkiloOid)
+                .build();
+        Changes changes = new Changes.Builder()
+                .added("organisaatioOids", organisaatioOids)
+                .build();
+        auditLogger.log(KayttooikeusOperation.CREATE_OR_UPDATE_ORGANISAATIO_HENKILO, target, changes);
     }
 
     void logFindOrCreateOrganisaatioHenkilot(String henkiloOid, List<OrganisaatioHenkiloCreateDto> organisaatioHenkilot, Object result) {
-        List<String> organisaatioOids = organisaatioHenkilot.stream()
+        String organisaatioOids = organisaatioHenkilot.stream()
                 .map(OrganisaatioHenkiloCreateDto::getOrganisaatioOid)
-                .collect(toList());
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .kohdeTunniste(henkiloOid)
-                .lisatieto(String.format("Lisätty henkilölle organisaatiot %s.", organisaatioOids))
-                .setOperaatio(KayttoOikeusOperation.FIND_OR_CREATE_ORGANISAATIO_HENKILOT);
-        finishLogging(logMessage);
+                .collect(joining(";"));
+
+        Target target = new Target.Builder()
+                .setField("oid", henkiloOid)
+                .build();
+        Changes changes = new Changes.Builder()
+                .added("organisaatioOids", organisaatioOids)
+                .build();
+        auditLogger.log(KayttooikeusOperation.FIND_OR_CREATE_ORGANISAATIO_HENKILOT, target, changes);
     }
 
     void logPassivoiOrganisaatioHenkilo(String oidHenkilo, String henkiloOrganisationOid, Object result) {
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .kohdeTunniste(oidHenkilo)
-                .lisatieto(String.format("Henkilön organisaatio %s passivoitu.", henkiloOrganisationOid))
-                .setOperaatio(KayttoOikeusOperation.PASSIVOI_ORGANISAATIO_HENKILO);
-        finishLogging(logMessage);
+        Target target = new Target.Builder()
+                .setField("henkiloOid", oidHenkilo)
+                .setField("organisaatioOid", henkiloOrganisationOid)
+                .build();
+        Changes changes = new Changes.Builder()
+                .build();
+        auditLogger.log(KayttooikeusOperation.PASSIVOI_ORGANISAATIO_HENKILO, target, changes);
     }
 
 }

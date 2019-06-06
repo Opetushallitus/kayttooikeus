@@ -1,64 +1,43 @@
 package fi.vm.sade.kayttooikeus.aspects;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fi.vm.sade.auditlog.Audit;
-import fi.vm.sade.auditlog.kayttooikeus.KayttoOikeusLogMessage;
-import fi.vm.sade.auditlog.kayttooikeus.KayttoOikeusOperation;
+import fi.vm.sade.auditlog.Changes;
+import fi.vm.sade.auditlog.Target;
 import fi.vm.sade.kayttooikeus.dto.KayttoOikeusCreateDto;
 import fi.vm.sade.kayttooikeus.dto.KayttoOikeusRyhmaModifyDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-public class KayttoOikeusRyhmaHelper extends AbstractAuditlogAspectHelper {
+@RequiredArgsConstructor
+public class KayttoOikeusRyhmaHelper {
 
-    public KayttoOikeusRyhmaHelper(Audit audit, ObjectMapper mapper) {
-        super(audit, mapper);
-    }
+    private final AuditLogger auditLogger;
 
     void logCreateKayttooikeusryhma(KayttoOikeusRyhmaModifyDto ryhma, Object result) {
-        String newGroup;
-        try {
-            newGroup = getObjectMapper().writeValueAsString(ryhma);
-        } catch (JsonProcessingException e) {
-            newGroup = "KayttoOikeusRyhmaModifyDto:n muuttaminen JSON muotoon epäonnistui!";
-        }
-
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .newValue(newGroup)
-                .lisatieto("Luotu uusi käyttöoikeusryhmä.")
-                .setOperaatio(KayttoOikeusOperation.CREATE_KAYTTOOIKEUSRYHMA);
-        finishLogging(logMessage);
+        Target target = new Target.Builder()
+                .setField("id", String.valueOf(result))
+                .build();
+        Changes changes = new Changes.Builder()
+                .build();
+        auditLogger.log(KayttooikeusOperation.CREATE_KAYTTOOIKEUSRYHMA, target, changes);
     }
 
     void logCreateKayttooikeus(KayttoOikeusCreateDto kayttoOikeus, Object result) {
-        String newValue;
-        try {
-            newValue = getObjectMapper().writeValueAsString(kayttoOikeus);
-        } catch (JsonProcessingException e) {
-            newValue = "KayttoOikeusCreateDto:n muuttaminen JSON muotoon epäonnistui!";
-        }
-
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .newValue(newValue)
-                .lisatieto("Luotu uusi käyttöoikeus annetun käyttöoikeusryhmän pohjalta.")
-                .setOperaatio(KayttoOikeusOperation.CREATE_KAYTTOIKEUS);
-        finishLogging(logMessage);
+        Target target = new Target.Builder()
+                .setField("id", String.valueOf(result))
+                .build();
+        Changes changes = new Changes.Builder()
+                .build();
+        auditLogger.log(KayttooikeusOperation.CREATE_KAYTTOIKEUS, target, changes);
     }
 
     void logUpdateKayttoOikeusForKayttoOikeusRyhma(long id, KayttoOikeusRyhmaModifyDto ryhmaData, Object result) {
-        String updatedGroup;
-        try {
-            updatedGroup = getObjectMapper().writeValueAsString(ryhmaData);
-        } catch (JsonProcessingException e) {
-            updatedGroup = "KayttoOikeusRyhmaModifyDto:n muuttaminen JSON muotoon epäonnistui!";
-        }
-
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .newValue(updatedGroup)
-                .lisatieto("Käyttöoikeusryhmän käyttöoikeudet päivitetty.")
-                .setOperaatio(KayttoOikeusOperation.UPDATE_KAYTTOOIKEUSRYHMA);
-        finishLogging(logMessage);
+        Target target = new Target.Builder()
+                .setField("id", String.valueOf(id))
+                .build();
+        Changes changes = new Changes.Builder()
+                .build();
+        auditLogger.log(KayttooikeusOperation.UPDATE_KAYTTOOIKEUSRYHMA, target, changes);
     }
 
 

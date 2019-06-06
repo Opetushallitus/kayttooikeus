@@ -43,7 +43,7 @@
     <logger name="org.apache.http.client.protocol.ResponseProcessCookies" level="error" />
 
     <!-- Auditlog -->
-    <logger name="fi.vm.sade.auditlog.Audit" level="INFO" additivity="false">
+    <logger name="fi.vm.sade.kayttooikeus.config.AuditlogConfiguration" level="INFO" additivity="false">
         <appender-ref ref="ROLLING" />
     </logger>
 

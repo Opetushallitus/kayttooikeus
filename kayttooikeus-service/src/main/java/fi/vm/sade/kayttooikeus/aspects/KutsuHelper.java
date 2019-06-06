@@ -1,39 +1,33 @@
 package fi.vm.sade.kayttooikeus.aspects;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fi.vm.sade.auditlog.Audit;
-import fi.vm.sade.auditlog.kayttooikeus.KayttoOikeusLogMessage;
-import fi.vm.sade.auditlog.kayttooikeus.KayttoOikeusOperation;
+import fi.vm.sade.auditlog.Changes;
+import fi.vm.sade.auditlog.Target;
 import fi.vm.sade.kayttooikeus.dto.KutsuCreateDto;
-import fi.vm.sade.kayttooikeus.model.Kutsu;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-public class KutsuHelper extends AbstractAuditlogAspectHelper {
+@RequiredArgsConstructor
+public class KutsuHelper {
 
-    public KutsuHelper(Audit audit, ObjectMapper mapper) {
-        super(audit, mapper);
-    }
+    private final AuditLogger auditLogger;
 
     void logCreateKutsu(KutsuCreateDto dto, Object result) {
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .kohdeTunniste(dto.getSahkoposti())
-                .lisatieto("Luotu kutsu virkailijalle.")
-                .setOperaatio(KayttoOikeusOperation.CREATE_KUTSU);
-        finishLogging(logMessage);
+        Target target = new Target.Builder()
+                .setField("id", String.valueOf(result))
+                .build();
+        Changes changes = new Changes.Builder()
+                .build();
+        auditLogger.log(KayttooikeusOperation.CREATE_KUTSU, target, changes);
     }
 
     void logDeleteKutsu(Long id, Object result) {
-        String email = "";
-        if (result instanceof Kutsu) {
-            email = ((Kutsu)result).getSahkoposti();
-        }
-
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .kohdeTunniste(email)
-                .lisatieto("Poistettu virkailijan kutsu.")
-                .setOperaatio(KayttoOikeusOperation.DELETE_KUTSU);
-        finishLogging(logMessage);
+        Target target = new Target.Builder()
+                .setField("id", String.valueOf(id))
+                .build();
+        Changes changes = new Changes.Builder()
+                .build();
+        auditLogger.log(KayttooikeusOperation.DELETE_KUTSU, target, changes);
     }
 
 }

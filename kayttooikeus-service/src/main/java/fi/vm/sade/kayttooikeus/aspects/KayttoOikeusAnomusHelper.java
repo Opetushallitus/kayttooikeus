@@ -1,64 +1,67 @@
 package fi.vm.sade.kayttooikeus.aspects;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fi.vm.sade.auditlog.Audit;
-import fi.vm.sade.auditlog.kayttooikeus.KayttoOikeusLogMessage;
-import fi.vm.sade.auditlog.kayttooikeus.KayttoOikeusOperation;
+import fi.vm.sade.auditlog.Changes;
+import fi.vm.sade.auditlog.Target;
 import fi.vm.sade.kayttooikeus.dto.GrantKayttooikeusryhmaDto;
 import fi.vm.sade.kayttooikeus.dto.KayttooikeusAnomusDto;
 import fi.vm.sade.kayttooikeus.dto.UpdateHaettuKayttooikeusryhmaDto;
+import lombok.RequiredArgsConstructor;
 import org.joda.time.LocalDate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class KayttoOikeusAnomusHelper extends AbstractAuditlogAspectHelper {
+@RequiredArgsConstructor
+public class KayttoOikeusAnomusHelper {
 
-    public KayttoOikeusAnomusHelper(Audit audit, ObjectMapper mapper) {
-        super(audit, mapper);
-    }
+    private final AuditLogger auditLogger;
 
     void logApproveOrRejectKayttooikeusAnomus(UpdateHaettuKayttooikeusryhmaDto kayttooikeusryhma, Object result) {
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .kohdeTunniste(String.valueOf(kayttooikeusryhma.getId()))
-                .newValue(kayttooikeusryhma.getKayttoOikeudenTila())
-                .lisatieto("Haettu käyttöoikeusryhmä käsitelty.")
-                .setOperaatio(KayttoOikeusOperation.APPROVE_OR_REJECT_KAYTTOOIKEUSANOMUS);
-        finishLogging(logMessage);
+        Target target = new Target.Builder()
+                .setField("id", String.valueOf(kayttooikeusryhma.getId()))
+                .build();
+        Changes changes = new Changes.Builder()
+                .added("tila", kayttooikeusryhma.getKayttoOikeudenTila())
+                .build();
+        auditLogger.log(KayttooikeusOperation.APPROVE_OR_REJECT_KAYTTOOIKEUSANOMUS, target, changes);
     }
 
     void logSendKayttooikeusAnomusNotification(LocalDate anottuPvm, Object result) {
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .lisatieto("Avoimista käyttöoikeusanomuksista lähetetty muistutukset hyväksyjille.")
-                .setOperaatio(KayttoOikeusOperation.SEND_KAYTTOOIKEUSANOMUS_NOTIFICATION);
-        finishLogging(logMessage);
+        Target target = new Target.Builder()
+                .build();
+        Changes changes = new Changes.Builder()
+                .build();
+        auditLogger.log(KayttooikeusOperation.SEND_KAYTTOOIKEUSANOMUS_NOTIFICATION, target, changes);
     }
 
     void logCancelKayttooikeusAnomus(Long kayttooikeusRyhmaId, Object result) {
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .kohdeTunniste(String.valueOf(kayttooikeusRyhmaId))
-                .lisatieto("Henkilön käyttöoikeushakemus peruttu.")
-                .setOperaatio(KayttoOikeusOperation.REMOVE_USER_FROM_KAYTTOOIKEUSANOMUS);
-        finishLogging(logMessage);
+        Target target = new Target.Builder()
+                .setField("id", String.valueOf(kayttooikeusRyhmaId))
+                .build();
+        Changes changes = new Changes.Builder()
+                .build();
+        auditLogger.log(KayttooikeusOperation.REMOVE_USER_FROM_KAYTTOOIKEUSANOMUS, target, changes);
     }
 
     void logCreateKayttooikeusAnomus(String anojaOid, KayttooikeusAnomusDto kayttooikeusAnomusDto, Object result) {
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .kohdeTunniste(anojaOid)
-                .newValue(kayttooikeusAnomusDto.getOrganisaatioOrRyhmaOid())
-                .lisatieto("Luotu uusi käyttöoikeusanomus.")
-                .setOperaatio(KayttoOikeusOperation.CREATE_KAYTTOOIKEUSANOMUS);
-        finishLogging(logMessage);
+        Target target = new Target.Builder()
+                .setField("henkiloOid", anojaOid)
+                .setField("organisaatioOid", kayttooikeusAnomusDto.getOrganisaatioOrRyhmaOid())
+                .build();
+        Changes changes = new Changes.Builder()
+                .build();
+        auditLogger.log(KayttooikeusOperation.CREATE_KAYTTOOIKEUSANOMUS, target, changes);
     }
 
     void logGrantKayttooikeusryhma(String anojaOid, String organisaatioOid, List<GrantKayttooikeusryhmaDto> updateHaettuKayttooikeusryhmaDtoList, Object result) {
-        KayttoOikeusLogMessage.LogMessageBuilder logMessage = KayttoOikeusLogMessage.builder()
-                .kohdeTunniste(anojaOid)
-                .newValue(organisaatioOid)
-                .lisatieto("Myönnetty halutut käyttöoikeusryhmät henkilölle.")
-                .setOperaatio(KayttoOikeusOperation.ADD_KAYTTOOIKEUSRYHMA_TO_HENKILO);
-        finishLogging(logMessage);
+        Target target = new Target.Builder()
+                .setField("henkiloOid", anojaOid)
+                .setField("organisaatioOid", organisaatioOid)
+                .build();
+        Changes changes = new Changes.Builder()
+                .build();
+        auditLogger.log(KayttooikeusOperation.ADD_KAYTTOOIKEUSRYHMA_TO_HENKILO, target, changes);
     }
 
 }
