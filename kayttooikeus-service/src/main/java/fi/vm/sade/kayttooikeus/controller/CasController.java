@@ -18,6 +18,7 @@ import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
@@ -31,7 +32,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/cas")
+@RequestMapping(value = "/cas", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @Api(tags = "CAS:a varten olevat rajapinnat.")
 @RequiredArgsConstructor
 public class CasController {
@@ -143,7 +144,7 @@ public class CasController {
         }
     }
 
-    @PostMapping("/uudelleenrekisterointi")
+    @PostMapping(value = "/uudelleenrekisterointi", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Virkailijan uudelleenrekisteröinti")
     public VahvaTunnistusResponseDto tunnistauduVahvasti(
             @RequestParam(value = "kielisyys") String kielisyys,
@@ -170,12 +171,12 @@ public class CasController {
             authorizations = @Authorization("login"),
             response = ResponseEntity.class)
     @PreAuthorize("isAuthenticated()")
-    @RequestMapping(value = "/prequel", method = RequestMethod.POST)
+    @PostMapping(value = "/prequel", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<String> requestPost() {
         return new ResponseEntity<>("ok", HttpStatus.OK);
     }
 
-    @PostMapping(value = "/emailverification/{loginToken}")
+    @PostMapping(value = "/emailverification/{loginToken}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation("Asettaa käyttäjän sähköpostiosoitteet vahvistetuksi")
     public EmailVerificationResponseDto emailVerification(@RequestBody @Validated HenkiloUpdateDto henkiloUpdate,
                                                           @PathVariable String loginToken) {

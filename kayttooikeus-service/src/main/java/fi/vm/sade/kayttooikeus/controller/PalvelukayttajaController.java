@@ -4,17 +4,15 @@ import fi.vm.sade.kayttooikeus.dto.PalvelukayttajaCreateDto;
 import fi.vm.sade.kayttooikeus.dto.PalvelukayttajaCriteriaDto;
 import fi.vm.sade.kayttooikeus.dto.PalvelukayttajaReadDto;
 import fi.vm.sade.kayttooikeus.service.PalvelukayttajaService;
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/palvelukayttaja")
+@RequestMapping(value = "/palvelukayttaja", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @RequiredArgsConstructor
 public class PalvelukayttajaController {
 
@@ -27,7 +25,7 @@ public class PalvelukayttajaController {
         return palvelukayttajaService.list(criteria);
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     public PalvelukayttajaReadDto create(@RequestBody @Valid PalvelukayttajaCreateDto dto) {

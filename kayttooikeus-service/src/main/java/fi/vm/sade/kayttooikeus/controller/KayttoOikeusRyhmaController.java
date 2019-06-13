@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/kayttooikeusryhma")
+@RequestMapping(value = "/kayttooikeusryhma", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @Api(value = "/kayttooikeusryhma", description = "Käyttöoikeusryhmien käsittelyyn liittyvät operaatiot.")
 public class KayttoOikeusRyhmaController {
     private KayttoOikeusService kayttoOikeusService;
@@ -126,7 +127,7 @@ public class KayttoOikeusRyhmaController {
     }
 
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Luo uuden käyttöoikeusryhmän.",
             notes = "Tekee uuden käyttöoikeusryhmän annetun DTO:n pohjalta.")
@@ -136,7 +137,7 @@ public class KayttoOikeusRyhmaController {
     }
 
 
-    @RequestMapping(value = "/kayttooikeus", method = RequestMethod.POST)
+    @PostMapping(value = "/kayttooikeus", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Luo uuden käyttöoikeuden.",
             notes = "Luo uuden käyttöoikeuden annetun käyttöoikeus modelin pohjalta.")
@@ -146,7 +147,7 @@ public class KayttoOikeusRyhmaController {
     }
 
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Päivittää käyttöoikeusryhmän.",
             notes = "Päivittää käyttöoikeusryhmän tiedot annetun DTO:n avulla.")
@@ -155,7 +156,7 @@ public class KayttoOikeusRyhmaController {
         return kayttoOikeusService.findKayttoOikeusRyhma(id, true);
     }
 
-    @RequestMapping(value = "/{id}/passivoi", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}/passivoi", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Passivoi käyttöoikeusryhmän.",
             notes = "Passivoi käyttöoikeusryhmän. ")
@@ -163,7 +164,7 @@ public class KayttoOikeusRyhmaController {
         kayttoOikeusService.passivoiKayttooikeusryhma(id);
     }
 
-    @RequestMapping(value = "/{id}/aktivoi", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}/aktivoi", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Aktivoi käyttöoikeusryhmän.",
             notes = "Aktivoi passivoidun käyttöoikeusryhmän.")
@@ -171,7 +172,7 @@ public class KayttoOikeusRyhmaController {
         this.kayttoOikeusService.aktivoiKayttooikeusryhma(id);
     }
 
-    @RequestMapping(value = "/ryhmasByKayttooikeus", method = RequestMethod.POST)
+    @PostMapping(value = "/ryhmasByKayttooikeus", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_KAYTTOOIKEUSRYHMIEN_LUKU',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation(value = "Listaa käyttöoikeusryhmät käyttooikeuksien mukaan.",

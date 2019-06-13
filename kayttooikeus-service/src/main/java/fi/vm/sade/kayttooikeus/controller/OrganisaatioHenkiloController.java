@@ -9,6 +9,7 @@ import fi.vm.sade.kayttooikeus.service.OrganisaatioHenkiloService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,7 @@ import java.util.Collection;
 import java.util.List;
 
 @RestController
-@RequestMapping("/organisaatiohenkilo")
+@RequestMapping(value = "/organisaatiohenkilo", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @Api(value = "/organisaatiohenkilo", description = "Organisaatiohenkilön käsittelyyn liittyvät operaatiot.")
 public class OrganisaatioHenkiloController {
     private OrganisaatioHenkiloService organisaatioHenkiloService;
@@ -46,14 +47,14 @@ public class OrganisaatioHenkiloController {
     }
 
     @PreAuthorize("@permissionCheckerServiceImpl.hasRoleForOrganisations(#organisaatioHenkiloList, {'KAYTTOOIKEUS': {'CRUD'}})")
-    @RequestMapping(value = "/{oid}/findOrCreate", method = RequestMethod.POST)
+    @PostMapping(value = "/{oid}/findOrCreate", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<OrganisaatioHenkiloDto> findOrCreateOrganisaatioHenkilos(@PathVariable(value = "oid") String oidHenkilo,
                                                                          @RequestBody List<OrganisaatioHenkiloCreateDto> organisaatioHenkiloList) {
         return this.organisaatioHenkiloService.addOrganisaatioHenkilot(oidHenkilo, organisaatioHenkiloList);
     }
 
     @PreAuthorize("@permissionCheckerServiceImpl.hasRoleForOrganisations(#organisaatioHenkiloList, {'KAYTTOOIKEUS': {'CRUD'}})")
-    @RequestMapping(value = "/{oid}/createOrUpdate", method = RequestMethod.PUT)
+    @PutMapping(value = "/{oid}/createOrUpdate", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public List<OrganisaatioHenkiloDto> updateOrganisaatioHenkilos(@PathVariable(value = "oid") String oidHenkilo,
                                                                    @RequestBody List<OrganisaatioHenkiloUpdateDto> organisaatioHenkiloList) {
         return this.organisaatioHenkiloService.createOrUpdateOrganisaatioHenkilos(oidHenkilo, organisaatioHenkiloList);

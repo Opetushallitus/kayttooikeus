@@ -5,6 +5,7 @@ import fi.vm.sade.kayttooikeus.dto.LoginDto;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/userDetails")
+@RequestMapping(value = "/userDetails", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @RequiredArgsConstructor
 public class UserDetailsController {
 
@@ -31,7 +32,7 @@ public class UserDetailsController {
     }
 
     // Palomuurilla rajoitettu pääsy vain verkon sisältä
-    @PostMapping
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public KayttajatiedotReadDto getByUsernameAndPassword(@Valid @RequestBody LoginDto dto) {
         return kayttajatiedotService.getByUsernameAndPassword(dto.getUsername(), dto.getPassword());
     }

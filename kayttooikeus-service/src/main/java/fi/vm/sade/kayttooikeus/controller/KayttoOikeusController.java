@@ -11,16 +11,16 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.ws.rs.core.MediaType;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
 
 @RestController
-@RequestMapping("/kayttooikeus")
+@RequestMapping(value = "/kayttooikeus", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @Api(tags = "Käyttöoikeuksien käsittelyyn liittyvät operaatiot.")
 public class KayttoOikeusController {
     private KayttoOikeusService kayttoOikeusService;
@@ -72,8 +72,8 @@ public class KayttoOikeusController {
             notes = "Tämä on alustavasti vain automaattisen sähköpostimuistutuksen testausta varten.",
             authorizations = @Authorization("ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA"),
             response = Integer.class)
-    @RequestMapping(value = "/expirationReminders", method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON)
+    @PostMapping(value = "/expirationReminders", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+            produces = MediaType.TEXT_PLAIN_VALUE)
     public String sendExpirationReminders(@ApiParam(value = "Vuosi", required = true) @RequestParam("year") int year,
                                        @ApiParam(value = "Kuukausi", required = true) @RequestParam("month") int month,
                                        @ApiParam(value = "Päivä", required = true) @RequestParam("day") int day) {

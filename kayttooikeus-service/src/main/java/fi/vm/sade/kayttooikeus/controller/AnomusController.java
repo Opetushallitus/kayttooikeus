@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ import java.util.Set;
 
 @Api(tags = "Käyttöoikeusanomukset ja käyttöoikeuksien hallinta")
 @RestController
-@RequestMapping("/kayttooikeusanomus")
+@RequestMapping(value = "/kayttooikeusanomus", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class AnomusController {
 
     private final KayttooikeusAnomusService kayttooikeusAnomusService;
@@ -56,7 +57,7 @@ public class AnomusController {
 
     @ApiOperation("Tekee uuden käyttöoikeusanomuksen")
     @PreAuthorize("isAuthenticated()")
-    @RequestMapping(value = "/{anojaOid}", method = RequestMethod.POST)
+    @PostMapping(value = "/{anojaOid}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Long createKayttooikeusAnomus(@ApiParam("Anojan OID") @PathVariable String anojaOid,
                                          @RequestBody @Validated KayttooikeusAnomusDto kayttooikeusAnomusDto) {
         return this.kayttooikeusAnomusService.createKayttooikeusAnomus(anojaOid, kayttooikeusAnomusDto);
@@ -67,7 +68,7 @@ public class AnomusController {
     // Organisation access validated on service layer
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
-    @RequestMapping(value = "", method = RequestMethod.PUT)
+    @PutMapping(value = "", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public void updateHaettuKayttooikeusryhma(@ApiParam("kayttoOikeudenTila MYONNETTY tai HYLATTY")
                                                   @RequestBody @Validated UpdateHaettuKayttooikeusryhmaDto updateHaettuKayttooikeusryhmaDto) {
         this.kayttooikeusAnomusService.updateHaettuKayttooikeusryhma(updateHaettuKayttooikeusryhmaDto);
@@ -77,7 +78,7 @@ public class AnomusController {
     // Organisation access validated on service layer
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
-    @RequestMapping(value = "/{oidHenkilo}/{organisaatioOid}", method = RequestMethod.PUT)
+    @PutMapping(value = "/{oidHenkilo}/{organisaatioOid}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public void grantMyonnettyKayttooikeusryhmaForHenkilo(@PathVariable String oidHenkilo, @PathVariable String organisaatioOid,
                                                           @RequestBody @Validated List<GrantKayttooikeusryhmaDto>
                                                                   grantKayttooikeusryhmaDtoList) {
@@ -86,12 +87,12 @@ public class AnomusController {
 
     @ApiOperation("Poistaa haetun käyttöoikeusryhmän käyttäjän omalta käyttöoikeusanomukselta")
     @PreAuthorize("isAuthenticated()")
-    @RequestMapping(value = "/peruminen/currentuser", method = RequestMethod.PUT)
+    @PutMapping(value = "/peruminen/currentuser", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public void cancelKayttooikeusRyhmaAnomus(@RequestBody @Validated Long kayttooikeusRyhmaId) {
         this.kayttooikeusAnomusService.cancelKayttooikeusAnomus(kayttooikeusRyhmaId);
     }
 
-    @PostMapping("/ilmoitus")
+    @PostMapping(value = "/ilmoitus", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Lähettää käyttöoikeusanomuksista sähköposti-ilmoituksen anomuksien hyväksyjille")
     public void lahetaUusienAnomuksienIlmoitukset(
             @RequestParam

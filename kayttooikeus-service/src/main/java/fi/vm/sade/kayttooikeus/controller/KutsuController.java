@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -26,7 +27,7 @@ import java.util.List;
 import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequestUri;
 
 @RestController
-@RequestMapping("/kutsu")
+@RequestMapping(value = "/kutsu", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @RequiredArgsConstructor
 @Api(tags = "Virkailijan kutsumiseen liittyvät toiminnot")
 public class KutsuController {
@@ -50,7 +51,7 @@ public class KutsuController {
         return this.kutsuService.listKutsus(sortBy, direction, kutsuCriteria, offset, amount);
     }
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation("Uuden kutsun luominen. Vaatii samat oikeudet kuin uuden käyttöoikeuden myöntäminen.")
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_KUTSU_CRUD',"
@@ -77,7 +78,7 @@ public class KutsuController {
         kutsuService.deleteKutsu(id);
     }
 
-    @RequestMapping(value = "/{id}/renew", method = RequestMethod.PUT)
+    @PutMapping(value = "/{id}/renew", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation("Kutsun uusiminen muuttamatta kutsun sisältöä eikä uusimisesta jää tietoa")
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_CRUD',"
             + "'ROLE_APP_KAYTTOOIKEUS_KUTSU_CRUD',"
@@ -86,7 +87,7 @@ public class KutsuController {
         this.kutsuService.renewKutsu(id);
     }
 
-    @RequestMapping(value = "/{temporaryToken}/token/identifier", method = RequestMethod.PUT)
+    @PutMapping(value = "/{temporaryToken}/token/identifier", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation("Kutsun päivittäminen väliaikaisella tokenilla. Sallii osittaisen päivittämisen.")
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     public void updateIdentifierByToken(@PathVariable String temporaryToken,
@@ -108,7 +109,7 @@ public class KutsuController {
 
     // Consumes single use temporary tokens so not authenticated
     @ApiOperation("Luo henkilön väliaikaisella tokenilla. Palauttaa authTokenin kirjautumista varten.")
-    @RequestMapping(value = "/token/{temporaryToken}", method = RequestMethod.POST)
+    @PostMapping(value = "/token/{temporaryToken}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public String createByToken(@PathVariable String temporaryToken,
                                 @Validated @RequestBody HenkiloCreateByKutsuDto henkiloCreateByKutsuDto) {
         // This needs to be done like this since otherwice KO locks the table row for this henkilo and ONR can't update

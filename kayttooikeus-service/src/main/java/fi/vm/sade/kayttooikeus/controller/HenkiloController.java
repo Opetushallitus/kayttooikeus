@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/henkilo")
+@RequestMapping(value = "/henkilo", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @Api(tags = "Henkilöön liittyvät operaatiot")
 @RequiredArgsConstructor
 public class HenkiloController {
@@ -99,14 +100,14 @@ public class HenkiloController {
 
     @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPerson(#henkiloOid, {'KAYTTOOIKEUS': {'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
     @ApiOperation(value = "Päivittää henkilön käyttäjätiedot.")
-    @RequestMapping(value = "/{oid}/kayttajatiedot", method = RequestMethod.PUT)
+    @PutMapping(value = "/{oid}/kayttajatiedot", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public KayttajatiedotReadDto updateKayttajatiedot(@PathVariable("oid") String henkiloOid,
                                                         @RequestBody @Validated KayttajatiedotUpdateDto kayttajatiedot) {
         return kayttajatiedotService.updateKayttajatiedot(henkiloOid, kayttajatiedot);
     }
 
     @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPersonOrSelf(#henkiloOid, {'KAYTTOOIKEUS': {'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, null)")
-    @RequestMapping(value = "/{henkiloOid}/password", method = RequestMethod.POST)
+    @PostMapping(value = "/{henkiloOid}/password", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Asettaa henkilön salasanan.",
             notes = "Asettaa henkilölle uuden salasanan virkailijan "
                     + "toimesta, ei tee tarkistusta vanhalle salasanalle "
@@ -144,7 +145,7 @@ public class HenkiloController {
     }
 
     @PreAuthorize("@permissionCheckerServiceImpl.isAllowedToAccessPerson(#oid, {'KAYTTOOIKEUS': {'CRUD', 'PALVELUKAYTTAJA_CRUD'}}, #permissionService)")
-    @RequestMapping(value = "/{oid}/hakatunnus", method = RequestMethod.PUT)
+    @PutMapping(value = "/{oid}/hakatunnus", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Päivittää henkilön Haka-tunnisteet. ",
             notes = "Päivittää annetun henkilön Haka-tunnisteet.",
             authorizations = @Authorization("ROLE_APP_KAYTTOOIKEUS_CRUD, "
@@ -185,14 +186,14 @@ public class HenkiloController {
         return henkiloService.getKayttooikeudet(oid, criteria);
     }
 
-    @PostMapping("/{oid}/kayttooikeudet")
+    @PostMapping(value = "/{oid}/kayttooikeudet", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @PreAuthorize("hasAnyRole('ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA')")
     @ApiOperation("Palauttaa henkilöiden oid:t joiden tietoihin annetulla henkilöllä on oikeutus")
     public KayttooikeudetDto postKayttooikeudet(@PathVariable String oid, @RequestBody OrganisaatioHenkiloCriteria criteria) {
         return henkiloService.getKayttooikeudet(oid, criteria);
     }
 
-    @PostMapping("/henkilohaku")
+    @PostMapping(value = "/henkilohaku", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @PreAuthorize("isAuthenticated()")
     @ApiOperation(value = "UI:ta varten tehty mahdollisesti HIDAS hakurajapinta. EI tarkoitettu palveluiden käyttöön. Muutosaltis.",
             notes = "Palauttaa suppean setin henkilöiden tietoja annetuilla hakukriteereillä. Toimii eri tavalla eri käyttäjäryhmille! " +
@@ -205,7 +206,7 @@ public class HenkiloController {
         return this.henkiloService.henkilohaku(henkilohakuCriteriaDto, offset, orderBy);
     }
 
-    @PostMapping("/henkilohakucount")
+    @PostMapping(value = "/henkilohakucount", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @PreAuthorize("isAuthenticated()")
     @ApiOperation(value = "UI:ta varten tehty mahdollisesti HIDAS hakurajapinta palauttaa henkilohaun tulosten lukumäärän ilman sivutusrajoitusta",
             notes = "Palauttaa annetuilla rajoitteilla löytyvän henkilöjoukon koon")
@@ -220,7 +221,7 @@ public class HenkiloController {
         return this.henkiloService.getOmatTiedot();
     }
 
-    @PutMapping("/{oid}/anomusilmoitus")
+    @PutMapping(value = "/{oid}/anomusilmoitus", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation("Anomusilmoitus asetuksen muuttaminen")
     @PreAuthorize("@permissionCheckerServiceImpl.isCurrentUserAdmin()")
     public void updateAnomusilmoitus(@PathVariable String oid,

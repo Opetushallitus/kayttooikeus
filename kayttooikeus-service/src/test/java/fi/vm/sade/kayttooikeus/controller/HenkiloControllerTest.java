@@ -22,8 +22,7 @@ import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -89,6 +88,24 @@ public class HenkiloControllerTest extends AbstractControllerTest {
                 .content("\"1.2.3.4.5\"").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
         verify(kayttajatiedotService).changePasswordAsAdmin(eq("1.2.3.4.5"), eq("1.2.3.4.5"));
+    }
+
+    @Test
+    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
+    public void changePasswordForm() throws Exception {
+        mvc.perform(post("/henkilo/{henkiloOid}/password", "1.2.3.4.5")
+                .content("Hacked=1").contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(status().isUnsupportedMediaType());
+        verifyZeroInteractions(kayttajatiedotService);
+    }
+
+    @Test
+    @WithMockUser(username = "1.2.3.4.5", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
+    public void changePasswordContentTypeUndefined() throws Exception {
+        mvc.perform(post("/henkilo/{henkiloOid}/password", "1.2.3.4.5")
+                .content("\"1.2.3.4.5\""))
+                .andExpect(status().isUnsupportedMediaType());
+        verifyZeroInteractions(kayttajatiedotService);
     }
 
 }
