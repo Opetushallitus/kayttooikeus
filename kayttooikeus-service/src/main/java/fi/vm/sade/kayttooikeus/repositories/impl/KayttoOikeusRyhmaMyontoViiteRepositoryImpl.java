@@ -1,20 +1,22 @@
 package fi.vm.sade.kayttooikeus.repositories.impl;
 
-import static com.querydsl.core.group.GroupBy.groupBy;
-import static com.querydsl.core.group.GroupBy.set;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaMyontoViiteRepository;
+import fi.vm.sade.kayttooikeus.repositories.criteria.MyontooikeusCriteria;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static fi.vm.sade.kayttooikeus.model.QKayttoOikeusRyhmaMyontoViite.kayttoOikeusRyhmaMyontoViite;
-import fi.vm.sade.kayttooikeus.repositories.criteria.MyontooikeusCriteria;
 import java.util.Map;
 import java.util.Set;
+
+import static com.querydsl.core.group.GroupBy.groupBy;
+import static com.querydsl.core.group.GroupBy.set;
+import static com.querydsl.core.types.dsl.Expressions.allOf;
+import static fi.vm.sade.kayttooikeus.model.QKayttoOikeusRyhmaMyontoViite.kayttoOikeusRyhmaMyontoViite;
 import static java.util.stream.Collectors.toSet;
 
 @Repository
@@ -61,18 +63,16 @@ public class KayttoOikeusRyhmaMyontoViiteRepositoryImpl
                 .where(henkilo.oidHenkilo.eq(henkiloOid))
                 .distinct();
 
-        if (criteria.getPalvelut() != null || criteria.getRooli() != null) {
+        if (criteria.getKayttooikeudet() != null) {
             QKayttoOikeus kayttoOikeus = QKayttoOikeus.kayttoOikeus;
-            query.join(kayttoOikeusRyhma.kayttoOikeus, kayttoOikeus);
+            QPalvelu palvelu = QPalvelu.palvelu;
 
-            if (criteria.getPalvelut() != null) {
-                QPalvelu palvelu = QPalvelu.palvelu;
-                query.join(kayttoOikeus.palvelu, palvelu);
-                query.where(palvelu.name.in(criteria.getPalvelut()));
-            }
-            if (criteria.getRooli() != null) {
-                query.where(kayttoOikeus.rooli.eq(criteria.getRooli()));
-            }
+            query.join(kayttoOikeusRyhma.kayttoOikeus, kayttoOikeus);
+            query.join(kayttoOikeus.palvelu, palvelu);
+
+            query.where(criteria.getKayttooikeudet().entrySet().stream()
+                    .map(entry -> allOf(palvelu.name.eq(entry.getKey()), kayttoOikeus.rooli.in(entry.getValue())))
+                    .reduce(new BooleanBuilder(), BooleanBuilder::or, BooleanBuilder::or));
         }
 
         return query.transform(groupBy(organisaatioHenkilo.organisaatioOid).as(set(myontoViite.slaveId)));

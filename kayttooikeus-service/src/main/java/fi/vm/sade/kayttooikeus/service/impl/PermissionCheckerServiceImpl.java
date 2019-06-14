@@ -391,17 +391,17 @@ public class PermissionCheckerServiceImpl implements PermissionCheckerService {
     // Check that current user MKRT can grant wanted KOR
     @Override
     public boolean kayttooikeusMyontoviiteLimitationCheck(String organisaatioOid, Long kayttooikeusryhmaId) {
-        return kayttooikeusMyontoviiteLimitationCheck(getCurrentUserOid(), organisaatioOid, kayttooikeusryhmaId);
+        return kayttooikeusMyontoviiteLimitationCheck(getCurrentUserOid(), organisaatioOid, kayttooikeusryhmaId, MyontooikeusCriteria.oletus());
     }
 
     @Override
-    public boolean kayttooikeusMyontoviiteLimitationCheck(String kayttajaOid, String organisaatioOid, Long kayttooikeusryhmaId) {
+    public boolean kayttooikeusMyontoviiteLimitationCheck(String kayttajaOid, String organisaatioOid, Long kayttooikeusryhmaId, MyontooikeusCriteria criteria) {
         boolean rekisterinpitaja = isRekisterinpitaja(kayttajaOid);
         if (rekisterinpitaja) {
             return true;
         }
         Map<String, Set<Long>> myontooikeudet = this.kayttoOikeusRyhmaMyontoViiteRepository
-                .getSlaveIdsByMasterHenkiloOid(kayttajaOid, MyontooikeusCriteria.oletus());
+                .getSlaveIdsByMasterHenkiloOid(kayttajaOid, criteria);
         lisaaAliorganisaatiot(myontooikeudet, rekisterinpitaja);
         return myontooikeudet.getOrDefault(organisaatioOid, emptySet()).contains(kayttooikeusryhmaId);
     }

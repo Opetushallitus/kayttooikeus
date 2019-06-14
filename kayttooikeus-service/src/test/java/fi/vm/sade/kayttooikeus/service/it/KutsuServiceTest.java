@@ -415,6 +415,76 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "1.2.4", authorities = {"ROLE_APP_KAYTTOOIKEUS_KUTSU_CRUD", "ROLE_APP_KAYTTOOIKEUS_KUTSU_CRUD_1.2.3.4.5"})
+    public void createKutsuAsNormalUserWithKutsuCrud() {
+        given(this.ryhmasahkopostiClient.sendRyhmasahkoposti(any())).willReturn("12345");
+        doReturn(HenkiloDto.builder()
+                .kutsumanimi("kutsun")
+                .sukunimi("kutsuja")
+                .yksiloityVTJ(true)
+                .hetu("valid hetu")
+                .build())
+                .when(this.oppijanumerorekisteriClient).getHenkiloByOid(anyString());
+
+        OrganisaatioPerustieto org1 = new OrganisaatioPerustieto();
+        org1.setOid("1.2.3.4.1");
+        org1.setNimi(new TextGroupMapDto().put("FI", "Kutsuttu organisaatio").asMap());
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(eq("1.2.3.4.1")))
+                .willReturn(Optional.of(org1));
+        given(this.organisaatioClient.listWithParentsAndChildren(eq("1.2.3.4.1"), any()))
+                .willReturn(asList(org1));
+        OrganisaatioPerustieto org2 = new OrganisaatioPerustieto();
+        org2.setOid("1.2.3.4.5");
+        org2.setNimi(new TextGroupMapDto().put("FI", "Käyttäjän organisaatio").asMap());
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(eq("1.2.3.4.5")))
+                .willReturn(Optional.of(org2));
+        given(this.organisaatioClient.listWithParentsAndChildren(eq("1.2.3.4.5"), any()))
+                .willReturn(asList(org2));
+
+        MyonnettyKayttoOikeusRyhmaTapahtuma myonnetty = populate(myonnettyKayttoOikeus(
+                organisaatioHenkilo(virkailija("1.2.4"), "1.2.3.4.5"),
+                kayttoOikeusRyhma("kayttoOikeusRyhma")
+                        .withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_KUTSU_CRUD))));
+        KayttoOikeusRyhma myonnettava = populate(kayttoOikeusRyhma("RYHMA2")
+                .withOrganisaatiorajoite("1.2.3.4.1")
+                .withNimi(text("fi", "Käyttöoikeusryhmä")));
+        populate(kayttoOikeusRyhmaMyontoViite(myonnetty.getKayttoOikeusRyhma().getId(),
+                myonnettava.getId()));
+
+        KutsuCreateDto.KutsuKayttoOikeusRyhmaCreateDto kutsuKayttoOikeusRyhma = new KutsuCreateDto.KutsuKayttoOikeusRyhmaCreateDto();
+        kutsuKayttoOikeusRyhma.setId(myonnettava.getId());
+        given(this.organisaatioClient.listWithChildOids(eq("1.2.3.4.5"), any()))
+                .willReturn(Stream.of("1.2.3.4.5", "1.2.3.4.1").collect(toSet()));
+
+        KutsuCreateDto kutsu = new KutsuCreateDto();
+        kutsu.setEtunimi("Etu");
+        kutsu.setSukunimi("Suku");
+        kutsu.setSahkoposti("example@example.com");
+        kutsu.setAsiointikieli(Asiointikieli.fi);
+        kutsu.setOrganisaatiot(new LinkedHashSet<>());
+        KutsuCreateDto.KutsuOrganisaatioCreateDto kutsuOrganisaatio = new KutsuCreateDto.KutsuOrganisaatioCreateDto();
+        kutsuOrganisaatio.setOrganisaatioOid("1.2.3.4.1");
+        kutsuOrganisaatio.setKayttoOikeusRyhmat(Stream.of(kutsuKayttoOikeusRyhma).collect(toSet()));
+        kutsu.getOrganisaatiot().add(kutsuOrganisaatio);
+
+        long id = kutsuService.createKutsu(kutsu);
+        KutsuReadDto tallennettu = kutsuService.getKutsu(id);
+
+        assertThat(tallennettu.getAsiointikieli()).isEqualByComparingTo(Asiointikieli.fi);
+        assertThat(tallennettu.getOrganisaatiot())
+                .hasSize(1)
+                .flatExtracting(KutsuReadDto.KutsuOrganisaatioReadDto::getKayttoOikeusRyhmat)
+                .hasSize(1)
+                .extracting(KutsuReadDto.KutsuKayttoOikeusRyhmaReadDto::getNimi)
+                .flatExtracting(TextGroupMapDto::getTexts)
+                .extracting("fi")
+                .containsExactly("Käyttöoikeusryhmä");
+
+        Kutsu entity = this.em.find(Kutsu.class, id);
+        assertThat(entity.getSalaisuus()).isNotEmpty();
+    }
+
+    @Test
     @WithMockUser(username = "1.2.3", authorities = {"ROLE_APP_KAYTTOOIKEUS_KUTSU_CRUD", "ROLE_APP_KAYTTOOIKEUS_KUTSU_CRUD_1.2.3.4.5"})
     public void createKutsuAsPalvelukayttaja() {
         given(this.ryhmasahkopostiClient.sendRyhmasahkoposti(any())).willReturn("12345");

@@ -8,6 +8,7 @@ import fi.vm.sade.kayttooikeus.enumeration.KutsuOrganisaatioOrder;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KutsuCriteria;
+import fi.vm.sade.kayttooikeus.repositories.criteria.MyontooikeusCriteria;
 import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
 import fi.vm.sade.kayttooikeus.service.*;
 import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
@@ -95,10 +96,7 @@ public class KutsuServiceImpl implements KutsuService {
                 .orElseThrow(() -> new DataInconsistencyException(String.format("Käyttäjää '%s' ei löytynyt", kayttajaOid)));
         String kutsujaOid = getKutsujaOid(kayttaja, kutsuCreateDto);
         if (!Objects.equals(kayttajaOid, kutsujaOid)) {
-            Set<String> kutsuOrganisaatioOids = kutsuCreateDto.getOrganisaatiot().stream()
-                    .map(KutsuCreateDto.KutsuOrganisaatioCreateDto::getOrganisaatioOid)
-                    .collect(Collectors.toSet());
-            throwIfNotInHierarchy(kutsuOrganisaatioOids);
+            throwIfNotInHierarchy(kutsuCreateDto);
         }
         if (!this.permissionCheckerService.isCurrentUserAdmin()) {
             this.organisaatioViiteLimitationsAreValidThrows(kutsuCreateDto.getOrganisaatiot());
@@ -164,6 +162,13 @@ public class KutsuServiceImpl implements KutsuService {
         }
     }
 
+    private void throwIfNotInHierarchy(KutsuCreateDto kutsuCreateDto) {
+        Set<String> organisaatioOids = kutsuCreateDto.getOrganisaatiot().stream()
+                .map(KutsuCreateDto.KutsuOrganisaatioCreateDto::getOrganisaatioOid)
+                .collect(Collectors.toSet());
+        this.throwIfNotInHierarchy(organisaatioOids);
+    }
+
     private void throwIfNotInHierarchy(Collection<String> organisaatioOids) {
         Map<String, List<String>> kayttooikeudet = singletonMap(PALVELU_KAYTTOOIKEUS, asList(ROLE_CRUD, ROLE_KUTSU_CRUD));
         Set<String> accessibleOrganisationOids = this.permissionCheckerService.hasOrganisaatioInHierarchy(organisaatioOids, kayttooikeudet);
@@ -189,7 +194,9 @@ public class KutsuServiceImpl implements KutsuService {
         // the granting person doesn't have access rights limitations (except admin users who have full access)
         kutsuOrganisaatioDtos.forEach(kutsuOrganisaatioDto -> kutsuOrganisaatioDto.getKayttoOikeusRyhmat()
                 .forEach(kayttoOikeusRyhmaDto -> {
-                    if (!this.permissionCheckerService.kayttooikeusMyontoviiteLimitationCheck(kayttajaOid, kutsuOrganisaatioDto.getOrganisaatioOid(), kayttoOikeusRyhmaDto.getId())) {
+                    if (!this.permissionCheckerService.kayttooikeusMyontoviiteLimitationCheck(kayttajaOid,
+                            kutsuOrganisaatioDto.getOrganisaatioOid(), kayttoOikeusRyhmaDto.getId(),
+                            MyontooikeusCriteria.kutsu())) {
                         throw new ForbiddenException("User doesn't have access rights to grant this group for group "
                                 + kayttoOikeusRyhmaDto.getId());
                     }
