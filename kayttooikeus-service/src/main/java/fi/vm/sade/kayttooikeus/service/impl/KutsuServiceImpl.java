@@ -262,15 +262,16 @@ public class KutsuServiceImpl implements KutsuService {
     public HenkiloUpdateDto createHenkilo(String temporaryToken, HenkiloCreateByKutsuDto henkiloCreateByKutsuDto) {
         Kutsu kutsuByToken = this.kutsuRepository.findByTemporaryTokenIsValidIsActive(temporaryToken)
                 .orElseThrow(() -> new NotFoundException("Could not find kutsu by token " + temporaryToken + " or token is invalid"));
+        Optional<HenkiloDto> henkiloByHetu = this.oppijanumerorekisteriClient.getHenkiloByHetu(kutsuByToken.getHetu());
         if (StringUtils.isEmpty(kutsuByToken.getHakaIdentifier())) {
             // Validation
             this.cryptoService.throwIfNotStrongPassword(henkiloCreateByKutsuDto.getPassword());
-            this.kayttajatiedotService.throwIfUsernameExists(henkiloCreateByKutsuDto.getKayttajanimi());
+            this.kayttajatiedotService.throwIfUsernameExists(henkiloCreateByKutsuDto.getKayttajanimi(),
+                    henkiloByHetu.map(HenkiloDto::getOidHenkilo));
             this.kayttajatiedotService.throwIfUsernameIsNotValid(henkiloCreateByKutsuDto.getKayttajanimi());
         }
 
         // Search for existing henkilo by hetu and create new if not found
-        Optional<HenkiloDto> henkiloByHetu = this.oppijanumerorekisteriClient.getHenkiloByHetu(kutsuByToken.getHetu());
         boolean isNewHenkilo = !henkiloByHetu.isPresent();
         String henkiloOid;
         if(isNewHenkilo) {

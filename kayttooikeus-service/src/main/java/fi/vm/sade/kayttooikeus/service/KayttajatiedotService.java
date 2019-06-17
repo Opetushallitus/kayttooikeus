@@ -28,6 +28,8 @@ public interface KayttajatiedotService {
 
     void throwIfUsernameExists(String username);
 
+    void throwIfUsernameExists(String username, Optional<String> henkiloOid);
+
     void throwIfUsernameIsNotValid(String username);
 
     void throwIfOldPassword(String oidHenkilo, String password);

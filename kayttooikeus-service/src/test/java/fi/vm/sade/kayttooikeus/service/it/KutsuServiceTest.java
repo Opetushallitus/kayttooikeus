@@ -843,6 +843,53 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     }
 
     @Test
+    public void createHenkiloHetuExistsKayttajatiedotSame() {
+        given(this.oppijanumerorekisteriClient.getHenkilonPerustiedot(eq("1.2.3.4.1")))
+                .willReturn(Optional.of(HenkiloPerustietoDto.builder().hetu("valid hetu").build()));
+        Kutsu kutsu = populate(KutsuPopulator.kutsu("arpa", "kuutio", "arpa@kuutio.fi")
+                .temporaryToken("123")
+                .hetu("hetu")
+                .kutsuja("1.2.3.4.1")
+                .organisaatio(KutsuOrganisaatioPopulator.kutsuOrganisaatio("1.2.0.0.1")
+                        .ryhma(KayttoOikeusRyhmaPopulator.kayttoOikeusRyhma("ryhma").withNimi(text("FI", "Kuvaus")))));
+        populate(HenkiloPopulator.henkilo("1.2.3.4.5"));
+        Henkilo henkilo = populate(OrganisaatioHenkiloPopulator.organisaatioHenkilo(
+                HenkiloPopulator.henkilo("1.2.0.0.2").withUsername("arpauser"),
+                "2.1.0.1"))
+                .getHenkilo();
+        populate(HenkiloPopulator.henkilo("1.2.3.4.1"));
+        doReturn(Optional.of(new HenkiloDto().builder().oidHenkilo("1.2.0.0.2").build())).when(this.oppijanumerorekisteriClient).getHenkiloByHetu("hetu");
+
+        HenkiloCreateByKutsuDto henkiloCreateByKutsuDto = new HenkiloCreateByKutsuDto("arpa",
+                new KielisyysDto("fi", null), "arpauser", "stronkPassword1!");
+        given(this.oppijanumerorekisteriClient.getHenkiloByOid(any())).willReturn(new HenkiloDto());
+        OrganisaatioPerustieto organisaatio = OrganisaatioPerustieto.builder().status(OrganisaatioStatus.AKTIIVINEN).build();
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any())).willReturn(Optional.of(organisaatio));
+
+        this.kutsuService.createHenkilo("123", henkiloCreateByKutsuDto);
+        assertThat(henkilo.getOidHenkilo()).isEqualTo("1.2.0.0.2");
+        assertThat(henkilo.getKayttajatiedot().getUsername()).isEqualTo("arpauser");
+        assertThat(henkilo.getKayttajatiedot().getPassword()).isNotEmpty();
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
+                .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
+                .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKayttoOikeusRyhma)
+                .extracting(KayttoOikeusRyhma::getTunniste)
+                .containsExactly("ryhma");
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
+                .flatExtracting(OrganisaatioHenkilo::getMyonnettyKayttoOikeusRyhmas)
+                .extracting(MyonnettyKayttoOikeusRyhmaTapahtuma::getKasittelija)
+                .extracting(Henkilo::getOidHenkilo)
+                .containsExactly("1.2.3.4.1");
+        assertThat(organisaatioHenkiloRepository.findByHenkilo(henkilo))
+                .flatExtracting(OrganisaatioHenkilo::getOrganisaatioOid)
+                .containsExactlyInAnyOrder("1.2.0.0.1", "2.1.0.1");
+
+        assertThat(kutsu.getLuotuHenkiloOid()).isEqualTo(henkilo.getOidHenkilo());
+        assertThat(kutsu.getTemporaryToken()).isNull();
+        assertThat(kutsu.getTila()).isEqualTo(KutsunTila.KAYTETTY);
+    }
+
+    @Test
     public void createHenkiloWithHakaIdentifier() {
         given(this.oppijanumerorekisteriClient.getHenkilonPerustiedot(eq("1.2.3.4.1")))
                 .willReturn(Optional.of(HenkiloPerustietoDto.builder().hetu("valid hetu").build()));

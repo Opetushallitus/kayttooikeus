@@ -41,17 +41,17 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
         }
 
         Kayttajatiedot kayttajatiedot = mapper.map(createDto, Kayttajatiedot.class);
-        validateUsernameUnique(kayttajatiedot.getUsername(), henkilo.getOidHenkilo());
+        if (!isUsernameUnique(kayttajatiedot.getUsername(), Optional.ofNullable(henkilo.getOidHenkilo()))) {
+            throw new IllegalArgumentException("Käyttäjänimi on jo käytössä");
+        }
         return saveKayttajatiedot(henkilo, kayttajatiedot);
     }
 
-    private void validateUsernameUnique(String username, String henkiloOid) {
-        henkiloDataRepository.findByKayttajatiedotUsername(username)
-                .ifPresent(henkiloByUsername -> {
-                    if (henkiloOid == null || !henkiloOid.equals(henkiloByUsername.getOidHenkilo())) {
-                        throw new IllegalArgumentException("Käyttäjänimi on jo käytössä");
-                    }
-                });
+    private boolean isUsernameUnique(String username, Optional<String> henkiloOid) {
+        return henkiloDataRepository.findByKayttajatiedotUsername(username)
+                .map(henkiloByUsername -> henkiloOid.map(henkiloByUsername.getOidHenkilo()::equals)
+                        .orElse(false))
+                .orElse(true);
     }
 
     @Override
@@ -60,10 +60,9 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
         if (StringUtils.hasLength(username)) {
             Optional<Kayttajatiedot> kayttajatiedot = this.kayttajatiedotRepository.findByHenkiloOidHenkilo(oidHenkilo);
             if (kayttajatiedot.isPresent()) {
-                this.kayttajatiedotRepository.findByUsername(username)
-                        .ifPresent((Kayttajatiedot t) -> {
-                            throw new IllegalArgumentException("Käyttäjänimi on jo käytössä");
-                        });
+                if (!isUsernameUnique(username, Optional.ofNullable(oidHenkilo))) {
+                    throw new IllegalArgumentException("Käyttäjänimi on jo käytössä");
+                }
                 kayttajatiedot.get().setUsername(username);
             }
             else {
@@ -97,11 +96,9 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
     }
 
     private KayttajatiedotReadDto updateKayttajatiedot(Henkilo henkilo, KayttajatiedotUpdateDto kayttajatiedotUpdateDto) {
-        kayttajatiedotRepository.findByUsername(kayttajatiedotUpdateDto.getUsername()).ifPresent(kayttajatiedot -> {
-            if(!kayttajatiedot.getHenkilo().equals(henkilo)) {
-                throw new IllegalArgumentException("Käyttäjänimi on jo käytössä");
-            }
-        });
+        if (!isUsernameUnique(kayttajatiedotUpdateDto.getUsername(), Optional.ofNullable(henkilo.getOidHenkilo()))) {
+            throw new IllegalArgumentException("Käyttäjänimi on jo käytössä");
+        }
         Kayttajatiedot kayttajatiedot = Optional.ofNullable(henkilo.getKayttajatiedot()).orElseGet(() -> {
             if (!KayttajaTyyppi.PALVELU.equals(henkilo.getKayttajaTyyppi())) {
                 throw new ValidationException("Vain palvelukäyttäjälle voi lisätä käyttäjätunnuksen");
@@ -129,10 +126,14 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
     @Override
     @Transactional(readOnly = true)
     public void throwIfUsernameExists(String username) {
-        this.kayttajatiedotRepository.findByUsername(username)
-                .ifPresent(foundUsername -> {
-                    throw new UsernameAlreadyExistsException(String.format("Username %s already exists", foundUsername));
-                });
+        throwIfUsernameExists(username, Optional.empty());
+    }
+
+    @Override
+    public void throwIfUsernameExists(String username, Optional<String> henkiloOid) {
+        if (!isUsernameUnique(username, henkiloOid)) {
+            throw new UsernameAlreadyExistsException(String.format("Username %s already exists", username));
+        }
     }
 
     @Override
