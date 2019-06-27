@@ -11,14 +11,14 @@ import org.springframework.context.annotation.Primary;
 @Configuration
 public class HttpClientConfiguration {
 
-    private static final String SUBSYSTEM_CODE = "kayttooikeus";
+    private static final String CALLER_ID = "1.2.246.562.10.00000000001.kayttooikeus-service.backend";
     public static final String HTTP_CLIENT_OPPIJANUMEROREKISTERI = "httpClientOppijanumerorekisteri";
     public static final String HTTP_CLIENT_VIESTINTA = "httpClientViestinta";
 
     @Bean
     @Primary
     public OphHttpClient httpClient() {
-        return new OphHttpClient.Builder(SUBSYSTEM_CODE).build();
+        return new OphHttpClient.Builder(CALLER_ID).build();
     }
 
     @Bean(HTTP_CLIENT_OPPIJANUMEROREKISTERI)
@@ -29,7 +29,7 @@ public class HttpClientConfiguration {
                 .webCasUrl(properties.url("cas.url"))
                 .casServiceUrl(properties.url("oppijanumerorekisteri-service.security-check"))
                 .build();
-        return new OphHttpClient.Builder(SUBSYSTEM_CODE).authenticator(authenticator).build();
+        return new OphHttpClient.Builder(CALLER_ID).authenticator(authenticator).build();
     }
 
     @Bean(HTTP_CLIENT_VIESTINTA)
@@ -40,7 +40,7 @@ public class HttpClientConfiguration {
                 .webCasUrl(properties.url("cas.url"))
                 .casServiceUrl(properties.url("ryhmasahkoposti-service.security-check"))
                 .build();
-        return new OphHttpClient.Builder(SUBSYSTEM_CODE).authenticator(authenticator).build();
+        return new OphHttpClient.Builder(CALLER_ID).authenticator(authenticator).build();
     }
 
 }
