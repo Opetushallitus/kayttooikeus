@@ -33,6 +33,9 @@ service-users:
   viestinta:
     username: test
     password: test
+  organisaatio:
+    username: test
+    password: test
   oppijanumerorekisteri:
     username: test
     password: test

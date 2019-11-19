@@ -3,7 +3,7 @@ package fi.vm.sade.kayttooikeus.controller;
 import fi.vm.sade.kayttooikeus.dto.HenkiloReadDto;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloTyyppi;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto;
-import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto.OrganisaatioDto;
+import fi.vm.sade.kayttooikeus.dto.OrganisaatioWithChildrenDto;
 import fi.vm.sade.kayttooikeus.dto.TextGroupMapDto;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
@@ -68,7 +68,7 @@ public class HenkiloControllerTest extends AbstractControllerTest {
                         .tyyppi(OrganisaatioHenkiloTyyppi.HAKIJA)
                         .passivoitu(false)
                         .tehtavanimike("Devaaja")
-                        .organisaatio(OrganisaatioDto.builder()
+                        .organisaatio(OrganisaatioWithChildrenDto.builder()
                                 .oid("1.2.3.4.7")
                                 .nimi(new TextGroupMapDto().put("fi", "Suomeksi")
                                         .put("sv", "Ruotsiksi"))

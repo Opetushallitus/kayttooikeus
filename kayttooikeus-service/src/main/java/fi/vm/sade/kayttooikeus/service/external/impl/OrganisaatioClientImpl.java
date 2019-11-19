@@ -13,15 +13,17 @@ import fi.vm.sade.kayttooikeus.service.external.OrganisaatioHakutulos;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.organisaatio.resource.dto.OrganisaatioRDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.carrotsearch.sizeof.RamUsageEstimator.humanReadableUnits;
 import static com.carrotsearch.sizeof.RamUsageEstimator.sizeOf;
+import static fi.vm.sade.kayttooikeus.config.HttpClientConfiguration.HTTP_CLIENT_ORGANISAATIO;
 import static fi.vm.sade.kayttooikeus.service.external.ExternalServiceException.mapper;
 import static fi.vm.sade.kayttooikeus.service.external.impl.HttpClientUtil.noContentOrNotFoundException;
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.io;
@@ -42,7 +44,7 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
     private OrganisaatioCache cache;
     
     
-    public OrganisaatioClientImpl(OphHttpClient httpClient,
+    public OrganisaatioClientImpl(@Qualifier(HTTP_CLIENT_ORGANISAATIO) OphHttpClient httpClient,
                                   UrlConfiguration urlConfiguration,
                                   ObjectMapper objectMapper,
                                   CommonProperties commonProperties,
@@ -106,6 +108,16 @@ public class OrganisaatioClientImpl implements OrganisaatioClient {
     @Override
     public Optional<OrganisaatioPerustieto> getOrganisaatioPerustiedotCached(String oid) {
         return this.cache.getByOid(oid);
+    }
+
+    @Override
+    public OrganisaatioPerustieto getRoot() {
+        return this.cache.getRoot();
+    }
+
+    @Override
+    public Stream<OrganisaatioPerustieto> stream() {
+        return this.cache.getAllOrganisaatios();
     }
 
     @Override

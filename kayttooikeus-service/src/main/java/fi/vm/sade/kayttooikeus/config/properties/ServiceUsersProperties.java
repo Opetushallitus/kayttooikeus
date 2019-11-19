@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "service-users")
 public class ServiceUsersProperties {
     private ServiceUserAccount viestinta;
+    private ServiceUserAccount organisaatio;
     private ServiceUserAccount oppijanumerorekisteri;
     
     @Getter

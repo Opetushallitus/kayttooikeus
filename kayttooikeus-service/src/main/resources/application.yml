@@ -68,6 +68,9 @@ service-users:
   viestinta:
     username: ${service-users.default.username}
     password: ${service-users.default.password}
+  organisaatio:
+    username: ${service-users.default.username}
+    password: ${service-users.default.password}
   oppijanumerorekisteri:
     username: ${service-users.default.username}
     password: ${service-users.default.password}

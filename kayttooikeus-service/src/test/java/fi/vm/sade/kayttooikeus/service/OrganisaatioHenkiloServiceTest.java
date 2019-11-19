@@ -1,7 +1,7 @@
 package fi.vm.sade.kayttooikeus.service;
 
 import fi.vm.sade.kayttooikeus.dto.*;
-import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto.OrganisaatioDto;
+import fi.vm.sade.kayttooikeus.dto.OrganisaatioWithChildrenDto;
 import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.AnomusRepository;
@@ -103,22 +103,22 @@ public class OrganisaatioHenkiloServiceTest extends AbstractServiceIntegrationTe
         List<OrganisaatioHenkiloWithOrganisaatioDto> result = organisaatioHenkiloService.listOrganisaatioHenkilos("1.2.3.4.5", "fi", null);
         assertThat(result)
                 .extracting(OrganisaatioHenkiloWithOrganisaatioDto::getOrganisaatio)
-                .extracting(OrganisaatioDto::getOid)
+                .extracting(OrganisaatioWithChildrenDto::getOid)
                 .containsExactlyInAnyOrder("1.2.3.4.1", "1.2.3.4.2", "1.2.3.4.3");
         assertThat(result)
                 .extracting(OrganisaatioHenkiloWithOrganisaatioDto::getOrganisaatio)
-                .flatExtracting(OrganisaatioDto::getChildren)
-                .extracting(OrganisaatioDto::getOid)
+                .flatExtracting(OrganisaatioWithChildrenDto::getChildren)
+                .extracting(OrganisaatioWithChildrenDto::getOid)
                 .containsExactlyInAnyOrder("1.2.3.4.2.2");
         assertThat(result)
                 .extracting(OrganisaatioHenkiloWithOrganisaatioDto::getOrganisaatio)
-                .extracting(OrganisaatioDto::getNimi)
+                .extracting(OrganisaatioWithChildrenDto::getNimi)
                 .extracting(TextGroupMapDto::getTexts)
                 .flatExtracting(Map::values)
                 .containsExactlyInAnyOrder("Only in English", "Suomeksi", "In English", "Okänd organisation", "Tuntematon organisaatio", "Unknown organisation");
         assertThat(result)
                 .extracting(OrganisaatioHenkiloWithOrganisaatioDto::getOrganisaatio)
-                .flatExtracting(OrganisaatioDto::getTyypit)
+                .flatExtracting(OrganisaatioWithChildrenDto::getTyypit)
                 .containsExactlyInAnyOrder("KOULUTUSTOIMIJA", "OPPILAITOS", "KOULUTUSTOIMIJA");
         assertThat(result)
                 .extracting(OrganisaatioHenkiloWithOrganisaatioDto::getTehtavanimike)

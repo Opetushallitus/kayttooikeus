@@ -4,7 +4,7 @@ import com.google.common.collect.Sets;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.*;
-import fi.vm.sade.kayttooikeus.dto.OrganisaatioHenkiloWithOrganisaatioDto.OrganisaatioDto;
+import fi.vm.sade.kayttooikeus.dto.OrganisaatioWithChildrenDto;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria;
@@ -83,8 +83,8 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
                         comparingPrimarlyBy(ofNullable(compareByLang).orElse(FALLBACK_LANGUAGE)))).collect(toList());
     }
 
-    private OrganisaatioDto mapOrganisaatioDtoRecursive(OrganisaatioPerustieto perustiedot, String compareByLang, boolean passiiviset) {
-        OrganisaatioDto dto = new OrganisaatioDto();
+    private OrganisaatioWithChildrenDto mapOrganisaatioDtoRecursive(OrganisaatioPerustieto perustiedot, String compareByLang, boolean passiiviset) {
+        OrganisaatioWithChildrenDto dto = new OrganisaatioWithChildrenDto();
         dto.setOid(perustiedot.getOid());
         dto.setNimi(new TextGroupMapDto(null, perustiedot.getNimi()));
         dto.setParentOidPath(perustiedot.getParentOidPath());
@@ -93,7 +93,7 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
         dto.setChildren(perustiedot.getChildren().stream()
                .filter(new OrganisaatioMyontoPredicate(passiiviset))
                 .map(child -> mapOrganisaatioDtoRecursive(child, compareByLang, passiiviset))
-                .sorted(Comparator.comparing(OrganisaatioDto::getNimi, comparingPrimarlyBy(ofNullable(compareByLang).orElse(FALLBACK_LANGUAGE))))
+                .sorted(Comparator.comparing(OrganisaatioWithChildrenDto::getNimi, comparingPrimarlyBy(ofNullable(compareByLang).orElse(FALLBACK_LANGUAGE))))
                 .collect(toList()));
         return dto;
     }

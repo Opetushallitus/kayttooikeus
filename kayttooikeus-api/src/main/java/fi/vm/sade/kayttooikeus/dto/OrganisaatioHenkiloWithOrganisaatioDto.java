@@ -1,24 +1,22 @@
 package fi.vm.sade.kayttooikeus.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import fi.vm.sade.kayttooikeus.dto.enumeration.OrganisaatioStatus;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class OrganisaatioHenkiloWithOrganisaatioDto extends OrganisaatioHenkiloDto {
-    private OrganisaatioDto organisaatio;
+    private OrganisaatioWithChildrenDto organisaatio;
     
     @Builder(builderMethodName = "organisaatioBuilder")
     public OrganisaatioHenkiloWithOrganisaatioDto(long id, String organisaatioOid,
                                                   OrganisaatioHenkiloTyyppi tyyppi,
                                                   String tehtavanimike, boolean passivoitu,
                                                   LocalDate voimassaAlkuPvm, LocalDate voimassaLoppuPvm,
-                                                  OrganisaatioDto organisaatio) {
+                                                  OrganisaatioWithChildrenDto organisaatio) {
         super(id, organisaatioOid, tyyppi, tehtavanimike, passivoitu, voimassaAlkuPvm, voimassaLoppuPvm);
         this.organisaatio = organisaatio;
     }
@@ -42,22 +40,9 @@ public class OrganisaatioHenkiloWithOrganisaatioDto extends OrganisaatioHenkiloD
     public void setOrganisaatioOid(String oid) {
         super.setOrganisaatioOid(oid);
         if (organisaatio == null) {
-            organisaatio = new OrganisaatioDto();
+            organisaatio = new OrganisaatioWithChildrenDto();
         }
         organisaatio.setOid(oid);
     }
-    
-    @Getter
-    @Setter
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class OrganisaatioDto {
-        private String oid;
-        private String parentOidPath;
-        private TextGroupMapDto nimi;
-        private List<String> tyypit;
-        private List<OrganisaatioDto> children;
-        private OrganisaatioStatus status;
-    }
+
 }

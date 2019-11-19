@@ -1,13 +1,17 @@
 package fi.vm.sade.kayttooikeus.service.external;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public interface OrganisaatioClient {
     List<String> getChildOids(String organisaatioOid);
+
+    OrganisaatioPerustieto getRoot();
+
+    Stream<OrganisaatioPerustieto> stream();
 
     /**
      * @param organisaatioOid Haettava organisaatio

@@ -29,6 +29,9 @@ service-users:
   viestinta:
     username: {{authentication_app_username_to_viestinta}}
     password: {{authentication_app_password_to_viestinta}}
+  organisaatio:
+    username: {{kayttooikeus_username}}
+    password: {{kayttooikeus_password}}
   oppijanumerorekisteri:
     username: {{authentication_app_username_to_oppijanumerorekisteri}}
     password: {{authentication_app_password_to_oppijanumerorekisteri}}
