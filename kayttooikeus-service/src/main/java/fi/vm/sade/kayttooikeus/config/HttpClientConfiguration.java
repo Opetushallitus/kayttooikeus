@@ -41,7 +41,7 @@ public class HttpClientConfiguration {
                 .webCasUrl(properties.url("cas.url"))
                 .casServiceUrl(properties.url("organisaatio-service.security-check"))
                 .build();
-        return new OphHttpClient.Builder(CALLER_ID).authenticator(authenticator).build();
+        return new OphHttpClient.Builder(CALLER_ID).setSocketTimeoutMs(100000).timeoutMs(100000).authenticator(authenticator).build();
     }
 
     @Bean(HTTP_CLIENT_VIESTINTA)
