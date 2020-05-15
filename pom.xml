@@ -55,7 +55,7 @@
         <!-- QA -->
         <jadler.version>1.3.0</jadler.version>
 
-        <orika.version>1.5.1</orika.version>
+        <orika.version>1.5.4</orika.version>
     </properties>
 
 
@@ -226,8 +226,7 @@ vcsRevision=${revision}
 buildTtime=${maven.build.timestamp}
 ]]>
                                     </echo>
-                                    <loadfile property="buildversiontxt"
-                                              srcFile="${project.build.directory}/classes/static/buildversion.txt"/>
+                                    <loadfile property="buildversiontxt" srcFile="${project.build.directory}/classes/static/buildversion.txt"/>
                                     <echo message="${buildversiontxt}"/>
                                     <echo file="target/mavenversion.txt">${project.version}</echo>
                                 </target>
