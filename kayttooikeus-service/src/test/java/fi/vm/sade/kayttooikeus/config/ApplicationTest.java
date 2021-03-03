@@ -23,13 +23,14 @@ public @interface ApplicationTest {
         public void beforeTestClass(TestContext testContext) throws Exception {
             int port = portNumberBySystemPropertyOrFree("test.port");
             System.setProperty("host-virkailija", "localhost:"+port);
+            System.setProperty("host-oppija", "localhost:"+port);
             System.setProperty("host-cas", "localhost:"+port);
-            System.setProperty("host-shibboleth", "localhost:"+port);
             System.setProperty("host-varda", "localhost:"+port);
             System.setProperty("url-virkailija", "http://localhost:"+port);
             System.setProperty("url-varda", "http://localhost:"+port);
             System.setProperty("organisaatio-service.baseUrl", "http://localhost:"+port);
             System.setProperty("cas.url", "http://localhost:"+port+"/cas");
+            System.setProperty("cas.oppija.url", "http://localhost:"+port+"/cas-oppija");
         }
     }
 }

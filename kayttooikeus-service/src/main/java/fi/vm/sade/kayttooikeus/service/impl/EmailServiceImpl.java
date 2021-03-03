@@ -253,13 +253,13 @@ public class EmailServiceImpl implements EmailService {
             put("kutsuToken", kutsu.getSalaisuus());
             put("kielisyys", kutsu.getKieliKoodi());
         }};
-        String shibbolethKayttooikeusTunnistusUrl = this.urlProperties
-                .url("shibboleth.kayttooikeus-service.cas.tunnistus", targetUrlQueryParams);
+        String kayttooikeusTunnistusUrl = this.urlProperties
+                .url("kayttooikeus-service.cas.tunnistus", targetUrlQueryParams);
         Map<String, String> urlQueryParams = new HashMap<String, String>() {{
-            put("target", shibbolethKayttooikeusTunnistusUrl);
+            put("service", kayttooikeusTunnistusUrl);
         }};
         recipient.setRecipientReplacements(asList(replacement("linkki", this.urlProperties
-                        .url("shibboleth.identification", kutsu.getKieliKoodi().toUpperCase(), urlQueryParams)),
+                        .url("cas.oppija.identification", kutsu.getKieliKoodi().toUpperCase(), urlQueryParams)),
                 replacement("vastaanottaja", mapper.map(kutsu, SahkopostiHenkiloDto.class)),
                 replacement("organisaatiot", kutsu.getOrganisaatiot().stream()
                         .map(org -> new OranizationReplacement(new TextGroupMapDto(
