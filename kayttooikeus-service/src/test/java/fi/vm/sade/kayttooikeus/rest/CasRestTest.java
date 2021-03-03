@@ -1,7 +1,10 @@
 package fi.vm.sade.kayttooikeus.rest;
 
 import fi.vm.sade.kayttooikeus.DatabaseService;
+import fi.vm.sade.kayttooikeus.config.ApplicationTest;
 import fi.vm.sade.kayttooikeus.dto.KutsunTila;
+import fi.vm.sade.kayttooikeus.service.OppijaCasTicketService;
+import fi.vm.sade.kayttooikeus.service.dto.OppijaCasTunnistusDto;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
 import org.junit.After;
@@ -10,7 +13,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,11 +38,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@ApplicationTest
 @AutoConfigureMockMvc
 public class CasRestTest {
 
+    /* Ruma kludge. Tällä kierretään mystinen @MockBean -ongelma. */
+    @TestConfiguration
+    static class OppijaCasConfiguration {
+        @Bean
+        @Primary
+        public OppijaCasTicketService oppijaCasTicketService() {
+            return (casTicket, service) -> new OppijaCasTunnistusDto("123456-7890", "Testi", "Testi-Petteri");
+        }
+    }
+
     @Autowired
     private MockMvc mockMvc;
+
     @Autowired
     private DatabaseService databaseService;
 
@@ -55,7 +73,6 @@ public class CasRestTest {
                 .tila(KutsunTila.AVOIN)
                 .salaisuus("kutsuToken123")
                 .aikaleima(LocalDateTime.now()));
-
         mockMvc.perform(get("/cas/tunnistus")
                 .param("kutsuToken", "kutsuToken123")
                 .param("kielisyys", "kielisyys123")

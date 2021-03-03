@@ -29,6 +29,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 @EnableGlobalMethodSecurity(jsr250Enabled = false, prePostEnabled = true, securedEnabled = true)
 @EnableWebSecurity
 public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
+    public static final String OPPIJA_TICKET_VALIDATOR_QUALIFIER = "oppijaTicketValidator";
     private CasProperties casProperties;
     private OphProperties ophProperties;
     private Environment environment;
@@ -72,6 +73,13 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
     @Bean
     public TicketValidator ticketValidator() {
         Cas20ProxyTicketValidator ticketValidator = new Cas20ProxyTicketValidator(ophProperties.url("cas.url"));
+        ticketValidator.setAcceptAnyProxy(true);
+        return ticketValidator;
+    }
+
+    @Bean(OPPIJA_TICKET_VALIDATOR_QUALIFIER)
+    public TicketValidator oppijaTicketValidator() {
+        Cas20ProxyTicketValidator ticketValidator = new Cas20ProxyTicketValidator(ophProperties.url("cas.oppija.url"));
         ticketValidator.setAcceptAnyProxy(true);
         return ticketValidator;
     }

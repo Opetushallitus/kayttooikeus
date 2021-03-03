@@ -12,6 +12,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Collections;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,7 +45,8 @@ public class ServiceToServiceControllerTest extends AbstractControllerTest {
         assertThat(dto).isNotNull();
         assertThat(dto.getCallingUserOid()).isEqualTo("1.2.3.4.5");
         assertThat(dto.getUserOid()).isEqualTo("1.2.3.1.1");
-        assertThat(dto.getAllowedPalveluRooli()).extracting("OPPIJANUMEROREKISTERI").containsExactly(Collections.singletonList("HENKILON_RU"));
+        assertThat(dto.getAllowedPalveluRooli()).containsEntry("OPPIJANUMEROREKISTERI", Collections.singletonList("HENKILON_RU"));
+        //assertThat(dto.getAllowedPalveluRooli()).extracting("OPPIJANUMEROREKISTERI").containsExactly("HENKILON_RU");
         assertThat(dto.getExternalPermissionService()).isEqualByComparingTo(ExternalPermissionService.HAKU_APP);
         assertThat(dto.getCallingUserRoles()).containsExactly("ROLE_APP_OPPIJANUMEROREKISTERI_REKISTERINPITAJA");
     }

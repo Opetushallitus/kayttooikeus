@@ -13,6 +13,7 @@ import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.kayttooikeus.service.external.RyhmasahkopostiClient;
 import fi.vm.sade.kayttooikeus.util.CreateUtil;
 import fi.vm.sade.oppijanumerorekisteri.dto.*;
+import fi.vm.sade.properties.OphProperties;
 import fi.vm.sade.ryhmasahkoposti.api.dto.EmailData;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;

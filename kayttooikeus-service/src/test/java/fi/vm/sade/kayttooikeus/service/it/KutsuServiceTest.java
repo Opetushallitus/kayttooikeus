@@ -15,6 +15,7 @@ import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
 import fi.vm.sade.kayttooikeus.repositories.populate.*;
 import fi.vm.sade.kayttooikeus.service.KayttooikeusAnomusService;
 import fi.vm.sade.kayttooikeus.service.KutsuService;
+import fi.vm.sade.kayttooikeus.service.OppijaCasTicketService;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioService;
 import fi.vm.sade.kayttooikeus.service.exception.ForbiddenException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
@@ -65,6 +66,10 @@ import static org.mockito.Mockito.*;
 @WithMockUser
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class KutsuServiceTest extends AbstractServiceIntegrationTest {
+
+    @MockBean
+    private OppijaCasTicketService oppijaCasTicketService;
+
     @Autowired
     private KutsuService kutsuService;
 
