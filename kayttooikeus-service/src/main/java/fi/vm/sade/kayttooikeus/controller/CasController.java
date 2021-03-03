@@ -7,8 +7,9 @@ import fi.vm.sade.kayttooikeus.dto.enumeration.LoginTokenValidationCode;
 import fi.vm.sade.kayttooikeus.service.EmailVerificationService;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
+import fi.vm.sade.kayttooikeus.service.OppijaCasTicketService;
 import fi.vm.sade.kayttooikeus.service.VahvaTunnistusService;
-import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
+import fi.vm.sade.kayttooikeus.service.dto.OppijaCasTunnistusDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
 import fi.vm.sade.properties.OphProperties;
@@ -17,6 +18,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jasig.cas.client.validation.TicketValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.List;
 
 @Slf4j
@@ -42,6 +43,7 @@ public class CasController {
     private final HenkiloService henkiloService;
     private final VahvaTunnistusService vahvaTunnistusService;
     private final EmailVerificationService emailVerificationService;
+    private final OppijaCasTicketService oppijaCasTicketService;
     private final OphProperties ophProperties;
 
     @ApiOperation(value = "Generoi autentikointitokenin henkilölle.",
@@ -102,7 +104,7 @@ public class CasController {
     @ApiOperation(value = "Hakee henkilön identiteetitiedot.",
             notes = "Hakee henkilön identieettitiedot annetun autentikointitokenin avulla ja invalidoi autentikointitokenin.")
     @RequestMapping(value = "/auth/token/{token}", method = RequestMethod.GET)
-    public IdentifiedHenkiloTypeDto getIdentityByAuthToken(@PathVariable("token") String authToken) throws IOException {
+    public IdentifiedHenkiloTypeDto getIdentityByAuthToken(@PathVariable("token") String authToken) {
         return identificationService.findByTokenAndInvalidateToken(authToken);
     }
 
@@ -114,13 +116,12 @@ public class CasController {
                            @RequestParam(value="loginToken", required = false) String loginToken,
                            @RequestParam(value="kutsuToken", required = false) String kutsuToken,
                            @RequestParam(value = "kielisyys", required = false) String kielisyys,
-                           @RequestHeader(value = "nationalidentificationnumber", required = false) String hetu,
-                           @RequestHeader(value = "firstname", required = false) String etunimet,
-                           @RequestHeader(value = "sn", required = false) String sukunimi) throws IOException {
+                           @RequestParam(value = "ticket", required = false) String ticket,
+                           @RequestHeader(value = "nationalidentificationnumber", required = false) String hetu)
+            throws IOException {
         // Vaihdetaan kutsuToken väliaikaiseen ja tallennetaan tiedot vetumasta
         if (StringUtils.hasLength(kutsuToken)) {
-            String redirectUrl = this.vahvaTunnistusService.kasitteleKutsunTunnistus(kutsuToken, kielisyys, hetu, decodeShibbolethHeader(etunimet), decodeShibbolethHeader(sukunimi));
-            response.sendRedirect(redirectUrl);
+            response.sendRedirect(kasitteleKutsunTunnistus(kutsuToken, kielisyys, ticket));
         }
         // Kirjataan henkilön vahva tunnistautuminen järjestelmään, vaihe 1
         else if (StringUtils.hasLength(loginToken)) {
@@ -134,11 +135,17 @@ public class CasController {
         }
     }
 
-    protected String decodeShibbolethHeader(String input) {
-        // Dekoodataan etunimet ja sukunimi manuaalisesti, koska shibboleth välittää ASCII-enkoodatut request headerit UTF-8 -merkistössä
-        Charset iso = Charset.forName("ISO-8859-1");
-        Charset utf8 = Charset.forName("UTF-8");
-        return new String(input.getBytes(iso), utf8);
+    protected String kasitteleKutsunTunnistus(String kutsuToken, String kielisyys, String casTicket) {
+        String kayttooikeusTunnistusUrl = ophProperties.url("kayttooikeus-service.cas.tunnistus");
+        try {
+            OppijaCasTunnistusDto tunnistustiedot = oppijaCasTicketService.haeTunnistustiedot(
+                    casTicket, kayttooikeusTunnistusUrl);
+            return vahvaTunnistusService.kasitteleKutsunTunnistus(kutsuToken, kielisyys, tunnistustiedot.hetu,
+                    tunnistustiedot.etunimet, tunnistustiedot.sukunimi);
+        } catch (TicketValidationException e) {
+            // TODO: redirectUrl = ???
+            throw new IllegalStateException("Virhe kutsun tunnistuksessa");
+        }
     }
 
     private String getVahvaTunnistusRedirectUrl(String loginToken, String kielisyys, String hetu) {
