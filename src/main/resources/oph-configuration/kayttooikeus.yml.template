@@ -21,6 +21,7 @@ cas:
 
 host:
   host-virkailija: {{host_virkailija}}
+  host-oppija: {{host_oppija}}
   host-cas: {{host_cas}}
   host-shibboleth: {{host_tunnistus}}
   host-varda: {{host_varda}}
