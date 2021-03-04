@@ -25,6 +25,7 @@ cas:
 
 host:
   host-virkailija: localhost
+  host-oppija: localhost
   host-cas: localhost
   host-shibboleth: localhost
   host-varda: localhost
