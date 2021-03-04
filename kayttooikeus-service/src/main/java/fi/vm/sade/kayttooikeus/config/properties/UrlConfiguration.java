@@ -13,6 +13,7 @@ public class UrlConfiguration extends OphProperties {
     public UrlConfiguration(Environment environment) {
         addFiles("/kayttooikeus-service-oph.properties");
         addOverride("host-cas", environment.getRequiredProperty("host.host-cas"));
+        addOverride("host-oppija", environment.getRequiredProperty("host.host-oppija"));
         addOverride("host-virkailija", environment.getRequiredProperty("host.host-virkailija"));
         addOverride("host-shibboleth", environment.getRequiredProperty("host.host-shibboleth"));
         addOverride("host-varda", environment.getRequiredProperty("host.host-varda"));
