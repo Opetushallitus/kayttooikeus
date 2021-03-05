@@ -257,9 +257,10 @@ public class EmailServiceImpl implements EmailService {
                 .url("kayttooikeus-service.cas.tunnistus", targetUrlQueryParams);
         Map<String, String> urlQueryParams = new HashMap<String, String>() {{
             put("service", kayttooikeusTunnistusUrl);
+            put("locale", kutsu.getKieliKoodi().toUpperCase());
         }};
         recipient.setRecipientReplacements(asList(replacement("linkki", this.urlProperties
-                        .url("cas.oppija.identification", kutsu.getKieliKoodi().toUpperCase(), urlQueryParams)),
+                        .url("cas.oppija.identification", urlQueryParams)),
                 replacement("vastaanottaja", mapper.map(kutsu, SahkopostiHenkiloDto.class)),
                 replacement("organisaatiot", kutsu.getOrganisaatiot().stream()
                         .map(org -> new OranizationReplacement(new TextGroupMapDto(
