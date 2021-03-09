@@ -48,7 +48,7 @@ public class CasRestTest {
         @Bean
         @Primary
         public OppijaCasTicketService oppijaCasTicketService() {
-            return (casTicket, service) -> new OppijaCasTunnistusDto("123456-7890", "Testi", "Testi-Petteri");
+            return (casTicket, service) -> new OppijaCasTunnistusDto("hetu123", "Testi", "Testi-Petteri");
         }
     }
 
@@ -76,9 +76,7 @@ public class CasRestTest {
         mockMvc.perform(get("/cas/tunnistus")
                 .param("kutsuToken", "kutsuToken123")
                 .param("kielisyys", "kielisyys123")
-                .header("nationalidentificationnumber", "hetu123")
-                .header("firstname", "etunimi123")
-                .header("sn", "sukunimi123"))
+                .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", containsString("/henkilo-ui/rekisteroidy?temporaryKutsuToken=")));
     }
@@ -89,9 +87,7 @@ public class CasRestTest {
         mockMvc.perform(get("/cas/tunnistus")
                 .param("kutsuToken", "kutsuToken123")
                 .param("kielisyys", "kielisyys123")
-                .header("nationalidentificationnumber", "hetu123")
-                .header("firstname", "etunimi123")
-                .header("sn", "sukunimi123"))
+                .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", endsWith("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/vanhakutsu")));
     }
@@ -110,9 +106,7 @@ public class CasRestTest {
         mockMvc.perform(get("/cas/tunnistus")
                 .param("loginToken", "loginToken123")
                 .param("kielisyys", "kielisyys123")
-                .header("nationalidentificationnumber", "hetu123")
-                .header("firstname", "etunimi123")
-                .header("sn", "sukunimi123"))
+                .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", containsString("/henkilo-ui/uudelleenrekisterointi/kielisyys123/loginToken123/")));
     }
@@ -123,9 +117,7 @@ public class CasRestTest {
         mockMvc.perform(get("/cas/tunnistus")
                 .param("loginToken", "loginToken123")
                 .param("kielisyys", "kielisyys123")
-                .header("nationalidentificationnumber", "hetu123")
-                .header("firstname", "etunimi123")
-                .header("sn", "sukunimi123"))
+                .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", endsWith("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/vanha")));
     }
@@ -141,9 +133,7 @@ public class CasRestTest {
         mockMvc.perform(get("/cas/tunnistus")
                 .param("loginToken", "loginToken123")
                 .param("kielisyys", "kielisyys123")
-                .header("nationalidentificationnumber", "hetu123")
-                .header("firstname", "etunimi123")
-                .header("sn", "sukunimi123"))
+                .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", endsWith("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/loginToken123")));
     }
@@ -159,9 +149,7 @@ public class CasRestTest {
 
         mockMvc.perform(get("/cas/tunnistus")
                 .param("kielisyys", "kielisyys123")
-                .header("nationalidentificationnumber", "hetu123")
-                .header("firstname", "etunimi123")
-                .header("sn", "sukunimi123"))
+                .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", containsString("/henkilo-ui/uudelleenrekisterointi/kielisyys123/")));
     }
@@ -173,9 +161,7 @@ public class CasRestTest {
 
         mockMvc.perform(get("/cas/tunnistus")
                 .param("kielisyys", "kielisyys123")
-                .header("nationalidentificationnumber", "hetu123")
-                .header("firstname", "etunimi123")
-                .header("sn", "sukunimi123"))
+                .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", endsWith("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/eiloydy")));
     }

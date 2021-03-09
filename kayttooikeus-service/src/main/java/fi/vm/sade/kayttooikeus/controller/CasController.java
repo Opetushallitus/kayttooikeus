@@ -116,35 +116,24 @@ public class CasController {
                            @RequestParam(value="loginToken", required = false) String loginToken,
                            @RequestParam(value="kutsuToken", required = false) String kutsuToken,
                            @RequestParam(value = "kielisyys", required = false) String kielisyys,
-                           @RequestParam(value = "ticket", required = false) String ticket,
-                           @RequestHeader(value = "nationalidentificationnumber", required = false) String hetu)
-            throws IOException {
-        // Vaihdetaan kutsuToken väliaikaiseen ja tallennetaan tiedot vetumasta
-        if (StringUtils.hasLength(kutsuToken)) {
-            response.sendRedirect(kasitteleKutsunTunnistus(kutsuToken, kielisyys, ticket));
-        }
-        // Kirjataan henkilön vahva tunnistautuminen järjestelmään, vaihe 1
-        else if (StringUtils.hasLength(loginToken)) {
-            // Joko päästetään suoraan sisään tai käytetään lisätietojen keräyssivun kautta
-            String redirectUrl = getVahvaTunnistusRedirectUrl(loginToken, kielisyys, hetu);
-            response.sendRedirect(redirectUrl);
-        }
-        else {
-            String redirectUrl = this.vahvaTunnistusService.kirjaaKayttajaVahvallaTunnistuksella(hetu, kielisyys);
-            response.sendRedirect(redirectUrl);
-        }
-    }
-
-    protected String kasitteleKutsunTunnistus(String kutsuToken, String kielisyys, String casTicket) {
+                           @RequestParam(value = "ticket", required = true) String ticket)
+            throws IOException, TicketValidationException { // TODO: virhe-redirect
         String kayttooikeusTunnistusUrl = ophProperties.url("kayttooikeus-service.cas.tunnistus");
-        try {
-            OppijaCasTunnistusDto tunnistustiedot = oppijaCasTicketService.haeTunnistustiedot(
-                    casTicket, kayttooikeusTunnistusUrl);
-            return vahvaTunnistusService.kasitteleKutsunTunnistus(kutsuToken, kielisyys, tunnistustiedot.hetu,
-                    tunnistustiedot.etunimet, tunnistustiedot.sukunimi);
-        } catch (TicketValidationException e) {
-            // TODO: redirectUrl = ???
-            throw new IllegalStateException("Virhe kutsun tunnistuksessa");
+        OppijaCasTunnistusDto tunnistustiedot = oppijaCasTicketService.haeTunnistustiedot(
+                ticket, kayttooikeusTunnistusUrl);
+        if (StringUtils.hasLength(kutsuToken)) {
+            // Vaihdetaan kutsuToken väliaikaiseen ja tallennetaan tiedot vetumasta
+            response.sendRedirect(vahvaTunnistusService.kasitteleKutsunTunnistus(
+                    kutsuToken, kielisyys, tunnistustiedot.hetu,
+                    tunnistustiedot.etunimet, tunnistustiedot.sukunimi));
+        } else if (StringUtils.hasLength(loginToken)) {
+            // Kirjataan henkilön vahva tunnistautuminen järjestelmään, vaihe 1
+            // Joko päästetään suoraan sisään tai käytetään lisätietojen keräyssivun kautta
+            String redirectUrl = getVahvaTunnistusRedirectUrl(loginToken, kielisyys, tunnistustiedot.hetu);
+            response.sendRedirect(redirectUrl);
+        } else {
+            response.sendRedirect(
+                    vahvaTunnistusService.kirjaaKayttajaVahvallaTunnistuksella(tunnistustiedot.hetu, kielisyys));
         }
     }
 
