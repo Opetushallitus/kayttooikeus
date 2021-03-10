@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
-import static fi.vm.sade.kayttooikeus.config.security.SecurityConfigDefault.OPPIJA_TICKET_VALIDATOR_QUALIFIER;
+import static fi.vm.sade.kayttooikeus.config.security.TunnistusSecurityConfig.OPPIJA_TICKET_VALIDATOR_QUALIFIER;
 
 @Service
 public class OppijaCasTicketServiceImpl implements OppijaCasTicketService {

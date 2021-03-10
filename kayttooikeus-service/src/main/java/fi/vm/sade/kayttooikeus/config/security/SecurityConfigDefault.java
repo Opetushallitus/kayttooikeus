@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.cas.ServiceProperties;
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
@@ -26,10 +27,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Profile("!dev")
 @Configuration
+@Order(2)
 @EnableGlobalMethodSecurity(jsr250Enabled = false, prePostEnabled = true, securedEnabled = true)
 @EnableWebSecurity
 public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
-    public static final String OPPIJA_TICKET_VALIDATOR_QUALIFIER = "oppijaTicketValidator";
+
     private CasProperties casProperties;
     private OphProperties ophProperties;
     private Environment environment;
@@ -73,13 +75,6 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
     @Bean
     public TicketValidator ticketValidator() {
         Cas20ProxyTicketValidator ticketValidator = new Cas20ProxyTicketValidator(ophProperties.url("cas.url"));
-        ticketValidator.setAcceptAnyProxy(true);
-        return ticketValidator;
-    }
-
-    @Bean(OPPIJA_TICKET_VALIDATOR_QUALIFIER)
-    public TicketValidator oppijaTicketValidator() {
-        Cas20ProxyTicketValidator ticketValidator = new Cas20ProxyTicketValidator(ophProperties.url("cas.oppija.url"));
         ticketValidator.setAcceptAnyProxy(true);
         return ticketValidator;
     }
@@ -131,7 +126,6 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
                 .antMatchers("/buildversion.txt").permitAll()
                 .antMatchers("/actuator/health").permitAll()
                 .antMatchers("/kutsu/token/*").permitAll()
-                .antMatchers("/cas/tunnistus").permitAll()
                 .antMatchers("/cas/uudelleenrekisterointi").permitAll()
                 .antMatchers("/cas/henkilo/loginToken/*").permitAll()
                 .antMatchers("/cas/emailverification/*").permitAll()
