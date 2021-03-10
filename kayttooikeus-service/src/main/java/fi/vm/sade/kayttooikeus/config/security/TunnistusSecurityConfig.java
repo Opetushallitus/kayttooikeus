@@ -27,7 +27,7 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean(OPPIJA_TICKET_VALIDATOR_QUALIFIER)
     public TicketValidator oppijaTicketValidator() {
         Cas20ProxyTicketValidator ticketValidator = new Cas20ProxyTicketValidator(ophProperties.url("cas.oppija.url"));
-        ticketValidator.setAcceptAnyProxy(true);
+        // ticketValidator.setAcceptAnyProxy(true);
         return ticketValidator;
     }
 
