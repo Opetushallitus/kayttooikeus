@@ -34,10 +34,11 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .antMatcher(OPPIJA_CAS_TUNNISTUS_PATH)
                 .headers().disable()
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers(OPPIJA_CAS_TUNNISTUS_PATH).permitAll()
-                .anyRequest().authenticated();
+                .anyRequest()
+                .permitAll();
     }
 }
