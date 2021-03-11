@@ -1,10 +1,9 @@
 package fi.vm.sade.kayttooikeus.config.security;
 
 import fi.vm.sade.kayttooikeus.NameContainer;
-import fi.vm.sade.kayttooikeus.service.dto.OppijaCasTunnistusDto;
+import fi.vm.sade.kayttooikeus.service.VahvaTunnistusService;
 import fi.vm.sade.properties.OphProperties;
 import org.jasig.cas.client.validation.Cas20ProxyTicketValidator;
-import fi.vm.sade.kayttooikeus.service.OppijaCasTicketService;
 import org.jasig.cas.client.validation.TicketValidationException;
 import org.jasig.cas.client.validation.TicketValidator;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +25,7 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.preauth.*;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.Filter;
 import javax.servlet.http.HttpServletRequest;
@@ -38,20 +38,23 @@ import static java.util.Collections.singletonList;
 
 @Profile("!dev")
 @Configuration
-@Order(2)
+@Order(1)
 public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
-    private static final String KUTSUTTU_ROLE = "APP_KAYTTOOIKEUS_KUTSUTTU";
+    private static final String KUTSUTTU_ROLE = "APP_KUTSUTTU";
 
-    private static final String CAS_LOGIN_CLOB= "/cas/login";
-    private static final String CAS_TUNNISTUS_CLOB = "/cas/tunnistus";
+    private static final String CAS_CLOB = "/cas/**";
+    private static final String CAS_validate_CLOB = "/cas/validate**";
     public static final String OPPIJA_TICKET_VALIDATOR_QUALIFIER = "oppijaTicketValidator";
 
     private final OphProperties ophProperties;
+    private final VahvaTunnistusService vahvaTunnistusService;
 
-    public TunnistusSecurityConfig(OphProperties ophProperties) {
+
+    public TunnistusSecurityConfig(OphProperties ophProperties, VahvaTunnistusService vahvaTunnistusService) {
         this.ophProperties = ophProperties;
+        this.vahvaTunnistusService = vahvaTunnistusService;
     }
 
     @Override
@@ -62,8 +65,9 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.headers().disable().csrf().disable();
-        http.antMatcher(CAS_LOGIN_CLOB).antMatcher(CAS_TUNNISTUS_CLOB).authorizeRequests()
-                .anyRequest().hasRole(KUTSUTTU_ROLE)
+        http.antMatcher(CAS_CLOB).authorizeRequests()
+                .antMatchers("/cas/login**", "/cas/validate**", "/cas/tunnistus**")
+                .hasRole("APP_KUTSUTTU")
                 .and()
                 .addFilterBefore(hakijaAuthenticationProcessingFilter(), BasicAuthenticationFilter.class)
                 .exceptionHandling()
@@ -79,11 +83,18 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public Filter hakijaAuthenticationProcessingFilter() throws Exception {
-        KutsuttuAuthenticationFilter filter = new KutsuttuAuthenticationFilter("/cas/login", oppijaTicketValidator(), ophProperties);
+        SimpleUrlAuthenticationSuccessHandler successHandler = oppijaSuccesUrlHandler();
+        KutsuttuAuthenticationFilter filter = new KutsuttuAuthenticationFilter("/cas/validate", oppijaTicketValidator(), ophProperties, successHandler, vahvaTunnistusService);
         filter.setAuthenticationManager(authenticationManager());
-        String authenticationSuccessUrl = ophProperties.url("kayttooikeus-service.cas.tunnistus");
-        filter.setAuthenticationSuccessHandler(new SimpleUrlAuthenticationSuccessHandler(authenticationSuccessUrl));
+        String authenticationSuccessUrl = ophProperties.url("kayttooikeus-service.cas.success");
+        filter.setAuthenticationSuccessHandler(successHandler);
         return filter;
+    }
+
+    @Bean
+    public SimpleUrlAuthenticationSuccessHandler oppijaSuccesUrlHandler() throws Exception {
+        String authenticationSuccessUrl = ophProperties.url("kayttooikeus-service.cas.success");
+        return new SimpleUrlAuthenticationSuccessHandler(authenticationSuccessUrl);
     }
 
     @Bean
@@ -109,9 +120,19 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
             //Locale locale = findSessionAttribute(request, SESSION_ATTRIBUTE_NAME_LOCALE, Locale.class)
             //        .orElse(DEFAULT_LOCALE);
             //String language = locale.getLanguage();
+            String locale = request.getParameter("locale");
+            String kutsuToken = request.getParameter("kutsuToken");
+            String loginToken = request.getParameter("loginToken");
+            String loppuOsa = "";
+
+            if (StringUtils.hasLength(kutsuToken)) {
+                loppuOsa = "&kutsuToken=" + kutsuToken;
+            } else if (StringUtils.hasLength(loginToken)) {
+                loppuOsa = "&loginToken=" + loginToken;
+            }
 
             //TODO Kieli ja kutsutoken ym requestista?
-            return properties.url("cas.oppija.login.service", loginCallbackUrl);
+            return properties.url("cas.oppija.login.service", (loginCallbackUrl + "?locale=" + locale + loppuOsa));
         }
     }
 
@@ -126,22 +147,44 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
 
         private final TicketValidator oppijaticketValidator;
         private final OphProperties properties;
+        private final SimpleUrlAuthenticationSuccessHandler successHandler;
+        private final VahvaTunnistusService vahvaTunnistusService;
 
 
-        public KutsuttuAuthenticationFilter(String defaultFilterProcessesUrl, TicketValidator oppijaticketValidator, OphProperties properties) {
+
+        public KutsuttuAuthenticationFilter(String defaultFilterProcessesUrl, TicketValidator oppijaticketValidator, OphProperties properties, SimpleUrlAuthenticationSuccessHandler successHandler, VahvaTunnistusService vahvaTunnistusService) {
             super(defaultFilterProcessesUrl);
+            this.successHandler = successHandler;
             this.properties = properties;
             this.oppijaticketValidator = oppijaticketValidator;
+            this.vahvaTunnistusService = vahvaTunnistusService;
+        }
+
+        private String getVahvaTunnistusRedirectUrl(String loginToken, String kielisyys, String hetu) {
+            try {
+                return vahvaTunnistusService.kirjaaVahvaTunnistus(loginToken, kielisyys, hetu);
+            } catch (Exception e) {
+                return properties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, loginToken);
+            }
         }
 
         @Override
         public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException {
+            String locale = request.getParameter("locale");
+            String kutsuToken = request.getParameter("kutsuToken");
+            String loginToken = request.getParameter("loginToken");
             String ticket = Optional.ofNullable(request.getParameter("ticket"))
                     .orElseThrow(() -> new PreAuthenticatedCredentialsNotFoundException("Unable to authenticate because required param doesn't exist"));
             Map<String, Object> casPrincipalAttributes = null;
             try { //Validate uses Cas:s serviceValidate endpoint and parses the result xml into custom Attributes.
-                String kayttooikeusTunnistusUrl = properties.url("kayttooikeus-service.cas.tunnistus");
-                casPrincipalAttributes = oppijaticketValidator.validate(ticket, kayttooikeusTunnistusUrl).getPrincipal().getAttributes();
+                String kayttooikeusTunnistusBaseUrl = properties.url("kayttooikeus-service.cas.tunnistus");
+                String loppuOsa = "";
+                if (StringUtils.hasLength(kutsuToken)) {
+                    loppuOsa = "&kutsuToken=" + kutsuToken;
+                } else if (StringUtils.hasLength(loginToken)) {
+                    loppuOsa = "&loginToken=" + loginToken;
+                }
+                casPrincipalAttributes = oppijaticketValidator.validate(ticket, (kayttooikeusTunnistusBaseUrl + "?locale=" + locale + loppuOsa)).getPrincipal().getAttributes();
             } catch (TicketValidationException e) {
                 throw new AuthenticationCredentialsNotFoundException("Unable to authenticate because required param doesn't exist");
             }
@@ -152,9 +195,21 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
             String firstName = Optional.ofNullable((String)casPrincipalAttributes.get("firstName"))
                     .orElse("");
 
+            if (StringUtils.hasLength(kutsuToken)) {
+                successHandler.setDefaultTargetUrl(vahvaTunnistusService.kasitteleKutsunTunnistus(
+                        kutsuToken, locale, nationalIdentificationNumber,
+                        firstName, surname));
+            } else if (StringUtils.hasLength(loginToken)) {
+                // Kirjataan henkilön vahva tunnistautuminen järjestelmään, vaihe 1
+                // Joko päästetään suoraan sisään tai käytetään lisätietojen keräyssivun kautta
+                successHandler.setDefaultTargetUrl(getVahvaTunnistusRedirectUrl(loginToken, locale, nationalIdentificationNumber));
+            } else {
+                successHandler.setDefaultTargetUrl(vahvaTunnistusService.kirjaaKayttajaVahvallaTunnistuksella(nationalIdentificationNumber, locale));
+            }
+
             PreAuthenticatedAuthenticationToken authRequest = new PreAuthenticatedAuthenticationToken(nationalIdentificationNumber, "N/A");
-            List<? extends GrantedAuthority> authorities = singletonList(new SimpleGrantedAuthority(String.format("ROLE_%s", "KUTSUTTU_ROOLI"))); // TODO ???
-            authRequest.setDetails(new CasOppijaAuthenticationDetails(request, authorities, firstName, surname));
+            List<? extends GrantedAuthority> authorities = singletonList(new SimpleGrantedAuthority(String.format("ROLE_%s", KUTSUTTU_ROLE))); // TODO ???
+            authRequest.setDetails(new CasOppijaAuthenticationDetails(request, authorities, firstName, surname, nationalIdentificationNumber));
             return getAuthenticationManager().authenticate(authRequest);
         }
 
@@ -163,11 +218,13 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
 
         private final String firstName;
         private final String surname;
+        private final String hetu;
 
-        public CasOppijaAuthenticationDetails(HttpServletRequest request, Collection<? extends GrantedAuthority> authorities, String firstName, String surname) {
+        public CasOppijaAuthenticationDetails(HttpServletRequest request, Collection<? extends GrantedAuthority> authorities, String firstName, String surname, String hetu) {
             super(request, authorities);
             this.firstName = firstName;
             this.surname = surname;
+            this.hetu = hetu;
         }
 
         @Override

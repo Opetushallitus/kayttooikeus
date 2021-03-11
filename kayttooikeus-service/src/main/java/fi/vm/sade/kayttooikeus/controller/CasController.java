@@ -108,44 +108,6 @@ public class CasController {
         return identificationService.findByTokenAndInvalidateToken(authToken);
     }
 
-    // Palomuurilla rajoitettu pääsy vain verkon sisältä
-    @ApiOperation(value = "Virkailijan hetu-tunnistuksen jälkeinen käsittely. (rekisteröinti, hetu tunnistuksen pakotus, " +
-            "mahdollinen kirjautuminen suomi.fi:n kautta.)")
-    @RequestMapping(value = "/tunnistus", method = RequestMethod.GET)
-    public void requestGet(HttpServletResponse response,
-                           @RequestParam(value="loginToken", required = false) String loginToken,
-                           @RequestParam(value="kutsuToken", required = false) String kutsuToken,
-                           @RequestParam(value = "kielisyys", required = false) String kielisyys,
-                           @RequestParam(value = "ticket", required = true) String ticket)
-            throws IOException, TicketValidationException { // TODO: virhe-redirect
-        String kayttooikeusTunnistusUrl = ophProperties.url("kayttooikeus-service.cas.tunnistus");
-        OppijaCasTunnistusDto tunnistustiedot = oppijaCasTicketService.haeTunnistustiedot(
-                ticket, kayttooikeusTunnistusUrl);
-        if (StringUtils.hasLength(kutsuToken)) {
-            // Vaihdetaan kutsuToken väliaikaiseen ja tallennetaan tiedot vetumasta
-            response.sendRedirect(vahvaTunnistusService.kasitteleKutsunTunnistus(
-                    kutsuToken, kielisyys, tunnistustiedot.hetu,
-                    tunnistustiedot.etunimet, tunnistustiedot.sukunimi));
-        } else if (StringUtils.hasLength(loginToken)) {
-            // Kirjataan henkilön vahva tunnistautuminen järjestelmään, vaihe 1
-            // Joko päästetään suoraan sisään tai käytetään lisätietojen keräyssivun kautta
-            String redirectUrl = getVahvaTunnistusRedirectUrl(loginToken, kielisyys, tunnistustiedot.hetu);
-            response.sendRedirect(redirectUrl);
-        } else {
-            response.sendRedirect(
-                    vahvaTunnistusService.kirjaaKayttajaVahvallaTunnistuksella(tunnistustiedot.hetu, kielisyys));
-        }
-    }
-
-    private String getVahvaTunnistusRedirectUrl(String loginToken, String kielisyys, String hetu) {
-        try {
-            return vahvaTunnistusService.kirjaaVahvaTunnistus(loginToken, kielisyys, hetu);
-        } catch (Exception e) {
-            log.error("User failed strong identification", e);
-            return ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, loginToken);
-        }
-    }
-
     @PostMapping(value = "/uudelleenrekisterointi", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Virkailijan uudelleenrekisteröinti")
     public VahvaTunnistusResponseDto tunnistauduVahvasti(

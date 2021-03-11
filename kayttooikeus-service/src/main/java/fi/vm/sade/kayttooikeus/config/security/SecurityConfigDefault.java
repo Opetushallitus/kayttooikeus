@@ -21,13 +21,14 @@ import org.springframework.security.cas.web.CasAuthenticationFilter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Profile("!dev")
 @Configuration
-@Order(1)
+@Order(2)
 @EnableGlobalMethodSecurity(jsr250Enabled = false, prePostEnabled = true, securedEnabled = true)
 @EnableWebSecurity
 public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
@@ -126,7 +127,8 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
                 .antMatchers("/buildversion.txt").permitAll()
                 .antMatchers("/actuator/health").permitAll()
                 .antMatchers("/kutsu/token/*").permitAll()
-                .antMatchers("/cas/tunnistus").permitAll()
+                .antMatchers("/cas/login**").permitAll()
+                .antMatchers("/cas/validate**").permitAll()
                 .antMatchers("/cas/uudelleenrekisterointi").permitAll()
                 .antMatchers("/cas/henkilo/loginToken/*").permitAll()
                 .antMatchers("/cas/emailverification/*").permitAll()

@@ -65,7 +65,7 @@ cas:
 
 host:
   host-virkailija: localhost:${server.port}
-  host-oppija: localhost:${server.port}
+  host-oppija: hahtuvaopintopolku.fi
   host-cas: localhost:${server.port}
   host-shibboleth: localhost:${server.port}
   host-varda: localhost:${server.port}
