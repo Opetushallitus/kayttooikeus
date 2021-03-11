@@ -1,6 +1,7 @@
 logging.level.org:
   springframework.web: info
   hibernate: info
+  springframework.security: DEBUG
 
 spring:
   main:

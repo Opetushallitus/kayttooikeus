@@ -27,18 +27,17 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean(OPPIJA_TICKET_VALIDATOR_QUALIFIER)
     public TicketValidator oppijaTicketValidator() {
         Cas20ProxyTicketValidator ticketValidator = new Cas20ProxyTicketValidator(ophProperties.url("cas.oppija.url"));
-        ticketValidator.setAcceptAnyProxy(true);
+        //ticketValidator.setAcceptAnyProxy(true);
         return ticketValidator;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .antMatcher(OPPIJA_CAS_TUNNISTUS_PATH)
                 .headers().disable()
                 .csrf().disable()
                 .authorizeRequests()
-                .anyRequest()
-                .permitAll();
+                .antMatchers(OPPIJA_CAS_TUNNISTUS_PATH).permitAll()
+                .anyRequest().authenticated();
     }
 }
