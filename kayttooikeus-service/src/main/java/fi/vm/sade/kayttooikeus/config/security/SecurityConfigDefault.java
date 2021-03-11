@@ -27,7 +27,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Profile("!dev")
 @Configuration
-@Order(2)
+@Order(1)
 @EnableGlobalMethodSecurity(jsr250Enabled = false, prePostEnabled = true, securedEnabled = true)
 @EnableWebSecurity
 public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
@@ -126,6 +126,7 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
                 .antMatchers("/buildversion.txt").permitAll()
                 .antMatchers("/actuator/health").permitAll()
                 .antMatchers("/kutsu/token/*").permitAll()
+                .antMatchers("/cas/tunnistus").permitAll()
                 .antMatchers("/cas/uudelleenrekisterointi").permitAll()
                 .antMatchers("/cas/henkilo/loginToken/*").permitAll()
                 .antMatchers("/cas/emailverification/*").permitAll()

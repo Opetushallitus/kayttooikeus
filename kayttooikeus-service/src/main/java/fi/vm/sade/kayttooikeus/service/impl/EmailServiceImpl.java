@@ -249,18 +249,14 @@ public class EmailServiceImpl implements EmailService {
         recipient.setLanguageCode(kutsu.getKieliKoodi());
         recipient.setName(kutsu.getEtunimi() + " " + kutsu.getSukunimi());
 
-        Map<String, String> targetUrlQueryParams = new HashMap<String, String>() {{
+
+        Map<String, String> urlQueryParams = new HashMap<String, String>() {{
+            put("locale", kutsu.getKieliKoodi().toUpperCase());
             put("kutsuToken", kutsu.getSalaisuus());
             put("kielisyys", kutsu.getKieliKoodi());
         }};
-        String kayttooikeusTunnistusUrl = this.urlProperties
-                .url("kayttooikeus-service.cas.tunnistus", targetUrlQueryParams);
-        Map<String, String> urlQueryParams = new HashMap<String, String>() {{
-            put("service", kayttooikeusTunnistusUrl);
-            put("locale", kutsu.getKieliKoodi().toUpperCase());
-        }};
         recipient.setRecipientReplacements(asList(replacement("linkki", this.urlProperties
-                        .url("cas.oppija.identification", urlQueryParams)),
+                        .url("kayttooikeus-service.cas.login", urlQueryParams)),
                 replacement("vastaanottaja", mapper.map(kutsu, SahkopostiHenkiloDto.class)),
                 replacement("organisaatiot", kutsu.getOrganisaatiot().stream()
                         .map(org -> new OranizationReplacement(new TextGroupMapDto(
