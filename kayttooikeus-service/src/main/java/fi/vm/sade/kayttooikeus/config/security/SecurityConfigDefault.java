@@ -54,7 +54,7 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
         ServiceProperties serviceProperties = new ServiceProperties();
         serviceProperties.setService(casProperties.getService() + "/j_spring_cas_security_check");
         serviceProperties.setSendRenew(casProperties.getSendRenew());
-        serviceProperties.setAuthenticateAllArtifacts(false);
+        serviceProperties.setAuthenticateAllArtifacts(true);
         return serviceProperties;
     }
 
@@ -123,7 +123,6 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
                 .headers().disable()
                 .csrf().disable()
                 .authorizeRequests()
-                //.antMatchers(TunnistusSecurityConfig.OPPIJA_CAS_TUNNISTUS_PATH).anonymous()
                 .antMatchers("/buildversion.txt").permitAll()
                 .antMatchers("/actuator/health").permitAll()
                 .antMatchers("/kutsu/token/*").permitAll()
