@@ -42,10 +42,9 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public SuomiFiAuthenticationProcessingFilter suomiFiAuthenticationProcessingFilter(
-            OphProperties ophProperties,
             @Qualifier(OPPIJA_TICKET_VALIDATOR_QUALIFIER) TicketValidator ticketValidator) throws Exception{
         SuomiFiAuthenticationProcessingFilter filter =
-                new SuomiFiAuthenticationProcessingFilter(ophProperties, ticketValidator);
+                new SuomiFiAuthenticationProcessingFilter(ticketValidator);
         filter.setAuthenticationManager(authenticationManager());
         filter.setAuthenticationDetailsSource(suomiFiAuthenticationDetailsSource());
         return filter;
@@ -68,7 +67,7 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest()
                 .permitAll()
             .and()
-                .addFilter(suomiFiAuthenticationProcessingFilter(ophProperties, oppijaTicketValidator()));
+                .addFilter(suomiFiAuthenticationProcessingFilter(oppijaTicketValidator()));
     }
 
     @Override
