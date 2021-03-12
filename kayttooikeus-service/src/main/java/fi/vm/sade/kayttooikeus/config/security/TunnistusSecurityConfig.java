@@ -5,6 +5,7 @@ import fi.vm.sade.kayttooikeus.config.security.casoppija.SuomiFiAuthenticationPr
 import fi.vm.sade.properties.OphProperties;
 import org.jasig.cas.client.validation.Cas20ProxyTicketValidator;
 import org.jasig.cas.client.validation.TicketValidator;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -41,7 +42,8 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public SuomiFiAuthenticationProcessingFilter suomiFiAuthenticationProcessingFilter(
-            OphProperties ophProperties, TicketValidator ticketValidator) throws Exception{
+            OphProperties ophProperties,
+            @Qualifier(OPPIJA_TICKET_VALIDATOR_QUALIFIER) TicketValidator ticketValidator) throws Exception{
         SuomiFiAuthenticationProcessingFilter filter =
                 new SuomiFiAuthenticationProcessingFilter(ophProperties, ticketValidator);
         filter.setAuthenticationManager(authenticationManager());
