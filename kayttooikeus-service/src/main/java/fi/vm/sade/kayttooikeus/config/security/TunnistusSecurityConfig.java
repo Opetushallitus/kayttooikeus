@@ -45,7 +45,7 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String KUTSUTTU_ROLE = "APP_KUTSUTTU";
 
-    private static final String KUTSU_CLOB = "/kutsuttu/**";
+    private static final String KUTSU_CLOB = "/kutsuttu/validate";
     public static final String OPPIJA_TICKET_VALIDATOR_QUALIFIER = "oppijaTicketValidator";
 
     private final OphProperties ophProperties;
@@ -64,14 +64,17 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.headers().disable().csrf().disable();
-        http.antMatcher(KUTSU_CLOB).authorizeRequests()
-                .antMatchers("/kutsuttu/login", "/kutsuttu/validate")
-                .hasRole("APP_KUTSUTTU")
+        http
+                .antMatcher(KUTSU_CLOB)
+                .headers().disable()
+                .csrf().disable()
+                .authorizeRequests()
+                .anyRequest()
+                .permitAll()
                 .and()
-                .addFilterBefore(oppijaAuthenticationProcessingFilter(), CasAuthenticationFilter.class)
-                .exceptionHandling()
-                .authenticationEntryPoint(oppijaAuthenticationEntryPoint());
+                .addFilterBefore(oppijaAuthenticationProcessingFilter(), CasAuthenticationFilter.class);
+                //.exceptionHandling()
+                //.authenticationEntryPoint(oppijaAuthenticationEntryPoint());
     }
 
     @Bean(OPPIJA_TICKET_VALIDATOR_QUALIFIER)
