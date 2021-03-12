@@ -28,7 +28,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Profile("!dev")
 @Configuration
-@Order(2)
+@Order(1)
 @EnableGlobalMethodSecurity(jsr250Enabled = false, prePostEnabled = true, securedEnabled = true)
 @EnableWebSecurity
 public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
@@ -121,7 +121,6 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .antMatcher("/**")
                 .headers().disable()
                 .csrf().disable()
                 .authorizeRequests()

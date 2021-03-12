@@ -72,8 +72,8 @@ host:
 
 service-users:
   default:
-    username: kayttooikeus
-    password: kayttooikeus
+    username: mkajanne
+    password: MiikanNetti23!
   viestinta:
     username: ${service-users.default.username}
     password: ${service-users.default.password}

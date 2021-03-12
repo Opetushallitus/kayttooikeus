@@ -38,7 +38,7 @@ import static java.util.Collections.singletonList;
 
 @Profile("!dev")
 @Configuration
-@Order(1)
+@Order(2)
 public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
