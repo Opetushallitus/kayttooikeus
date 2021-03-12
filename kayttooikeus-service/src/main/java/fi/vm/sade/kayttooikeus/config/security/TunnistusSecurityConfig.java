@@ -1,5 +1,7 @@
 package fi.vm.sade.kayttooikeus.config.security;
 
+import fi.vm.sade.kayttooikeus.config.security.casoppija.SuomiFiAuthenticationDetailsSource;
+import fi.vm.sade.kayttooikeus.config.security.casoppija.SuomiFiAuthenticationProcessingFilter;
 import fi.vm.sade.properties.OphProperties;
 import org.jasig.cas.client.validation.Cas20ProxyTicketValidator;
 import org.jasig.cas.client.validation.TicketValidator;
@@ -7,8 +9,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesUserDetailsService;
 
 @Profile("!dev")
 @Configuration
@@ -24,11 +29,31 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
         this.ophProperties = ophProperties;
     }
 
-    @Bean(OPPIJA_TICKET_VALIDATOR_QUALIFIER)
+    @Bean
+    public SuomiFiAuthenticationDetailsSource suomiFiAuthenticationDetailsSource() {
+        return new SuomiFiAuthenticationDetailsSource();
+    }
+
+    @Bean(name = OPPIJA_TICKET_VALIDATOR_QUALIFIER)
     public TicketValidator oppijaTicketValidator() {
-        Cas20ProxyTicketValidator ticketValidator = new Cas20ProxyTicketValidator(ophProperties.url("cas.oppija.url"));
-        ticketValidator.setAcceptAnyProxy(true);
-        return ticketValidator;
+        return new Cas20ProxyTicketValidator(ophProperties.url("cas.oppija.url"));
+    }
+
+    @Bean
+    public SuomiFiAuthenticationProcessingFilter suomiFiAuthenticationProcessingFilter(
+            OphProperties ophProperties, TicketValidator ticketValidator) throws Exception{
+        SuomiFiAuthenticationProcessingFilter filter =
+                new SuomiFiAuthenticationProcessingFilter(ophProperties, ticketValidator);
+        filter.setAuthenticationManager(authenticationManager());
+        filter.setAuthenticationDetailsSource(suomiFiAuthenticationDetailsSource());
+        return filter;
+    }
+
+    @Bean
+    public PreAuthenticatedAuthenticationProvider authenticationProvider() {
+        PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
+        provider.setPreAuthenticatedUserDetailsService(new PreAuthenticatedGrantedAuthoritiesUserDetailsService());
+        return provider;
     }
 
     @Override
@@ -39,6 +64,14 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .authorizeRequests()
                 .anyRequest()
-                .permitAll();
+                .permitAll()
+            .and()
+                .addFilter(suomiFiAuthenticationProcessingFilter(ophProperties, oppijaTicketValidator()));
     }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) {
+        auth.authenticationProvider(authenticationProvider());
+    }
+
 }

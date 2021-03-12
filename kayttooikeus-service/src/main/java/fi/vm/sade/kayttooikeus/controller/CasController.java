@@ -1,15 +1,14 @@
 package fi.vm.sade.kayttooikeus.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import fi.vm.sade.kayttooikeus.config.security.casoppija.SuomiFiAuthenticationDetails;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.enumeration.LogInRedirectType;
 import fi.vm.sade.kayttooikeus.dto.enumeration.LoginTokenValidationCode;
 import fi.vm.sade.kayttooikeus.service.EmailVerificationService;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
-import fi.vm.sade.kayttooikeus.service.OppijaCasTicketService;
 import fi.vm.sade.kayttooikeus.service.VahvaTunnistusService;
-import fi.vm.sade.kayttooikeus.service.dto.OppijaCasTunnistusDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
 import fi.vm.sade.properties.OphProperties;
@@ -18,11 +17,11 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jasig.cas.client.validation.TicketValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 
 @Slf4j
@@ -43,7 +43,6 @@ public class CasController {
     private final HenkiloService henkiloService;
     private final VahvaTunnistusService vahvaTunnistusService;
     private final EmailVerificationService emailVerificationService;
-    private final OppijaCasTicketService oppijaCasTicketService;
     private final OphProperties ophProperties;
 
     @ApiOperation(value = "Generoi autentikointitokenin henkilölle.",
@@ -108,32 +107,33 @@ public class CasController {
         return identificationService.findByTokenAndInvalidateToken(authToken);
     }
 
-    // Palomuurilla rajoitettu pääsy vain verkon sisältä
     @ApiOperation(value = "Virkailijan hetu-tunnistuksen jälkeinen käsittely. (rekisteröinti, hetu tunnistuksen pakotus, " +
             "mahdollinen kirjautuminen suomi.fi:n kautta.)")
     @RequestMapping(value = "/tunnistus", method = RequestMethod.GET)
     public void requestGet(HttpServletResponse response,
+                           Principal principal,
                            @RequestParam(value="loginToken", required = false) String loginToken,
                            @RequestParam(value="kutsuToken", required = false) String kutsuToken,
-                           @RequestParam(value = "kielisyys", required = false) String kielisyys,
-                           @RequestParam(value = "ticket", required = true) String ticket)
-            throws IOException, TicketValidationException { // TODO: virhe-redirect
-        String kayttooikeusTunnistusUrl = ophProperties.url("kayttooikeus-service.cas.tunnistus");
-        OppijaCasTunnistusDto tunnistustiedot = oppijaCasTicketService.haeTunnistustiedot(
-                ticket, kayttooikeusTunnistusUrl);
+                           @RequestParam(value = "kielisyys", required = false) String kielisyys)
+            throws IOException {
+        assert(principal != null);
+        assert(principal instanceof PreAuthenticatedAuthenticationToken);
+        PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) principal;
+        SuomiFiAuthenticationDetails details =
+                (SuomiFiAuthenticationDetails) token.getDetails();
         if (StringUtils.hasLength(kutsuToken)) {
             // Vaihdetaan kutsuToken väliaikaiseen ja tallennetaan tiedot vetumasta
             response.sendRedirect(vahvaTunnistusService.kasitteleKutsunTunnistus(
-                    kutsuToken, kielisyys, tunnistustiedot.hetu,
-                    tunnistustiedot.etunimet, tunnistustiedot.sukunimi));
+                    kutsuToken, kielisyys, details.hetu,
+                    details.etunimet, details.sukunimi));
         } else if (StringUtils.hasLength(loginToken)) {
             // Kirjataan henkilön vahva tunnistautuminen järjestelmään, vaihe 1
             // Joko päästetään suoraan sisään tai käytetään lisätietojen keräyssivun kautta
-            String redirectUrl = getVahvaTunnistusRedirectUrl(loginToken, kielisyys, tunnistustiedot.hetu);
+            String redirectUrl = getVahvaTunnistusRedirectUrl(loginToken, kielisyys, details.hetu);
             response.sendRedirect(redirectUrl);
         } else {
             response.sendRedirect(
-                    vahvaTunnistusService.kirjaaKayttajaVahvallaTunnistuksella(tunnistustiedot.hetu, kielisyys));
+                    vahvaTunnistusService.kirjaaKayttajaVahvallaTunnistuksella(details.hetu, kielisyys));
         }
     }
 
