@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.cas.web.CasAuthenticationFilter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -65,10 +66,10 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.headers().disable().csrf().disable();
         http.antMatcher(KUTSU_CLOB).authorizeRequests()
-                .antMatchers("/kutsuttu/login*", "/kutsuttu/validate*")
+                .antMatchers("/kutsuttu/login", "/kutsuttu/validate")
                 .hasRole("APP_KUTSUTTU")
                 .and()
-                .addFilter(oppijaAuthenticationProcessingFilter())
+                .addFilterBefore(oppijaAuthenticationProcessingFilter(), CasAuthenticationFilter.class)
                 .exceptionHandling()
                 .authenticationEntryPoint(oppijaAuthenticationEntryPoint());
     }

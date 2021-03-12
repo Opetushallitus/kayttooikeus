@@ -28,7 +28,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 @Profile("!dev")
 @Configuration
-@Order(1)
+@Order(2)
 @EnableGlobalMethodSecurity(jsr250Enabled = false, prePostEnabled = true, securedEnabled = true)
 @EnableWebSecurity
 public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
@@ -73,7 +73,7 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
         return casAuthenticationProvider;
     }
 
-    @Bean
+    @Bean(name = "CAS_TICKET_VALIDATOR")
     public TicketValidator ticketValidator() {
         Cas20ProxyTicketValidator ticketValidator = new Cas20ProxyTicketValidator(ophProperties.url("cas.url"));
         ticketValidator.setAcceptAnyProxy(true);
