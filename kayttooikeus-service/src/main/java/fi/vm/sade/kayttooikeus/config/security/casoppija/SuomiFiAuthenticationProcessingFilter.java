@@ -48,7 +48,7 @@ public class SuomiFiAuthenticationProcessingFilter extends AbstractPreAuthentica
                     LOGGER.warn("Invalid ticket: \"{}\"", ticket);
                 }
             } catch (TicketValidationException e) {
-                LOGGER.warn("Failed to validate ticket: \"{}\"", ticket);
+                LOGGER.warn("Failed to validate ticket: \"" + ticket + "\"", e);
             }
         }
         return null;
