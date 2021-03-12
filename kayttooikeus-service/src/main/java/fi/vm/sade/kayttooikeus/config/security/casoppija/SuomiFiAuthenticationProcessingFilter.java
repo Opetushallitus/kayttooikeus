@@ -1,6 +1,5 @@
 package fi.vm.sade.kayttooikeus.config.security.casoppija;
 
-import fi.vm.sade.properties.OphProperties;
 import org.jasig.cas.client.validation.Assertion;
 import org.jasig.cas.client.validation.TicketValidationException;
 import org.jasig.cas.client.validation.TicketValidator;
@@ -21,16 +20,15 @@ public class SuomiFiAuthenticationProcessingFilter extends AbstractPreAuthentica
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SuomiFiAuthenticationProcessingFilter.class);
     private final TicketValidator ticketValidator;
-    private final String service;
 
-    public SuomiFiAuthenticationProcessingFilter(OphProperties ophProperties, TicketValidator ticketValidator) {
+    public SuomiFiAuthenticationProcessingFilter(TicketValidator ticketValidator) {
         this.ticketValidator = ticketValidator;
-        this.service = ophProperties.url("kayttooikeus-service.cas.tunnistus");
     }
 
     @Override
-    protected Object getPreAuthenticatedPrincipal(HttpServletRequest httpServletRequest) {
-        String ticket = httpServletRequest.getParameter(OPPIJA_TICKET_PARAM_NAME);
+    protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
+        String ticket = request.getParameter(OPPIJA_TICKET_PARAM_NAME);
+        String service = String.join("?", request.getRequestURL(), request.getQueryString());
         if (ticket != null) {
             LOGGER.info("Validating ticket: \"{}\"", ticket);
             try {
@@ -42,7 +40,7 @@ public class SuomiFiAuthenticationProcessingFilter extends AbstractPreAuthentica
                     String sukunimi = (String) attributes.get(SUKUNIMI_ATTRIBUTE);
                     String etunimet = (String) attributes.get(ETUNIMET_ATTRIBUTE);
                     SuomiFiUserDetails details = new SuomiFiUserDetails(hetu, sukunimi, etunimet);
-                    httpServletRequest.setAttribute(SUOMI_FI_DETAILS_ATTR_KEY, details);
+                    request.setAttribute(SUOMI_FI_DETAILS_ATTR_KEY, details);
                     return String.join(", ", sukunimi, etunimet);
                 } else {
                     LOGGER.warn("Invalid ticket: \"{}\"", ticket);
@@ -55,8 +53,8 @@ public class SuomiFiAuthenticationProcessingFilter extends AbstractPreAuthentica
     }
 
     @Override
-    protected Object getPreAuthenticatedCredentials(HttpServletRequest httpServletRequest) {
-        return httpServletRequest.getParameter(OPPIJA_TICKET_PARAM_NAME);
+    protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
+        return request.getParameter(OPPIJA_TICKET_PARAM_NAME);
     }
 
 }
