@@ -9,6 +9,8 @@ import org.springframework.security.web.authentication.preauth.AbstractPreAuthen
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SuomiFiAuthenticationProcessingFilter extends AbstractPreAuthenticatedProcessingFilter {
 
@@ -28,7 +30,14 @@ public class SuomiFiAuthenticationProcessingFilter extends AbstractPreAuthentica
     @Override
     protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
         String ticket = request.getParameter(OPPIJA_TICKET_PARAM_NAME);
-        String service = String.join("?", request.getRequestURL(), request.getQueryString());
+        String parameters = request.getParameterMap().entrySet().stream()
+                .filter(entry -> !entry.getKey().equals(OPPIJA_TICKET_PARAM_NAME))
+                .map(entry ->
+                        Stream.of(entry.getValue())
+                                .map(value -> entry.getKey() + "=" + value)
+                                .collect(Collectors.joining("&")))
+                .collect(Collectors.joining("&"));
+        String service = String.join("?", request.getRequestURL(), parameters);
         if (ticket != null) {
             LOGGER.info("Validating ticket: \"{}\"", ticket);
             try {
