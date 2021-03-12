@@ -38,7 +38,7 @@ import static java.util.Collections.singletonList;
 
 @Profile("!dev")
 @Configuration
-@Order(2)
+@Order(1)
 public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
@@ -68,7 +68,7 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/kutsuttu/login*", "/kutsuttu/validate*")
                 .hasRole("APP_KUTSUTTU")
                 .and()
-                .addFilterBefore(hakijaAuthenticationProcessingFilter(), BasicAuthenticationFilter.class)
+                .addFilter(oppijaAuthenticationProcessingFilter())
                 .exceptionHandling()
                 .authenticationEntryPoint(oppijaAuthenticationEntryPoint());
     }
@@ -81,7 +81,7 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public Filter hakijaAuthenticationProcessingFilter() throws Exception {
+    public Filter oppijaAuthenticationProcessingFilter() throws Exception {
         SimpleUrlAuthenticationSuccessHandler successHandler = oppijaSuccesUrlHandler();
         KutsuttuAuthenticationFilter filter = new KutsuttuAuthenticationFilter("/kutsuttu/validate", oppijaTicketValidator(), ophProperties, successHandler, vahvaTunnistusService);
         filter.setAuthenticationManager(authenticationManager());
