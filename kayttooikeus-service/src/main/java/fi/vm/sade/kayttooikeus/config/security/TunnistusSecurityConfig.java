@@ -44,8 +44,7 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String KUTSUTTU_ROLE = "APP_KUTSUTTU";
 
-    private static final String CAS_CLOB = "/cas/**";
-    private static final String CAS_validate_CLOB = "/cas/validate**";
+    private static final String KUTSU_CLOB = "/kutsuttu/**";
     public static final String OPPIJA_TICKET_VALIDATOR_QUALIFIER = "oppijaTicketValidator";
 
     private final OphProperties ophProperties;
@@ -65,13 +64,13 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.headers().disable().csrf().disable();
-        http.antMatcher(CAS_CLOB).authorizeRequests()
-                .antMatchers("/cas/login**", "/cas/validate**", "/cas/tunnistus**")
+        http.antMatcher(KUTSU_CLOB).authorizeRequests()
+                .antMatchers("/kutsuttu/login*", "/kutsuttu/validate*")
                 .hasRole("APP_KUTSUTTU")
                 .and()
                 .addFilterBefore(hakijaAuthenticationProcessingFilter(), BasicAuthenticationFilter.class)
                 .exceptionHandling()
-                .authenticationEntryPoint(hakijaAuthenticationEntryPoint());
+                .authenticationEntryPoint(oppijaAuthenticationEntryPoint());
     }
 
     @Bean(OPPIJA_TICKET_VALIDATOR_QUALIFIER)
@@ -84,9 +83,8 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public Filter hakijaAuthenticationProcessingFilter() throws Exception {
         SimpleUrlAuthenticationSuccessHandler successHandler = oppijaSuccesUrlHandler();
-        KutsuttuAuthenticationFilter filter = new KutsuttuAuthenticationFilter("/cas/validate", oppijaTicketValidator(), ophProperties, successHandler, vahvaTunnistusService);
+        KutsuttuAuthenticationFilter filter = new KutsuttuAuthenticationFilter("/kutsuttu/validate", oppijaTicketValidator(), ophProperties, successHandler, vahvaTunnistusService);
         filter.setAuthenticationManager(authenticationManager());
-        String authenticationSuccessUrl = ophProperties.url("kayttooikeus-service.cas.success");
         filter.setAuthenticationSuccessHandler(successHandler);
         return filter;
     }
@@ -98,7 +96,7 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public AuthenticationEntryPoint hakijaAuthenticationEntryPoint() {
+    public AuthenticationEntryPoint oppijaAuthenticationEntryPoint() {
         String loginCallbackUrl = ophProperties.url("kayttooikeus-service.cas.tunnistus");
         String defaultLoginUrl = ophProperties.url("cas.oppija.login.service", loginCallbackUrl);
         return new AuthenticationEntryPointImpl(defaultLoginUrl, ophProperties, loginCallbackUrl);
@@ -130,8 +128,6 @@ public class TunnistusSecurityConfig extends WebSecurityConfigurerAdapter {
             } else if (StringUtils.hasLength(loginToken)) {
                 loppuOsa = "&loginToken=" + loginToken;
             }
-
-            //TODO Kieli ja kutsutoken ym requestista?
             return properties.url("cas.oppija.login.service", (loginCallbackUrl + "?locale=" + locale + loppuOsa));
         }
     }

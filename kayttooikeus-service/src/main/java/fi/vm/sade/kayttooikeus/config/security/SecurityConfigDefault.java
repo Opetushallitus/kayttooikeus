@@ -121,14 +121,15 @@ public class SecurityConfigDefault extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .antMatcher("/**")
                 .headers().disable()
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/buildversion.txt").permitAll()
                 .antMatchers("/actuator/health").permitAll()
                 .antMatchers("/kutsu/token/*").permitAll()
-                .antMatchers("/cas/login**").permitAll()
-                .antMatchers("/cas/validate**").permitAll()
+                //.antMatchers("/kutsuttu/login*").permitAll()
+                //.antMatchers("/kutsuttu/validate*").permitAll()
                 .antMatchers("/cas/uudelleenrekisterointi").permitAll()
                 .antMatchers("/cas/henkilo/loginToken/*").permitAll()
                 .antMatchers("/cas/emailverification/*").permitAll()
