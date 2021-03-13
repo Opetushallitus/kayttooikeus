@@ -21,11 +21,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
@@ -110,7 +114,7 @@ public class CasController {
     @ApiOperation(value = "Virkailijan hetu-tunnistuksen jälkeinen käsittely. (rekisteröinti, hetu tunnistuksen pakotus, " +
             "mahdollinen kirjautuminen suomi.fi:n kautta.)")
     @RequestMapping(value = "/tunnistus", method = RequestMethod.GET)
-    public void requestGet(HttpServletResponse response,
+    public void requestGet(HttpServletRequest request, HttpServletResponse response,
                            Principal principal,
                            @RequestParam(value="loginToken", required = false) String loginToken,
                            @RequestParam(value="kutsuToken", required = false) String kutsuToken,
@@ -122,6 +126,8 @@ public class CasController {
         SuomiFiAuthenticationDetails details =
                 (SuomiFiAuthenticationDetails) token.getDetails();
         if (StringUtils.hasLength(kutsuToken)) {
+            // kirjataan Cas oppijan sessio ulos, koska muuten Henkilö ui hajoaa omien tietojen hakuun koska käyttäjää ei löydy onr:stä.
+            handleOppijaLogout(request, response);
             // Vaihdetaan kutsuToken väliaikaiseen ja tallennetaan tiedot vetumasta
             response.sendRedirect(vahvaTunnistusService.kasitteleKutsunTunnistus(
                     kutsuToken, kielisyys, details.hetu,
@@ -225,4 +231,11 @@ public class CasController {
         return this.henkiloService.getMyRoles();
     }
 
+    private void handleOppijaLogout(HttpServletRequest request, HttpServletResponse response) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null){
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+        SecurityContextHolder.getContext().setAuthentication(null);
+    }
 }
