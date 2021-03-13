@@ -251,7 +251,7 @@ public class EmailServiceImpl implements EmailService {
 
         Map<String, String> targetUrlQueryParams = new HashMap<String, String>() {{
             put("kutsuToken", kutsu.getSalaisuus());
-            put("kielisyys", kutsu.getKieliKoodi());
+            put("locale", kutsu.getKieliKoodi());
         }};
         String kayttooikeusTunnistusUrl = this.urlProperties
                 .url("kayttooikeus-service.cas.tunnistus", targetUrlQueryParams);

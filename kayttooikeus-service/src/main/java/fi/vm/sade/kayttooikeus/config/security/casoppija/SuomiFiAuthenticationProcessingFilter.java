@@ -50,7 +50,7 @@ public class SuomiFiAuthenticationProcessingFilter extends AbstractPreAuthentica
                     String etunimet = (String) attributes.get(ETUNIMET_ATTRIBUTE);
                     SuomiFiUserDetails details = new SuomiFiUserDetails(hetu, sukunimi, etunimet);
                     request.setAttribute(SUOMI_FI_DETAILS_ATTR_KEY, details);
-                    return String.join(", ", sukunimi, etunimet);
+                    return hetu;
                 } else {
                     LOGGER.warn("Invalid ticket: \"{}\"", ticket);
                 }
