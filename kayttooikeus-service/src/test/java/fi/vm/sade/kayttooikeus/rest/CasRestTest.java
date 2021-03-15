@@ -89,7 +89,7 @@ public class CasRestTest {
                 .aikaleima(LocalDateTime.now()));
         mockMvc.perform(get("/cas/tunnistus")
                 .param("kutsuToken", "kutsuToken123")
-                .param("kielisyys", "kielisyys123")
+                .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", containsString("/henkilo-ui/rekisteroidy?temporaryKutsuToken=")));
@@ -99,7 +99,7 @@ public class CasRestTest {
     public void tunnistusKutsuTokenEiLoydy() throws Exception {
         mockMvc.perform(get("/cas/tunnistus")
                 .param("kutsuToken", "kutsuToken123")
-                .param("kielisyys", "kielisyys123")
+                .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", endsWith("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/vanhakutsu")));
@@ -117,7 +117,7 @@ public class CasRestTest {
 
         mockMvc.perform(get("/cas/tunnistus")
                 .param("loginToken", "loginToken123")
-                .param("kielisyys", "kielisyys123")
+                .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", containsString("/henkilo-ui/uudelleenrekisterointi/kielisyys123/loginToken123/")));
@@ -127,7 +127,7 @@ public class CasRestTest {
     public void tunnistusLoginTokenEiLoydy() throws Exception {
         mockMvc.perform(get("/cas/tunnistus")
                 .param("loginToken", "loginToken123")
-                .param("kielisyys", "kielisyys123")
+                .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", endsWith("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/vanha")));
@@ -142,7 +142,7 @@ public class CasRestTest {
 
         mockMvc.perform(get("/cas/tunnistus")
                 .param("loginToken", "loginToken123")
-                .param("kielisyys", "kielisyys123")
+                .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", endsWith("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/loginToken123")));
@@ -157,7 +157,7 @@ public class CasRestTest {
                 .build()));
 
         mockMvc.perform(get("/cas/tunnistus")
-                .param("kielisyys", "kielisyys123")
+                .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", containsString("/henkilo-ui/uudelleenrekisterointi/kielisyys123/")));
@@ -168,7 +168,7 @@ public class CasRestTest {
         when(oppijanumerorekisteriClient.getHenkiloByHetu(any())).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/cas/tunnistus")
-                .param("kielisyys", "kielisyys123")
+                .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", endsWith("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/eiloydy")));

@@ -118,16 +118,16 @@ public class CasController {
                            Principal principal,
                            @RequestParam(value="loginToken", required = false) String loginToken,
                            @RequestParam(value="kutsuToken", required = false) String kutsuToken,
-                           @RequestParam(value = "kielisyys", required = false) String kielisyys)
+                           @RequestParam(value = "locale", required = false) String kielisyys)
             throws IOException {
         assert(principal != null);
         assert(principal instanceof PreAuthenticatedAuthenticationToken);
         PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) principal;
         SuomiFiAuthenticationDetails details =
                 (SuomiFiAuthenticationDetails) token.getDetails();
+        // kirjataan ulos, jotta virkailija-CAS ei hämmenny
+        handleOppijaLogout(request, response);
         if (StringUtils.hasLength(kutsuToken)) {
-            // kirjataan Cas oppijan sessio ulos, koska muuten Henkilö ui hajoaa omien tietojen hakuun koska käyttäjää ei löydy onr:stä.
-            handleOppijaLogout(request, response);
             // Vaihdetaan kutsuToken väliaikaiseen ja tallennetaan tiedot vetumasta
             response.sendRedirect(vahvaTunnistusService.kasitteleKutsunTunnistus(
                     kutsuToken, kielisyys, details.hetu,
