@@ -21,6 +21,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -92,7 +95,8 @@ public class CasRestTest {
                 .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", containsString("/henkilo-ui/rekisteroidy?temporaryKutsuToken=")));
+                .andExpect(header().string("Location",
+                        containsString(urlEncode("/henkilo-ui/rekisteroidy?temporaryKutsuToken="))));
     }
 
     @Test
@@ -102,7 +106,8 @@ public class CasRestTest {
                 .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", endsWith("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/vanhakutsu")));
+                .andExpect(header().string("Location",
+                        endsWith(urlEncode("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/vanhakutsu"))));
     }
 
     @Test
@@ -120,7 +125,8 @@ public class CasRestTest {
                 .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", containsString("/henkilo-ui/uudelleenrekisterointi/kielisyys123/loginToken123/")));
+                .andExpect(header().string("Location",
+                        containsString(urlEncode("/henkilo-ui/uudelleenrekisterointi/kielisyys123/loginToken123/"))));
     }
 
     @Test
@@ -130,7 +136,8 @@ public class CasRestTest {
                 .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", endsWith("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/vanha")));
+                .andExpect(header().string("Location",
+                        endsWith(urlEncode("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/vanha"))));
     }
 
     @Test
@@ -145,7 +152,8 @@ public class CasRestTest {
                 .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", endsWith("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/loginToken123")));
+                .andExpect(header().string("Location",
+                        endsWith(urlEncode("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/loginToken123"))));
     }
 
     @Test
@@ -160,7 +168,8 @@ public class CasRestTest {
                 .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", containsString("/henkilo-ui/uudelleenrekisterointi/kielisyys123/")));
+                .andExpect(header().string("Location",
+                        containsString(urlEncode("/henkilo-ui/uudelleenrekisterointi/kielisyys123/"))));
     }
 
     @Test
@@ -171,7 +180,15 @@ public class CasRestTest {
                 .param("locale", "kielisyys123")
                 .param("ticket", "password"))
                 .andExpect(status().isFound())
-                .andExpect(header().string("Location", endsWith("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/eiloydy")));
+                .andExpect(header().string("Location",
+                        endsWith(urlEncode("/henkilo-ui/vahvatunnistusinfo/virhe/kielisyys123/eiloydy"))));
     }
 
+    private String urlEncode(String url) {
+        try {
+            return URLEncoder.encode(url, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

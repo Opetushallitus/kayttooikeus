@@ -129,17 +129,19 @@ public class CasController {
         handleOppijaLogout(request, response);
         if (StringUtils.hasLength(kutsuToken)) {
             // Vaihdetaan kutsuToken väliaikaiseen ja tallennetaan tiedot vetumasta
-            response.sendRedirect(vahvaTunnistusService.kasitteleKutsunTunnistus(
+            response.sendRedirect(getRedirectViaLoginUrl(
+                    vahvaTunnistusService.kasitteleKutsunTunnistus(
                     kutsuToken, kielisyys, details.hetu,
-                    details.etunimet, details.sukunimi));
+                    details.etunimet, details.sukunimi)));
         } else if (StringUtils.hasLength(loginToken)) {
             // Kirjataan henkilön vahva tunnistautuminen järjestelmään, vaihe 1
             // Joko päästetään suoraan sisään tai käytetään lisätietojen keräyssivun kautta
-            String redirectUrl = getVahvaTunnistusRedirectUrl(loginToken, kielisyys, details.hetu);
+            String redirectUrl = getRedirectViaLoginUrl(
+                    getVahvaTunnistusRedirectUrl(loginToken, kielisyys, details.hetu));
             response.sendRedirect(redirectUrl);
         } else {
-            response.sendRedirect(
-                    vahvaTunnistusService.kirjaaKayttajaVahvallaTunnistuksella(details.hetu, kielisyys));
+            response.sendRedirect(getRedirectViaLoginUrl(
+                    vahvaTunnistusService.kirjaaKayttajaVahvallaTunnistuksella(details.hetu, kielisyys)));
         }
     }
 
@@ -150,6 +152,12 @@ public class CasController {
             log.error("User failed strong identification", e);
             return ophProperties.url("henkilo-ui.vahvatunnistus.virhe", kielisyys, loginToken);
         }
+    }
+
+    private String getRedirectViaLoginUrl(String originalUrl) {
+        // kierrätetään CAS-oppijan logoutista, jotta CAS-virkailijaa ei hämmennetä
+        // sen sessiolla, tiketeillä tms.
+        return ophProperties.url("cas.oppija.logout", originalUrl);
     }
 
     @PostMapping(value = "/uudelleenrekisterointi", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
