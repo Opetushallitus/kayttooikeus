@@ -120,7 +120,9 @@ public class CasController {
                            @RequestParam(value="kutsuToken", required = false) String kutsuToken,
                            @RequestParam(value = "locale", required = false) String kielisyys)
             throws IOException {
-        assert(principal != null);
+        if (principal == null) {
+            response.sendRedirect(ophProperties.url("virkailijan-tyopoyta"));
+        }
         assert(principal instanceof PreAuthenticatedAuthenticationToken);
         PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) principal;
         SuomiFiAuthenticationDetails details =
@@ -129,18 +131,18 @@ public class CasController {
         handleOppijaLogout(request, response);
         if (StringUtils.hasLength(kutsuToken)) {
             // Vaihdetaan kutsuToken väliaikaiseen ja tallennetaan tiedot vetumasta
-            response.sendRedirect(getRedirectViaLoginUrl(
+            response.sendRedirect(getRedirectViaLogoutUrl(
                     vahvaTunnistusService.kasitteleKutsunTunnistus(
                     kutsuToken, kielisyys, details.hetu,
                     details.etunimet, details.sukunimi)));
         } else if (StringUtils.hasLength(loginToken)) {
             // Kirjataan henkilön vahva tunnistautuminen järjestelmään, vaihe 1
             // Joko päästetään suoraan sisään tai käytetään lisätietojen keräyssivun kautta
-            String redirectUrl = getRedirectViaLoginUrl(
+            String redirectUrl = getRedirectViaLogoutUrl(
                     getVahvaTunnistusRedirectUrl(loginToken, kielisyys, details.hetu));
             response.sendRedirect(redirectUrl);
         } else {
-            response.sendRedirect(getRedirectViaLoginUrl(
+            response.sendRedirect(getRedirectViaLogoutUrl(
                     vahvaTunnistusService.kirjaaKayttajaVahvallaTunnistuksella(details.hetu, kielisyys)));
         }
     }
@@ -154,7 +156,7 @@ public class CasController {
         }
     }
 
-    private String getRedirectViaLoginUrl(String originalUrl) {
+    private String getRedirectViaLogoutUrl(String originalUrl) {
         // kierrätetään CAS-oppijan logoutista, jotta CAS-virkailijaa ei hämmennetä
         // sen sessiolla, tiketeillä tms.
         return ophProperties.url("cas.oppija.logout", originalUrl);
