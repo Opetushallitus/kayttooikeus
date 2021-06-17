@@ -27,7 +27,6 @@ host:
   host-virkailija: localhost
   host-oppija: localhost
   host-cas: localhost
-  host-shibboleth: localhost
   host-varda: localhost
 
 service-users:
@@ -50,3 +49,7 @@ kayttooikeus:
     enabled: false
     run-on-startup: false
     pool_size: 1
+  user-details-auth:
+    username: test
+    password: test
+

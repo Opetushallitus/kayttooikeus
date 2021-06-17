@@ -33,7 +33,7 @@ before_script:
 script:
   - mvn -P ci clean install -B -Dbranch=${TRAVIS_BRANCH} -Drevision=${TRAVIS_COMMIT} -DbuildNumber=${TRAVIS_BUILD_NUMBER}
 
-  - mv kayttooikeus-service/target/kayttooikeus-service-*SNAPSHOT.jar $DOCKER_BUILD_DIR/artifact/${ARTIFACT_NAME}.jar
+  - mv kayttooikeus-service/target/kayttooikeus-service.jar $DOCKER_BUILD_DIR/artifact/${ARTIFACT_NAME}.jar
   - cp -vr src/main/resources/oph-configuration $DOCKER_BUILD_DIR/config/
 
   - export BASE_IMAGE="baseimage-fatjar-openjdk11:master"

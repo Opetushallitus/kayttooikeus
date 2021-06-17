@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "kayttooikeus")
 public class KayttooikeusProperties {
     private Scheduling scheduling = new Scheduling();
+    private UserDetailsAuth userDetailsAuth = new UserDetailsAuth();
 
     @Getter @Setter
     public static class Scheduling {
@@ -36,5 +37,11 @@ public class KayttooikeusProperties {
             private Long henkiloNimiCache = 100000L;
         }
 
+    }
+
+    @Getter @Setter
+    public static class UserDetailsAuth {
+        private String username;
+        private String password;
     }
 }

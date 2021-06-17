@@ -1,0 +1,32 @@
+version: "3.3"
+services:
+  kayttooikeus-service:
+    build: ./kayttooikeus-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - server.port=8081
+      - host.host-cas=mock-cas:8080
+      - host.protocol-cas=http
+      - host.host-virkailija=virkailija.untuvaopintopolku.fi
+      - host.host-oppija=untuvaopintopolku.fi
+      - spring.datasource.url=jdbc:postgresql://kayttooikeus-db:5432/kayttooikeus?ApplicationName=kayttooikeus-service
+      - service-users.default.username=testuser
+      - service-users.default.password=testuser
+    volumes:
+      - ./dev-migrations:/var/tmp/db/migration:ro
+  kayttooikeus-db:
+    image: postgres:10.6
+    environment:
+      - POSTGRES_USER=oph
+      - POSTGRES_PASSWORD=oph
+      - POSTGRES_DB=kayttooikeus
+  mock-cas:
+    image: soulwing/cas-mock-server
+    ports:
+      - "8080:8080"
+    environment:
+      - ATTRIBUTES_JSON_URL=file:///var/tmp/cas-mock/attributes.json
+    volumes:
+      - ./cas-mock:/var/tmp/cas-mock:ro

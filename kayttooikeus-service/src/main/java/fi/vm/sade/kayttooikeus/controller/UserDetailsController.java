@@ -6,6 +6,7 @@ import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,8 +22,10 @@ public class UserDetailsController {
     private final UserDetailsService userDetailsService;
     private final KayttajatiedotService kayttajatiedotService;
 
-    // Palomuurilla rajoitettu pääsy vain verkon sisältä
     @GetMapping("/{username}")
+    @PreAuthorize("hasAnyRole(" +
+            "'ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_READ', " +
+            "'ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_CRUD')")
     public UserDetails getUserDetails(@PathVariable String username) {
         try {
             return userDetailsService.loadUserByUsername(username);
@@ -31,8 +34,10 @@ public class UserDetailsController {
         }
     }
 
-    // Palomuurilla rajoitettu pääsy vain verkon sisältä
     @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PreAuthorize("hasAnyRole(" +
+            "'ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_READ', " +
+            "'ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_CRUD')")
     public KayttajatiedotReadDto getByUsernameAndPassword(@Valid @RequestBody LoginDto dto) {
         return kayttajatiedotService.getByUsernameAndPassword(dto.getUsername(), dto.getPassword());
     }

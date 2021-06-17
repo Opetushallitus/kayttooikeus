@@ -25,7 +25,6 @@ host:
   host-virkailija: {{host_virkailija}}
   host-oppija: {{host_oppija}}
   host-cas: {{host_cas}}
-  host-shibboleth: {{host_tunnistus}}
   host-varda: {{host_varda}}
 
 service-users:
@@ -47,6 +46,9 @@ kayttooikeus:
   disable-same-site-cookie: {{kayttooikeus_disable_same_site_cookie | default('false')}}
   scheduling:
     enabled: true
+  user-details-auth:
+      username: {{kayttooikeus_userdetails_username}}
+      password: {{kayttooikeus_userdetails_password}}
 
 auth:
   crypto-service:

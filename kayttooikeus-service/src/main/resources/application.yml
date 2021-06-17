@@ -68,7 +68,6 @@ host:
   host-virkailija: localhost:${server.port}
   host-oppija: localhost:${server.port}
   host-cas: localhost:${server.port}
-  host-shibboleth: localhost:${server.port}
   host-varda: localhost:${server.port}
 
 service-users:
@@ -95,6 +94,9 @@ kayttooikeus:
   disable-same-site-cookie: false
   scheduling:
     enabled: false
+  user-details-auth:
+    username: ${service-users.default.username}
+    password: ${service-users.default.username}
 
 auth:
   crypto-service:
