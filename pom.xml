@@ -46,9 +46,9 @@
         <auditlog.api.version>8.3.0-SNAPSHOT</auditlog.api.version>
 
         <!-- Utils -->
-        <commons.io.version>1.3.2</commons.io.version>
+        <commons.io.version>2.7</commons.io.version>
 
-        <springfox.version>2.7.0</springfox.version>
+        <springfox.version>2.10.0</springfox.version>
 
         <!-- buildversion.txt generation plugin -->
         <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
@@ -227,8 +227,7 @@ vcsRevision=${revision}
 buildTtime=${maven.build.timestamp}
 ]]>
                                     </echo>
-                                    <loadfile property="buildversiontxt"
-                                              srcFile="${project.build.directory}/classes/static/buildversion.txt"/>
+                                    <loadfile property="buildversiontxt" srcFile="${project.build.directory}/classes/static/buildversion.txt"/>
                                     <echo message="${buildversiontxt}"/>
                                     <echo file="target/mavenversion.txt">${project.version}</echo>
                                 </target>
