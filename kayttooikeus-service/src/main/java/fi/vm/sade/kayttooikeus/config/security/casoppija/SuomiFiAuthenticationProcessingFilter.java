@@ -1,13 +1,21 @@
 package fi.vm.sade.kayttooikeus.config.security.casoppija;
 
+import fi.vm.sade.kayttooikeus.config.security.TunnistusSecurityConfig;
 import org.jasig.cas.client.validation.Assertion;
 import org.jasig.cas.client.validation.TicketValidationException;
 import org.jasig.cas.client.validation.TicketValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,6 +34,14 @@ public class SuomiFiAuthenticationProcessingFilter extends AbstractPreAuthentica
 
     public SuomiFiAuthenticationProcessingFilter(TicketValidator ticketValidator) {
         this.ticketValidator = ticketValidator;
+    }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        if ( isInvitation((HttpServletRequest) request)) {
+            SecurityContextHolder.clearContext();
+        }
+        super.doFilter(request, response, chain);
     }
 
     @Override
@@ -78,4 +94,7 @@ public class SuomiFiAuthenticationProcessingFilter extends AbstractPreAuthentica
         return request.getParameter(OPPIJA_TICKET_PARAM_NAME);
     }
 
+    private boolean isInvitation(HttpServletRequest req) {
+        return TunnistusSecurityConfig.OPPIJA_CAS_TUNNISTUS_PATH.equals(req.getPathInfo());
+    }
 }
