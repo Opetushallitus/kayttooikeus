@@ -1,0 +1,1 @@
+SELECT insertkayttooikeus('EHOKS', 'HOKS_DELETE', 'Hoksien poisto-oikeus');
