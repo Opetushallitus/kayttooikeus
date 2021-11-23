@@ -18,4 +18,5 @@ public interface EmailService {
 
     void sendInvitationEmail(Kutsu kutsu);
 
+    boolean sendPurgeNotification(Kutsu invitation);
 }

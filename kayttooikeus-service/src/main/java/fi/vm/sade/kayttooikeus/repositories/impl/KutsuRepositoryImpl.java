@@ -3,6 +3,7 @@ package fi.vm.sade.kayttooikeus.repositories.impl;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import fi.vm.sade.kayttooikeus.dto.KutsunTila;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.KutsuRepositoryCustom;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KutsuCriteria;
@@ -12,6 +13,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -52,5 +56,17 @@ public class KutsuRepositoryImpl implements KutsuRepositoryCustom {
             query.limit(amount);
         }
         return query.distinct().fetch();
+    }
+
+    @Override
+    public Collection<Long> findExpiredInvitations(Period threshold) {
+        QKutsu kutsu = QKutsu.kutsu;
+        return new JPAQueryFactory(this.em)
+                .from(kutsu)
+                .select(kutsu.id)
+                .where(
+                        kutsu.tila.eq(KutsunTila.AVOIN)
+                                .and(kutsu.aikaleima.lt(LocalDateTime.now().minus(threshold))))
+                .distinct().fetch();
     }
 }

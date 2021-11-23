@@ -1,16 +1,17 @@
 package fi.vm.sade.kayttooikeus.service;
 
-import fi.vm.sade.kayttooikeus.dto.KutsuUpdateDto;
-import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
 import fi.vm.sade.kayttooikeus.dto.KutsuCreateDto;
 import fi.vm.sade.kayttooikeus.dto.KutsuReadDto;
+import fi.vm.sade.kayttooikeus.dto.KutsuUpdateDto;
 import fi.vm.sade.kayttooikeus.enumeration.KutsuOrganisaatioOrder;
 import fi.vm.sade.kayttooikeus.model.Kutsu;
 import fi.vm.sade.kayttooikeus.repositories.criteria.KutsuCriteria;
-import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloCreateDto;
+import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
 import org.springframework.data.domain.Sort;
 
+import java.time.Period;
+import java.util.Collection;
 import java.util.List;
 
 public interface KutsuService {
@@ -18,6 +19,7 @@ public interface KutsuService {
 
     /**
      * Uuden kutsun luominen
+     *
      * @param dto kutsun luomiseen
      * @return Luodun kutsun id
      */
@@ -25,6 +27,7 @@ public interface KutsuService {
 
     /**
      * Kutsun hakeminen id:llä
+     *
      * @param id kutsun id
      * @return kutsu halutulla id:llä
      */
@@ -33,12 +36,14 @@ public interface KutsuService {
     /**
      * Kutsun uusiminen muuttamatta kutsun sisältöä. Jos ei ole oma kutsu vaatii tavallisilta käyttäjiltä
      * authorisoinnin organisaatiohierarkian kautta.
+     *
      * @param id kutsun ID
      */
     void renewKutsu(long id);
 
     /**
      * Merkitsee kutsun tilan poistetuksi. Ei fyysisesti poista mitään.
+     *
      * @param id poistettavan kutsun id
      * @return poistetun kutsun id
      */
@@ -46,6 +51,7 @@ public interface KutsuService {
 
     /**
      * Palauttaa kutsun väliaikaisen kutsutokenin perusteella
+     *
      * @param temporaryToken käyttäjän vahvan tunnistuksen jälkeen generoitu väliaikainen kutsutoken
      * @return tokenia vastaava kutsu
      */
@@ -53,7 +59,8 @@ public interface KutsuService {
 
     /**
      * Henkilön luominen väliaikaisella kutsutokenilla
-     * @param temporaryToken token generoitu kutsulle vahvan tunnistuksen jälkeen
+     *
+     * @param temporaryToken          token generoitu kutsulle vahvan tunnistuksen jälkeen
      * @param henkiloCreateByKutsuDto haluttu henkilö
      * @return Luodun henkilön oid
      */
@@ -63,10 +70,11 @@ public interface KutsuService {
 
     /**
      * Päivittää haka tunnisteen kutsuun
+     *
      * @param temporaryToken käyttäjän vahvan tunnistuksen jälkeen generoitu väliaikainen kutsutoken
      * @param kutsuUpdateDto haka tunnisteen sisältävä dto
      */
     void updateHakaIdentifierToKutsu(String temporaryToken, KutsuUpdateDto kutsuUpdateDto);
 
-
+    Collection<Long> findExpiredInvitations(Period threshold);
 }

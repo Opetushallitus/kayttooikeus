@@ -30,6 +30,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -275,7 +276,7 @@ public class KutsuServiceImpl implements KutsuService {
         // Search for existing henkilo by hetu and create new if not found
         boolean isNewHenkilo = !henkiloByHetu.isPresent();
         String henkiloOid;
-        if(isNewHenkilo) {
+        if (isNewHenkilo) {
             HenkiloCreateDto henkiloCreateDto = this.getHenkiloCreateDto(henkiloCreateByKutsuDto, kutsuByToken);
             henkiloOid = this.oppijanumerorekisteriClient.createHenkilo(henkiloCreateDto);
         } else {
@@ -310,7 +311,7 @@ public class KutsuServiceImpl implements KutsuService {
         // In case henkilo already exists
         henkiloUpdateDto.setKutsumanimi(henkiloCreateByKutsuDto.getKutsumanimi());
 
-        if(isNewHenkilo) {
+        if (isNewHenkilo) {
             addEmailToNewHenkiloUpdateDto(henkiloUpdateDto, kutsuByToken.getSahkoposti());
         } else {
             addEmailToExistingHenkiloUpdateDto(henkiloOid, kutsuByToken.getSahkoposti(), henkiloUpdateDto);
@@ -332,7 +333,7 @@ public class KutsuServiceImpl implements KutsuService {
                 .map(YhteystietoDto::getYhteystietoArvo)
                 .noneMatch(kutsuSahkoposti::equals);
 
-        if(missingKutsusahkoposti) { // add kutsuemail if it doesn't exist in henkilos yhteystiedot
+        if (missingKutsusahkoposti) { // add kutsuemail if it doesn't exist in henkilos yhteystiedot
             YhteystietoDto yhteystietoDto = new YhteystietoDto(YhteystietoTyyppi.YHTEYSTIETO_SAHKOPOSTI, kutsuSahkoposti);
             Set<YhteystietoDto> yhteystietoDtos = new HashSet<>();
             yhteystietoDtos.add(yhteystietoDto);
@@ -435,5 +436,8 @@ public class KutsuServiceImpl implements KutsuService {
         this.mapper.map(kutsuUpdateDto, kutsu);
     }
 
-
+    @Override
+    public Collection<Long> findExpiredInvitations(Period threshold) {
+        return kutsuRepository.findExpiredInvitations(threshold);
+    }
 }

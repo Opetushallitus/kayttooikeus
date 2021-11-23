@@ -52,6 +52,7 @@ import static java.util.stream.Collectors.*;
 
 @Service
 public class EmailServiceImpl implements EmailService {
+    public static final String INVITATION_PURGE_EMAIL_TEMPLATE = "kayttooikeus_kutsu_postoilmoitus";
     private static final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
     private static final String DEFAULT_LANGUAGE_CODE = "fi";
     private static final Locale DEFAULT_LOCALE = new Locale(DEFAULT_LANGUAGE_CODE);
@@ -277,6 +278,41 @@ public class EmailServiceImpl implements EmailService {
         logger.info("Sending invitation email to {}", kutsu.getSahkoposti());
         String response = this.ryhmasahkopostiClient.sendRyhmasahkoposti(emailData);
         logger.info("Sent invitation email to {}, ryhmasahkoposti-result: {}", kutsu.getSahkoposti(), response);
+    }
+
+    @Override
+    public boolean sendPurgeNotification(Kutsu invitation) {
+        EmailData emailData = new EmailData();
+        emailData.setEmail(getMessageTemplate(INVITATION_PURGE_EMAIL_TEMPLATE, invitation.getKieliKoodi()));
+        emailData.setRecipient(singletonList(resolveRecipient(invitation)));
+        try {
+            ryhmasahkopostiClient.sendRyhmasahkoposti(emailData);
+            logger.info("Sent invitation purge notification email to: {}", emailData.getRecipient().get(0));
+        } catch (Exception e) {
+            logger.error("Failed to send invitation purge notification email to: {}. Invitation id: {}",
+                    emailData.getRecipient().get(0), invitation.getId());
+            return false;
+        }
+        return true;
+    }
+
+    private EmailMessage getMessageTemplate(String templateName, String languageCode) {
+        EmailMessage email = new EmailMessage();
+        email.setTemplateName(templateName);
+        email.setLanguageCode(languageCode);
+        email.setCallingProcess(CALLING_PROCESS);
+        email.setCharset("UTF-8");
+        email.setHtml(true);
+        return email;
+    }
+
+    private EmailRecipient resolveRecipient(Kutsu invitation) {
+        EmailRecipient recipient = new EmailRecipient();
+        recipient.setEmail(invitation.getSahkoposti());
+        recipient.setLanguageCode(invitation.getKieliKoodi());
+        recipient.setName(String.format("%s %s", invitation.getEtunimi(), invitation.getSukunimi()));
+        recipient.setRecipientReplacements(Collections.EMPTY_LIST);
+        return recipient;
     }
 
     @NotNull

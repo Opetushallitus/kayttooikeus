@@ -10,10 +10,13 @@ import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.kayttooikeus.service.external.RyhmasahkopostiClient;
+import fi.vm.sade.kayttooikeus.service.impl.EmailServiceImpl;
 import fi.vm.sade.kayttooikeus.util.CreateUtil;
 import fi.vm.sade.kayttooikeus.util.YhteystietoUtil;
 import fi.vm.sade.oppijanumerorekisteri.dto.*;
 import fi.vm.sade.ryhmasahkoposti.api.dto.EmailData;
+import fi.vm.sade.ryhmasahkoposti.api.dto.EmailMessage;
+import fi.vm.sade.ryhmasahkoposti.api.dto.EmailRecipient;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
@@ -43,6 +46,11 @@ public class EmailServiceTest extends AbstractServiceTest {
 
     private static final String HENKILO_OID = "1.2.3.4.5";
     private static final String WORK_EMAIL = "testi@example.com";
+
+    private static final String TEST_LANG = "fi";
+    private static final String TEST_EMAIL = "arpa@kuutio.fi";
+    private static final String TEST_FIRST_NAME = "arpa";
+    private static final String TEST_LAST_NAME = "kuutio";
 
     @MockBean
     private RyhmasahkopostiClient ryhmasahkopostiClient;
@@ -265,5 +273,38 @@ public class EmailServiceTest extends AbstractServiceTest {
         assertThat(emailData.getEmail().getLanguageCode()).isEqualTo("fi");
         assertThat(emailData.getEmail().getFrom()).isNull();
         assertThat(emailData.getEmail().getTemplateName()).isEqualTo("kayttooikeus_kutsu_v2");
+    }
+
+    @Test
+    public void sendPurgeNotificationSuccess() {
+        Kutsu invitation = Kutsu.builder()
+                .kieliKoodi(TEST_LANG)
+                .sahkoposti(TEST_EMAIL)
+                .etunimi(TEST_FIRST_NAME)
+                .sukunimi(TEST_LAST_NAME)
+                .build();
+
+        assertThat(emailService.sendPurgeNotification(invitation)).isTrue();
+        ArgumentCaptor<EmailData> captor = ArgumentCaptor.forClass(EmailData.class);
+        verify(ryhmasahkopostiClient).sendRyhmasahkoposti(captor.capture());
+
+        EmailData emailData = captor.getValue();
+        assertThat(emailData.getReplacements().isEmpty()).isTrue();
+        assertThat(emailData.getRecipient().size()).isEqualTo(1);
+
+        EmailMessage message = emailData.getEmail();
+        assertThat(message.getTemplateName()).isEqualTo(EmailServiceImpl.INVITATION_PURGE_EMAIL_TEMPLATE);
+        assertThat(message.getLanguageCode()).isEqualTo(TEST_LANG);
+
+        EmailRecipient recipient = emailData.getRecipient().get(0);
+        assertThat(recipient.getEmail()).isEqualTo(TEST_EMAIL);
+        assertThat(recipient.getName()).isEqualTo(String.format("%s %s", TEST_FIRST_NAME, TEST_LAST_NAME));
+        assertThat(recipient.getLanguageCode()).isEqualTo(TEST_LANG);
+    }
+
+    @Test
+    public void sendPurgeNotificationFailure() {
+        when(ryhmasahkopostiClient.sendRyhmasahkoposti(any())).thenThrow(new RuntimeException("BOOM!"));
+        assertThat(emailService.sendPurgeNotification(Kutsu.builder().build())).isFalse();
     }
 }
