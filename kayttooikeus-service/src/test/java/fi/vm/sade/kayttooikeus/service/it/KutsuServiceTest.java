@@ -39,6 +39,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -81,7 +82,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
 
     @SpyBean
     private KayttooikeusAnomusService kayttooikeusAnomusService;
-    
+
     @MockBean
     private OrganisaatioClient organisaatioClient;
 
@@ -117,12 +118,12 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         given(this.organisaatioClient.listWithChildOids(eq("1.2.3.4.5"), any())).willReturn(singleton("1.2.3.4.5"));
         given(this.organisaatioClient.listWithChildOids(eq("1.2.3.4.6"), any())).willReturn(singleton("1.2.3.4.6"));
         populate(kutsu("Essi", "Esimerkki", "a@eaxmple.com")
-                .kutsuja("1.2.3").aikaleima(LocalDateTime.of(2016,1,1,0,0,0, 0))
+                .kutsuja("1.2.3").aikaleima(LocalDateTime.of(2016, 1, 1, 0, 0, 0, 0))
                 .organisaatio(kutsuOrganisaatio("1.2.3.4.5")
                         .ryhma(kayttoOikeusRyhma("RYHMA1"))
                 ));
         Kutsu kutsu2 = populate(kutsu("Matti", "Meikäläinen", "b@eaxmple.com")
-                .kutsuja("1.2.4").aikaleima(LocalDateTime.of(2016,2,1,0,0,0,0))
+                .kutsuja("1.2.4").aikaleima(LocalDateTime.of(2016, 2, 1, 0, 0, 0, 0))
                 .organisaatio(kutsuOrganisaatio("1.2.3.4.5")
                         .ryhma(kayttoOikeusRyhma("RYHMA2")))
                 .organisaatio(kutsuOrganisaatio("1.2.3.4.6")
@@ -130,7 +131,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         );
         populate(kutsu("Eero", "Esimerkki", "c@eaxmple.com")
                 .tila(KutsunTila.POISTETTU)
-                .kutsuja("1.2.4").aikaleima(LocalDateTime.of(2016,1,1,0,0,0,0))
+                .kutsuja("1.2.4").aikaleima(LocalDateTime.of(2016, 1, 1, 0, 0, 0, 0))
                 .organisaatio(kutsuOrganisaatio("1.2.3.4.5").ryhma(kayttoOikeusRyhma("RYHMA1"))
                 ));
 
@@ -144,10 +145,10 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
                 .willReturn(Optional.of(org1));
         given(this.organisaatioClient.getOrganisaatioPerustiedotCached(eq("1.2.3.4.6")))
                 .willReturn(Optional.of(org2));
-        
+
         List<KutsuReadDto> kutsus = kutsuService.listKutsus(KutsuOrganisaatioOrder.AIKALEIMA, Sort.Direction.ASC, KutsuCriteria.builder().searchTerm("matti meikäläinen").build(), null, null);
         assertEquals(1, kutsus.size());
-        assertEquals(LocalDateTime.of(2016,2,1,0,0,0,0), kutsus.get(0).getAikaleima());
+        assertEquals(LocalDateTime.of(2016, 2, 1, 0, 0, 0, 0), kutsus.get(0).getAikaleima());
         assertEquals(kutsu2.getId(), kutsus.get(0).getId());
         assertEquals("b@eaxmple.com", kutsus.get(0).getSahkoposti());
         assertEquals(2, kutsus.get(0).getOrganisaatiot().size());
@@ -196,7 +197,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     public void listAvoinKutsusWithMiniAdminAndKayttooikeusryhmaView() {
         MyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma = populate(
                 myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3", "1.2.3.4.5"),
-                kayttoOikeusRyhma("RYHMA1").withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_CRUD))));
+                        kayttoOikeusRyhma("RYHMA1").withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_CRUD))));
         populate(kutsu("Essi", "Esimerkki", "a@eaxmple.com")
                 .kutsuja("1.2.3").aikaleima(LocalDateTime.of(2016, 1, 1, 0, 0, 0, 0))
                 .organisaatio(kutsuOrganisaatio("1.2.3.4.5")
@@ -344,7 +345,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         org1.setNimi(new TextGroupMapDto().put("FI", "Opetushallitus").asMap());
         given(this.organisaatioClient.getOrganisaatioPerustiedotCached(eq("1.2.246.562.10.00000000001")))
                 .willReturn(Optional.of(org1));
-        
+
         MyonnettyKayttoOikeusRyhmaTapahtuma tapahtuma = populate(myonnettyKayttoOikeus(
                 organisaatioHenkilo(virkailija("1.2.4"), "1.2.246.562.10.00000000001"),
                 kayttoOikeusRyhma("kayttoOikeusRyhma")
@@ -655,7 +656,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         List<String> yhteystietoArvot = allYhteystiedot.stream().map(y -> y.getYhteystietoArvo()).collect(Collectors.toList());
         assertTrue(yhteystietoArvot.contains("teppo.testi@domain.com"));
     }
-    
+
     //Assert that new email addresses are added and existing remains
     @Test
     public void addEmailToExistingHenkiloTest() {
@@ -700,7 +701,7 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         assertEquals("1.2.4", kutsu.getPoistaja());
         assertNotNull(kutsu.getPoistettu());
     }
-    
+
     @Test(expected = ForbiddenException.class)
     @WithMockUser(username = "1.2.4", authorities = "ROLE_APP_KAYTTOOIKEUS_CRUD")
     public void deleteKutsuOtherKutsujaWithoutProperAuthorityFails() {
@@ -1079,6 +1080,11 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         assertThat(kutsu.getLuotuHenkiloOid()).isEqualTo(henkilo.getOidHenkilo());
         assertThat(kutsu.getTemporaryToken()).isNull();
         assertThat(kutsu.getTila()).isEqualTo(KutsunTila.KAYTETTY);
+    }
+
+    @Test
+    public void findExpiredInvitations() {
+        assertThat(kutsuService.findExpiredInvitations(Period.ZERO)).isEmpty();
     }
 
     @Test

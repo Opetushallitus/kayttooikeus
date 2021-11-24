@@ -19,7 +19,6 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -112,9 +111,9 @@ public class TaskExecutorServiceTest extends AbstractServiceTest {
 
     @Test
     public void discardExpiredApplicationsNoApplications() {
-        given(kutsuService.findExpiredInvitations(TEST_PERIOD)).willReturn(Collections.emptyList());
+        given(anomusService.findExpiredApplications(TEST_PERIOD)).willReturn(Collections.emptyList());
 
-        taskExecutorService.discardExpiredInvitations(TEST_PERIOD);
+        taskExecutorService.discardExpiredApplications(TEST_PERIOD);
 
         verify(anomusService, never()).discardApplication(any());
         verify(emailService, never()).sendDiscardedApplicationNotification(any());
