@@ -107,10 +107,27 @@ public class KutsuRepositoryTest extends AbstractRepositoryTest {
     @Test
     public void findExpiredInvitations() {
         populate(kutsu("", "", "")
-                .kutsuja("")
                 .aikaleima(LocalDateTime.now().minus(Period.ofMonths(2)))
         );
-        assertThat(kutsuRepository.findExpiredInvitations(Period.ofMonths(1)).size()).isEqualTo(1);
-        assertThat(kutsuRepository.findExpiredInvitations(Period.ofMonths(3)).size()).isEqualTo(0);
+        assertThat(kutsuRepository.findExpiredInvitations(Period.ofMonths(1))).hasSize(1);
+        assertThat(kutsuRepository.findExpiredInvitations(Period.ofMonths(3))).isEmpty();
+    };
+
+    @Test
+    public void findExpiredInvitationsIgnoresRemoved() {
+        populate(kutsu("", "", "")
+                .poistettu(LocalDateTime.now())
+                .aikaleima(LocalDateTime.now().minus(Period.ofMonths(2)))
+        );
+        assertThat(kutsuRepository.findExpiredInvitations(Period.ZERO)).isEmpty();
+    };
+
+    @Test
+    public void findExpiredInvitationsIgnoresWrongStatus() {
+        populate(kutsu("", "", "")
+                .tila(KutsunTila.KAYTETTY)
+                .aikaleima(LocalDateTime.now().minus(Period.ofMonths(2)))
+        );
+        assertThat(kutsuRepository.findExpiredInvitations(Period.ZERO)).isEmpty();
     };
 }

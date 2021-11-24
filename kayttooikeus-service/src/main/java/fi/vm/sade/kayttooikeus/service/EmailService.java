@@ -1,5 +1,6 @@
 package fi.vm.sade.kayttooikeus.service;
 
+import fi.vm.sade.kayttooikeus.dto.HaettuKayttooikeusryhmaDto;
 import fi.vm.sade.kayttooikeus.dto.UpdateHaettuKayttooikeusryhmaDto;
 import fi.vm.sade.kayttooikeus.model.Anomus;
 import fi.vm.sade.kayttooikeus.model.Kutsu;
@@ -18,5 +19,7 @@ public interface EmailService {
 
     void sendInvitationEmail(Kutsu kutsu);
 
-    boolean sendPurgeNotification(Kutsu invitation);
+    void sendDiscardedInvitationNotification(Kutsu invitation);
+
+    void sendDiscardedApplicationNotification(Anomus application);
 }

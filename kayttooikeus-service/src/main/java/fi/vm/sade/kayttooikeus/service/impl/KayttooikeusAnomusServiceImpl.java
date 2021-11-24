@@ -29,6 +29,7 @@ import javax.validation.ValidationException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Period;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -516,6 +517,20 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         return kayttooikeusByOrganisation.entrySet().stream()
                 .filter(entity -> !entity.getValue().isEmpty())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    /* Used internally by scheduled task */
+    @Override
+    @Transactional
+    public void discardApplication(Anomus anomus) {
+        anomus.setAnomuksenTila(AnomuksenTila.HYLATTY);
+        anomus.setAnomusTilaTapahtumaPvm(LocalDateTime.now());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Collection<Anomus> findExpiredApplications(Period threshold) {
+        return anomusRepository.findExpiredApplications(threshold);
     }
 
     private void regularUserChecks(Map<String, Set<Long>> kayttooikeusByOrganisation, Map<String, Set<Long>> myontooikeudet) {

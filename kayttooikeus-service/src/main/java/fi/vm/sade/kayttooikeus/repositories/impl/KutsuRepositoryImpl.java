@@ -59,14 +59,15 @@ public class KutsuRepositoryImpl implements KutsuRepositoryCustom {
     }
 
     @Override
-    public Collection<Long> findExpiredInvitations(Period threshold) {
+    public Collection<Kutsu> findExpiredInvitations(Period threshold) {
         QKutsu kutsu = QKutsu.kutsu;
         return new JPAQueryFactory(this.em)
                 .from(kutsu)
-                .select(kutsu.id)
+                .select(kutsu)
                 .where(
                         kutsu.tila.eq(KutsunTila.AVOIN)
+                                .and(kutsu.poistettu.isNull())
                                 .and(kutsu.aikaleima.lt(LocalDateTime.now().minus(threshold))))
-                .distinct().fetch();
+                .fetch();
     }
 }

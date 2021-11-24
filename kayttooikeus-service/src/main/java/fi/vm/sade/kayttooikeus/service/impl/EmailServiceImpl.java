@@ -7,6 +7,7 @@ import fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila;
 import fi.vm.sade.kayttooikeus.dto.TextGroupMapDto;
 import fi.vm.sade.kayttooikeus.dto.UpdateHaettuKayttooikeusryhmaDto;
 import fi.vm.sade.kayttooikeus.model.Anomus;
+import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhma;
 import fi.vm.sade.kayttooikeus.model.Kutsu;
 import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaRepository;
@@ -52,7 +53,8 @@ import static java.util.stream.Collectors.*;
 
 @Service
 public class EmailServiceImpl implements EmailService {
-    public static final String INVITATION_PURGE_EMAIL_TEMPLATE = "kayttooikeus_kutsu_postoilmoitus";
+    public static final String DISCARDED_INVITATION_EMAIL_TEMPLATE = "kayttooikeus_kutsu_postoilmoitus";
+    public static final String DISCARDED_APPLICATION_EMAIL_TEMPLATE = "kayttooikeus_anomus_postoilmoitus";
     private static final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
     private static final String DEFAULT_LANGUAGE_CODE = "fi";
     private static final Locale DEFAULT_LOCALE = new Locale(DEFAULT_LANGUAGE_CODE);
@@ -281,19 +283,25 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public boolean sendPurgeNotification(Kutsu invitation) {
+    public void sendDiscardedInvitationNotification(Kutsu invitation) {
         EmailData emailData = new EmailData();
-        emailData.setEmail(getMessageTemplate(INVITATION_PURGE_EMAIL_TEMPLATE, invitation.getKieliKoodi()));
+        emailData.setEmail(getMessageTemplate(DISCARDED_INVITATION_EMAIL_TEMPLATE, invitation.getKieliKoodi()));
         emailData.setRecipient(singletonList(resolveRecipient(invitation)));
-        try {
-            ryhmasahkopostiClient.sendRyhmasahkoposti(emailData);
-            logger.info("Sent invitation purge notification email to: {}", emailData.getRecipient().get(0));
-        } catch (Exception e) {
-            logger.error("Failed to send invitation purge notification email to: {}. Invitation id: {}",
-                    emailData.getRecipient().get(0), invitation.getId());
-            return false;
-        }
-        return true;
+        ryhmasahkopostiClient.sendRyhmasahkoposti(emailData);
+    }
+
+    @Override
+    public void sendDiscardedApplicationNotification(Anomus application) {
+        String languageCode = resolveLanguageCode(application.getHenkilo());
+        EmailData emailData = new EmailData();
+        emailData.setEmail(getMessageTemplate(DISCARDED_APPLICATION_EMAIL_TEMPLATE, languageCode));
+        emailData.setRecipient(singletonList(resolveRecipient(application, languageCode)));
+        ryhmasahkopostiClient.sendRyhmasahkoposti(emailData);
+    }
+
+    private String resolveLanguageCode(Henkilo henkilo) {
+        return oppijanumerorekisteriClient.getHenkiloByOid(henkilo.getOidHenkilo())
+                .getAsiointiKieli().getKieliKoodi();
     }
 
     private EmailMessage getMessageTemplate(String templateName, String languageCode) {
@@ -306,12 +314,22 @@ public class EmailServiceImpl implements EmailService {
         return email;
     }
 
+    private EmailRecipient resolveRecipient(Anomus application, String languageCode) {
+        EmailRecipient recipient = new EmailRecipient();
+        recipient.setEmail(application.getSahkopostiosoite());
+        recipient.setLanguageCode(languageCode);
+        recipient.setName(String.format("%s %s", application.getHenkilo().getKutsumanimiCached(),
+                application.getHenkilo().getSukunimiCached()));
+        recipient.setRecipientReplacements(Collections.emptyList());
+        return recipient;
+    }
+
     private EmailRecipient resolveRecipient(Kutsu invitation) {
         EmailRecipient recipient = new EmailRecipient();
         recipient.setEmail(invitation.getSahkoposti());
         recipient.setLanguageCode(invitation.getKieliKoodi());
         recipient.setName(String.format("%s %s", invitation.getEtunimi(), invitation.getSukunimi()));
-        recipient.setRecipientReplacements(Collections.EMPTY_LIST);
+        recipient.setRecipientReplacements(Collections.emptyList());
         return recipient;
     }
 
@@ -330,5 +348,4 @@ public class EmailServiceImpl implements EmailService {
         private String name;
         private List<String> permissions;
     }
-
 }

@@ -8,14 +8,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.Period;
-import java.util.Collection;
 import java.util.Optional;
 
 @Repository
 @Transactional(propagation = Propagation.MANDATORY)
 public interface KutsuRepository extends CrudRepository<Kutsu, Long>, KutsuRepositoryCustom {
     Optional<Kutsu> findById(Long id);
+
     Optional<Kutsu> findByTemporaryTokenAndTilaAndTemporaryTokenCreatedGreaterThan(String temporaryToken, KutsunTila kutsunTila, LocalDateTime created);
 
     default Optional<Kutsu> findByTemporaryTokenIsValidIsActive(String temporaryToken) {

@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -1078,5 +1079,12 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
         assertThat(kutsu.getLuotuHenkiloOid()).isEqualTo(henkilo.getOidHenkilo());
         assertThat(kutsu.getTemporaryToken()).isNull();
         assertThat(kutsu.getTila()).isEqualTo(KutsunTila.KAYTETTY);
+    }
+
+    @Test
+    public void discardInvitation() {
+        Kutsu invitation = Mockito.mock(Kutsu.class);
+        kutsuService.discardInvitation(invitation);
+        verify(invitation, times(1)).poista("system");
     }
 }

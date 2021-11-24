@@ -11,5 +11,5 @@ import java.util.List;
 public interface KutsuRepositoryCustom {
     List<Kutsu> listKutsuListDtos(KutsuCriteria criteria, List<OrderSpecifier> orderSpecifier, Long offset, Long amount);
 
-    Collection<Long> findExpiredInvitations(Period threshold);
+    Collection<Kutsu> findExpiredInvitations(Period threshold);
 }

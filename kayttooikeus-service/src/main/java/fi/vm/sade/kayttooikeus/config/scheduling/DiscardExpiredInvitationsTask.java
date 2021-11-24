@@ -6,22 +6,22 @@ import com.github.kagkarlsson.scheduler.task.RecurringTask;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import fi.vm.sade.kayttooikeus.config.properties.KayttooikeusProperties;
 import fi.vm.sade.kayttooikeus.service.TaskExecutorService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalTime;
 import java.time.Period;
 
-@Slf4j
 @Component
-public class PurgeExpiredInvitationsTask extends RecurringTask {
+public class DiscardExpiredInvitationsTask extends RecurringTask {
+
+    private static final Period EXPIRATION_THRESHOLD = Period.ofMonths(2);
 
     private final TaskExecutorService taskExecutorService;
 
     @Autowired
-    public PurgeExpiredInvitationsTask(KayttooikeusProperties kayttooikeusProperties, TaskExecutorService taskExecutorService) {
-        super(PurgeExpiredInvitationsTask.class.getName(), new Daily(LocalTime.of(
+    public DiscardExpiredInvitationsTask(KayttooikeusProperties kayttooikeusProperties, TaskExecutorService taskExecutorService) {
+        super(DiscardExpiredInvitationsTask.class.getName(), new Daily(LocalTime.of(
                 kayttooikeusProperties.getScheduling().getConfiguration().getPurgeExpiredInvitationsHour(),
                 kayttooikeusProperties.getScheduling().getConfiguration().getPurgeExpiredInvitationsMinute())));
         this.taskExecutorService = taskExecutorService;
@@ -29,6 +29,6 @@ public class PurgeExpiredInvitationsTask extends RecurringTask {
 
     @Override
     public void execute(TaskInstance<Void> taskInstance, ExecutionContext executionContext) {
-        taskExecutorService.purgeExpiredInvitations(Period.ofMonths(1));
+        taskExecutorService.discardExpiredInvitations(EXPIRATION_THRESHOLD);
     }
 }

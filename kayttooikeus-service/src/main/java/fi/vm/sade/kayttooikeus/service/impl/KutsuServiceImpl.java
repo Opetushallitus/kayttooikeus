@@ -437,7 +437,13 @@ public class KutsuServiceImpl implements KutsuService {
     }
 
     @Override
-    public Collection<Long> findExpiredInvitations(Period threshold) {
+    public Collection<Kutsu> findExpiredInvitations(Period threshold) {
         return kutsuRepository.findExpiredInvitations(threshold);
+    }
+
+    @Override
+    @Transactional
+    public void discardInvitation(Kutsu invitation) {
+        invitation.poista("system");
     }
 }

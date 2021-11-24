@@ -26,6 +26,7 @@ public class KutsuPopulator implements Populator<Kutsu> {
     private String temporaryToken;
     private String hetu;
     private String hakaIdentifier;
+    private LocalDateTime poistettu;
 
     public KutsuPopulator(String etunimi, String sukunimi, String sahkoposti) {
         this.etunimi = etunimi;
@@ -86,7 +87,12 @@ public class KutsuPopulator implements Populator<Kutsu> {
         this.hakaIdentifier = hakaIdentifier;
         return this;
     }
-    
+
+    public KutsuPopulator poistettu(LocalDateTime poistettu) {
+        this.poistettu = poistettu;
+        return this;
+    }
+
     @Override
     public Kutsu apply(EntityManager entityManager) {
         return Populator.<Kutsu>firstOptional(entityManager.createQuery("select k " +
@@ -106,6 +112,7 @@ public class KutsuPopulator implements Populator<Kutsu> {
             kutsu.setTemporaryTokenCreated(LocalDateTime.now());
             kutsu.setHetu(this.hetu);
             kutsu.setHakaIdentifier(this.hakaIdentifier);
+            kutsu.setPoistettu(this.poistettu);
             entityManager.persist(kutsu);
             
             organisaatiot.forEach(organisaatioPopulator -> {

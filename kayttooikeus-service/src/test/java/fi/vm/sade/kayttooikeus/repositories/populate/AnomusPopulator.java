@@ -6,17 +6,19 @@ import fi.vm.sade.kayttooikeus.model.Anomus;
 import fi.vm.sade.kayttooikeus.model.HaettuKayttoOikeusRyhma;
 
 import javax.persistence.EntityManager;
+import java.time.LocalDateTime;
 
 public class AnomusPopulator implements Populator<Anomus> {
-    private String sahkoposti;
+    private final String sahkoposti;
     private AnomuksenTila tila;
     private String organisaatioOid;
     private Populator<HaettuKayttoOikeusRyhma> haettuKayttoOikeusRyhmaPopulator;
+    private LocalDateTime anottuPvm;
 
     private AnomusPopulator(String sahkoposti) {
         this.sahkoposti = sahkoposti;
     }
-    
+
     public static AnomusPopulator anomus(String sahkoposti) {
         return new AnomusPopulator(sahkoposti);
     }
@@ -30,21 +32,31 @@ public class AnomusPopulator implements Populator<Anomus> {
         this.organisaatioOid = organisaatioOid;
         return this;
     }
-    
+
     public AnomusPopulator withHaettuRyhma(Populator<HaettuKayttoOikeusRyhma> haettuKayttoOikeusRyhmaPopulator) {
         this.haettuKayttoOikeusRyhmaPopulator = haettuKayttoOikeusRyhmaPopulator;
         return this;
     }
-    
+
+    public AnomusPopulator anottuPvm(LocalDateTime anottuPvm) {
+        this.anottuPvm = anottuPvm;
+        return this;
+    }
+
     @Override
     public Anomus apply(EntityManager entityManager) {
         Anomus anomus = new Anomus();
         anomus.setSahkopostiosoite(this.sahkoposti);
         anomus.setAnomuksenTila(this.tila);
         anomus.setOrganisaatioOid(this.organisaatioOid);
-        HaettuKayttoOikeusRyhma haettuKayttoOikeusRyhma = this.haettuKayttoOikeusRyhmaPopulator.apply(entityManager);
-        anomus.setHaettuKayttoOikeusRyhmas(Sets.newHashSet(haettuKayttoOikeusRyhma));
-        haettuKayttoOikeusRyhma.setAnomus(anomus);
+        anomus.setAnottuPvm(this.anottuPvm);
+
+        if (haettuKayttoOikeusRyhmaPopulator != null) {
+            HaettuKayttoOikeusRyhma haettuKayttoOikeusRyhma = this.haettuKayttoOikeusRyhmaPopulator.apply(entityManager);
+            anomus.setHaettuKayttoOikeusRyhmas(Sets.newHashSet(haettuKayttoOikeusRyhma));
+            haettuKayttoOikeusRyhma.setAnomus(anomus);
+        }
+
         entityManager.persist(anomus);
 
         return anomus;

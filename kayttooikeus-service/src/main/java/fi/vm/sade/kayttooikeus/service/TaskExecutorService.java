@@ -6,5 +6,7 @@ import java.time.Period;
 public interface TaskExecutorService {
     int sendExpirationReminders(Period...expireThresholds);
 
-    void purgeExpiredInvitations(Period threshold);
+    void discardExpiredInvitations(Period threshold);
+
+    void discardExpiredApplications(Period threshold);
 }

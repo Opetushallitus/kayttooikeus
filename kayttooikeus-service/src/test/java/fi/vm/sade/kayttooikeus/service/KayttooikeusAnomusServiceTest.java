@@ -26,6 +26,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -1036,4 +1037,11 @@ public class KayttooikeusAnomusServiceTest {
         assertThat(currentHenkiloCanGrant.get("1.2.0.0.1")).containsExactlyInAnyOrder(2001L, 2002L);
     }
 
+    @Test
+    public void discardApplication() {
+        Anomus application = Mockito.mock(Anomus.class);
+        kayttooikeusAnomusService.discardApplication(application);
+        verify(application, times(1)).setAnomuksenTila(AnomuksenTila.HYLATTY);
+        verify(application, times(1)).setAnomusTilaTapahtumaPvm(any());
+    }
 }

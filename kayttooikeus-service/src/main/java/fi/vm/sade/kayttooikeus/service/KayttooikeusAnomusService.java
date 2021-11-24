@@ -2,14 +2,13 @@ package fi.vm.sade.kayttooikeus.service;
 
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.enumeration.OrderByAnomus;
+import fi.vm.sade.kayttooikeus.model.Anomus;
 import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhma;
 import fi.vm.sade.kayttooikeus.repositories.criteria.AnomusCriteria;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.Period;
+import java.util.*;
 
 public interface KayttooikeusAnomusService {
 
@@ -56,4 +55,8 @@ public interface KayttooikeusAnomusService {
     void removePrivilege(String oidHenkilo, Long id, String organisaatioOid);
 
     Map<String, Set<Long>> findCurrentHenkiloCanGrant(String accessedHenkiloOid);
+
+    Collection<Anomus> findExpiredApplications(Period threshold);
+
+    void discardApplication(Anomus application);
 }

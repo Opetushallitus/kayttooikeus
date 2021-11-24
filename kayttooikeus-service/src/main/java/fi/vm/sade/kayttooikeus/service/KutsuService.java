@@ -76,5 +76,7 @@ public interface KutsuService {
      */
     void updateHakaIdentifierToKutsu(String temporaryToken, KutsuUpdateDto kutsuUpdateDto);
 
-    Collection<Long> findExpiredInvitations(Period threshold);
+    Collection<Kutsu> findExpiredInvitations(Period threshold);
+
+    void discardInvitation(Kutsu invitation);
 }
