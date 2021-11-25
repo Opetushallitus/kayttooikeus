@@ -53,8 +53,8 @@ import static java.util.stream.Collectors.*;
 
 @Service
 public class EmailServiceImpl implements EmailService {
-    public static final String DISCARDED_INVITATION_EMAIL_TEMPLATE = "kayttooikeus_kutsu_postoilmoitus";
-    public static final String DISCARDED_APPLICATION_EMAIL_TEMPLATE = "kayttooikeus_anomus_postoilmoitus";
+    public static final String DISCARDED_INVITATION_EMAIL_TEMPLATE = "kayttooikeus_kutsu_poistoilmoitus";
+    public static final String DISCARDED_APPLICATION_EMAIL_TEMPLATE = "kayttooikeus_anomus_poistoilmoitus";
     private static final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
     private static final String DEFAULT_LANGUAGE_CODE = "fi";
     private static final Locale DEFAULT_LOCALE = new Locale(DEFAULT_LANGUAGE_CODE);
