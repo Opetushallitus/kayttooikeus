@@ -22,6 +22,7 @@ import fi.vm.sade.kayttooikeus.util.OrganisaatioMyontoPredicate;
 import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindException;
 
@@ -519,18 +520,17 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    /* Used internally by scheduled task */
     @Override
     @Transactional
-    public void discardApplication(Anomus anomus) {
-        anomus.setAnomuksenTila(AnomuksenTila.HYLATTY);
-        anomus.setAnomusTilaTapahtumaPvm(LocalDateTime.now());
+    public Collection<Anomus> findExpiredApplications(Period threshold) {
+        return anomusRepository.findExpiredApplications(threshold);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Collection<Anomus> findExpiredApplications(Period threshold) {
-        return anomusRepository.findExpiredApplications(threshold);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void discardApplication(Anomus anomus) {
+        anomus.setAnomuksenTila(AnomuksenTila.HYLATTY);
+        anomus.setAnomusTilaTapahtumaPvm(LocalDateTime.now());
     }
 
     private void regularUserChecks(Map<String, Set<Long>> kayttooikeusByOrganisation, Map<String, Set<Long>> myontooikeudet) {

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -62,6 +63,7 @@ public class TaskExecutorServiceImpl implements TaskExecutorService {
     }
 
     @Override
+    @Transactional
     public void discardExpiredInvitations(Period threshold) {
         Collection<Kutsu> invitations = kutsuService.findExpiredInvitations(threshold);
         logger.info("Discarding {} expired invitations", invitations.size());
@@ -90,6 +92,7 @@ public class TaskExecutorServiceImpl implements TaskExecutorService {
     }
 
     @Override
+    @Transactional
     public void discardExpiredApplications(Period threshold) {
         Collection<Anomus> applications = anomusService.findExpiredApplications(threshold);
         logger.info("Discarding {} expired applications", applications.size());

@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -437,12 +438,13 @@ public class KutsuServiceImpl implements KutsuService {
     }
 
     @Override
+    @Transactional
     public Collection<Kutsu> findExpiredInvitations(Period threshold) {
         return kutsuRepository.findExpiredInvitations(threshold);
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void discardInvitation(Kutsu invitation) {
         invitation.poista("system");
     }
