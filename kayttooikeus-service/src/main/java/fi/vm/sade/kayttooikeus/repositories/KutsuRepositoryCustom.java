@@ -8,8 +8,6 @@ import java.time.Period;
 import java.util.Collection;
 import java.util.List;
 
-public interface KutsuRepositoryCustom {
+public interface KutsuRepositoryCustom extends ExpiringEntities<Kutsu> {
     List<Kutsu> listKutsuListDtos(KutsuCriteria criteria, List<OrderSpecifier> orderSpecifier, Long offset, Long amount);
-
-    Collection<Kutsu> findExpiredInvitations(Period threshold);
 }

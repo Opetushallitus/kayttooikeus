@@ -50,7 +50,7 @@ public class AnomusRepositoryImpl implements AnomusRepositoryCustom {
     }
 
     @Override
-    public Collection<Anomus> findExpiredApplications(Period threshold) {
+    public Collection<Anomus> findExpired(Period threshold) {
         QAnomus anomus = QAnomus.anomus;
         return new JPAQueryFactory(entityManager)
                 .from(anomus)

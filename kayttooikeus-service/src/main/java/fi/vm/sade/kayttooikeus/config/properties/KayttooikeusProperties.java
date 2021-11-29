@@ -33,6 +33,7 @@ public class KayttooikeusProperties {
             private Integer purgeExpiredInvitationsMinute = 30;
             private Integer purgeExpiredApplicationsHour = 1;
             private Integer purgeExpiredApplicationsMinute = 45;
+            private Integer expirationThreshold = 2;
             private Long henkiloNimiCache = 100000L;
         }
 

@@ -9,11 +9,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-public interface AnomusRepositoryCustom {
+public interface AnomusRepositoryCustom extends ExpiringEntities<Anomus>{
 
     List<Anomus> findBy(Function<QAnomus, Predicate> criteria);
 
     List<Anomus> findBy(Function<QAnomus, Predicate> criteria, Long limit, Long offset);
-
-    Collection<Anomus> findExpiredApplications(Period threshold);
 }

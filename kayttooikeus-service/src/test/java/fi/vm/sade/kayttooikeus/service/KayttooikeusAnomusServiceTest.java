@@ -1022,13 +1022,13 @@ public class KayttooikeusAnomusServiceTest {
 
     @Test
     public void findExpiredApplications() {
-        assertThat(kayttooikeusAnomusService.findExpiredApplications(Period.ZERO)).isEmpty();
+        assertThat(kayttooikeusAnomusService.findExpired(Period.ZERO)).isEmpty();
     }
 
     @Test
     public void discardApplication() {
         Anomus application = Mockito.mock(Anomus.class);
-        kayttooikeusAnomusService.discardApplication(application);
+        kayttooikeusAnomusService.discard(application);
         verify(application, times(1)).setAnomuksenTila(AnomuksenTila.HYLATTY);
         verify(application, times(1)).setAnomusTilaTapahtumaPvm(any());
     }

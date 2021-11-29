@@ -15,6 +15,8 @@ import java.time.Period;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static java.util.stream.Collectors.*;
 
@@ -65,58 +67,57 @@ public class TaskExecutorServiceImpl implements TaskExecutorService {
     @Override
     @Transactional
     public void discardExpiredInvitations(Period threshold) {
-        Collection<Kutsu> invitations = kutsuService.findExpiredInvitations(threshold);
-        logger.info("Discarding {} expired invitations", invitations.size());
-        Map<Boolean, Integer> result = invitations.stream()
-                .map(this::discardInvitation)
-                .collect(groupingBy(Boolean::booleanValue, summingInt(success -> 1)));
-        if (!result.isEmpty()) {
-            logger.info("Sent discarded invitation notifications. {} success, {} failures",
-                    result.getOrDefault(true, 0),
-                    result.getOrDefault(false, 0));
-        }
-        if (result.containsKey(false)) {
-            logger.error("There were errors while discarding invitations, please check the logs");
-        }
-    }
-
-    private boolean discardInvitation(Kutsu invitation) {
-        try {
-            kutsuService.discardInvitation(invitation);
-            emailService.sendDiscardedInvitationNotification(invitation);
-        } catch (Exception e) {
-            logger.warn("Error while discarding invitation {}", invitation.getId(), e);
-            return false;
-        }
-        return true;
+        expire("invitation", kutsuService, discardInvitation()).accept(threshold);
     }
 
     @Override
     @Transactional
     public void discardExpiredApplications(Period threshold) {
-        Collection<Anomus> applications = anomusService.findExpiredApplications(threshold);
-        logger.info("Discarding {} expired applications", applications.size());
-        Map<Boolean, Integer> result = applications.stream()
-                .map(this::discardApplication)
-                .collect(groupingBy(Boolean::booleanValue, summingInt(success -> 1)));
-        if (!result.isEmpty()) {
-            logger.info("Application discard process finished. {} success, {} failures",
-                    result.getOrDefault(true, 0),
-                    result.getOrDefault(false, 0));
-        }
-        if (result.containsKey(false)) {
-            logger.error("There were errors while discarding applications, please check the logs");
-        }
+        expire("application", anomusService, discardApplication()).accept(threshold);
     }
 
-    private boolean discardApplication(Anomus application) {
-        try {
-            anomusService.discardApplication(application);
-            emailService.sendDiscardedApplicationNotification(application);
-        } catch (Exception e) {
-            logger.warn("Error while discarding application {}", application.getId(), e);
-            return false;
-        }
-        return true;
+    private <T> Consumer<Period> expire(String name, ExpiringEntities<T> service, Function<T, Boolean> discard) {
+        return threshold -> {
+            Collection<T> entities = service.findExpired(threshold);
+            logger.info("Discarding {} expired {}s", entities.size(), name);
+            Map<Boolean, Integer> result = entities.stream()
+                    .map(discard)
+                    .collect(groupingBy(Boolean::booleanValue, summingInt(success -> 1)));
+            if (!result.isEmpty()) {
+                logger.info("Sent discarded {} notifications. {} success, {} failures",
+                        name,
+                        result.getOrDefault(true, 0),
+                        result.getOrDefault(false, 0));
+            }
+            if (result.containsKey(false)) {
+                logger.error("There were errors while discarding {}, please check the logs", name);
+            }
+        };
+    }
+
+    private Function<Kutsu, Boolean> discardInvitation() {
+        return invitation -> {
+            try {
+                kutsuService.discard(invitation);
+                emailService.sendDiscardedInvitationNotification(invitation);
+            } catch (Exception e) {
+                logger.warn("Error while discarding invitation {}", invitation.getId(), e);
+                return false;
+            }
+            return true;
+        };
+    }
+
+    private Function<Anomus, Boolean> discardApplication() {
+        return application -> {
+            try {
+                anomusService.discard(application);
+                emailService.sendDiscardedApplicationNotification(application);
+            } catch (Exception e) {
+                logger.warn("Error while discarding application {}", application.getId(), e);
+                return false;
+            }
+            return true;
+        };
     }
 }

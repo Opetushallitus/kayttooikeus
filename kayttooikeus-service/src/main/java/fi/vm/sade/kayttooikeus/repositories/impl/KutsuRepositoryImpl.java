@@ -59,7 +59,7 @@ public class KutsuRepositoryImpl implements KutsuRepositoryCustom {
     }
 
     @Override
-    public Collection<Kutsu> findExpiredInvitations(Period threshold) {
+    public Collection<Kutsu> findExpired(Period threshold) {
         QKutsu kutsu = QKutsu.kutsu;
         return new JPAQueryFactory(this.em)
                 .from(kutsu)

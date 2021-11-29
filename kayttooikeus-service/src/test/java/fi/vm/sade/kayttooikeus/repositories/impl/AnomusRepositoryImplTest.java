@@ -27,8 +27,8 @@ public class AnomusRepositoryImplTest extends AbstractRepositoryTest {
                 .tila(AnomuksenTila.ANOTTU)
                 .anottuPvm(LocalDateTime.now().minus(Period.ofMonths(1)))
         );
-        assertThat(anomusRepository.findExpiredApplications(Period.ZERO)).hasSize(1);
-        assertThat(anomusRepository.findExpiredApplications(Period.ofMonths(2))).isEmpty();
+        assertThat(anomusRepository.findExpired(Period.ZERO)).hasSize(1);
+        assertThat(anomusRepository.findExpired(Period.ofMonths(2))).isEmpty();
     };
 
     @Test
@@ -37,6 +37,6 @@ public class AnomusRepositoryImplTest extends AbstractRepositoryTest {
                 .tila(AnomuksenTila.HYLATTY)
                 .anottuPvm(LocalDateTime.now().minus(Period.ofMonths(1)))
         );
-        assertThat(anomusRepository.findExpiredApplications(Period.ZERO)).isEmpty();
+        assertThat(anomusRepository.findExpired(Period.ZERO)).isEmpty();
     }
 }

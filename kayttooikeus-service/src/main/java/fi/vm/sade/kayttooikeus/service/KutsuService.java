@@ -10,11 +10,9 @@ import fi.vm.sade.kayttooikeus.repositories.dto.HenkiloCreateByKutsuDto;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloUpdateDto;
 import org.springframework.data.domain.Sort;
 
-import java.time.Period;
-import java.util.Collection;
 import java.util.List;
 
-public interface KutsuService {
+public interface KutsuService extends ExpiringEntities<Kutsu> {
     List<KutsuReadDto> listKutsus(KutsuOrganisaatioOrder sortBy, Sort.Direction direction, KutsuCriteria kutsuListCriteria, Long offset, Long amount);
 
     /**
@@ -75,8 +73,4 @@ public interface KutsuService {
      * @param kutsuUpdateDto haka tunnisteen sisältävä dto
      */
     void updateHakaIdentifierToKutsu(String temporaryToken, KutsuUpdateDto kutsuUpdateDto);
-
-    Collection<Kutsu> findExpiredInvitations(Period threshold);
-
-    void discardInvitation(Kutsu invitation);
 }

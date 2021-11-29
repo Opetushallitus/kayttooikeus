@@ -73,7 +73,7 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
     public List<HaettuKayttooikeusryhmaDto> listHaetutKayttoOikeusRyhmat(String oidHenkilo, boolean activeOnly) {
         AnomusCriteria criteria = new AnomusCriteria();
         criteria.setAnojaOid(oidHenkilo);
-        if(activeOnly) {
+        if (activeOnly) {
             criteria.setAnomuksenTilat(EnumSet.of(AnomuksenTila.ANOTTU));
             criteria.setKayttoOikeudenTilas(EnumSet.of(KayttoOikeudenTila.ANOTTU));
         }
@@ -429,7 +429,7 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
     private MyonnettyKayttoOikeusRyhmaTapahtuma findOrCreateMyonnettyKayttooikeusryhmaTapahtuma(String oidHenkilo,
                                                                                                 OrganisaatioHenkilo organisaatioHenkilo,
                                                                                                 KayttoOikeusRyhma kayttoOikeusRyhma) {
-        MyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma =  this.myonnettyKayttoOikeusRyhmaTapahtumaRepository
+        MyonnettyKayttoOikeusRyhmaTapahtuma myonnettyKayttoOikeusRyhmaTapahtuma = this.myonnettyKayttoOikeusRyhmaTapahtumaRepository
                 .findMyonnettyTapahtuma(kayttoOikeusRyhma.getId(),
                         organisaatioHenkilo.getOrganisaatioOid(), oidHenkilo)
                 .orElseGet(() -> this.myonnettyKayttoOikeusRyhmaTapahtumaRepository.save(MyonnettyKayttoOikeusRyhmaTapahtuma.builder()
@@ -453,7 +453,7 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         if (!kayttajaOid.equals(anomus.getHenkilo().getOidHenkilo())) {
             throw new ForbiddenException(String.format("Käyttäjällä '%s' ei ole oikeuksia perua haettua käyttöoikeusryhmää '%s'", kayttajaOid, haettuKayttoOikeusRyhma.getId()));
         }
-        anomus.getHaettuKayttoOikeusRyhmas().removeIf( h -> h.getId().equals(haettuKayttoOikeusRyhma.getId()) );
+        anomus.getHaettuKayttoOikeusRyhmas().removeIf(h -> h.getId().equals(haettuKayttoOikeusRyhma.getId()));
         if (anomus.getHaettuKayttoOikeusRyhmas().isEmpty()) {
             anomus.setAnomuksenTila(AnomuksenTila.PERUTTU);
         }
@@ -479,7 +479,6 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                 new MyonnettyKayttoOikeusService.DeleteDetails(kasittelija,
                         KayttoOikeudenTila.SULJETTU, "Käyttöoikeuden sulkeminen"));
     }
-
 
 
     // Käsittelee admin, OPH-virkailija ja virkailija tyyppisiä käyttäjiä. Kaksi ensimmäistä käyttäytyvät tässä samoin.
@@ -522,13 +521,13 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
 
     @Override
     @Transactional
-    public Collection<Anomus> findExpiredApplications(Period threshold) {
-        return anomusRepository.findExpiredApplications(threshold);
+    public Collection<Anomus> findExpired(Period threshold) {
+        return anomusRepository.findExpired(threshold);
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void discardApplication(Anomus anomus) {
+    public void discard(Anomus anomus) {
         anomus.setAnomuksenTila(AnomuksenTila.HYLATTY);
         anomus.setAnomusTilaTapahtumaPvm(LocalDateTime.now());
     }
@@ -558,9 +557,7 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
             if (value == null) {
                 value = new HashSet<>();
             }
-            if (!value.contains(ryhmaId)) {
-                value.add(ryhmaId);
-            }
+            value.add(ryhmaId);
             return value;
         };
     }

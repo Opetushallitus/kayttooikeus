@@ -15,7 +15,7 @@ import java.time.Period;
 @Component
 public class DiscardExpiredApplicationsTask extends RecurringTask {
 
-    private static final Period EXPIRATION_THRESHOLD = Period.ofMonths(2);
+    private final Period expirationThreshold;
 
     private final TaskExecutorService taskExecutorService;
 
@@ -24,12 +24,13 @@ public class DiscardExpiredApplicationsTask extends RecurringTask {
         super(DiscardExpiredApplicationsTask.class.getName(), new Daily(LocalTime.of(
                 kayttooikeusProperties.getScheduling().getConfiguration().getPurgeExpiredApplicationsHour(),
                 kayttooikeusProperties.getScheduling().getConfiguration().getPurgeExpiredApplicationsMinute())));
+        this.expirationThreshold = Period.ofMonths(kayttooikeusProperties.getScheduling().getConfiguration().getExpirationThreshold());
         this.taskExecutorService = taskExecutorService;
     }
 
     @Override
     public void execute(TaskInstance<Void> taskInstance, ExecutionContext executionContext) {
-        taskExecutorService.discardExpiredApplications(EXPIRATION_THRESHOLD);
+        taskExecutorService.discardExpiredApplications(expirationThreshold);
     }
 }
 

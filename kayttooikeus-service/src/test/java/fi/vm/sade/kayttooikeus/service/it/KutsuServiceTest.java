@@ -1084,13 +1084,13 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
 
     @Test
     public void findExpiredInvitations() {
-        assertThat(kutsuService.findExpiredInvitations(Period.ZERO)).isEmpty();
+        assertThat(kutsuService.findExpired(Period.ZERO)).isEmpty();
     }
 
     @Test
     public void discardInvitation() {
         Kutsu invitation = Mockito.mock(Kutsu.class);
-        kutsuService.discardInvitation(invitation);
+        kutsuService.discard(invitation);
         verify(invitation, times(1)).poista("system");
     }
 }

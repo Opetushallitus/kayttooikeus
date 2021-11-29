@@ -109,8 +109,8 @@ public class KutsuRepositoryTest extends AbstractRepositoryTest {
         populate(kutsu("", "", "")
                 .aikaleima(LocalDateTime.now().minus(Period.ofMonths(2)))
         );
-        assertThat(kutsuRepository.findExpiredInvitations(Period.ofMonths(1))).hasSize(1);
-        assertThat(kutsuRepository.findExpiredInvitations(Period.ofMonths(3))).isEmpty();
+        assertThat(kutsuRepository.findExpired(Period.ofMonths(1))).hasSize(1);
+        assertThat(kutsuRepository.findExpired(Period.ofMonths(3))).isEmpty();
     };
 
     @Test
@@ -119,7 +119,7 @@ public class KutsuRepositoryTest extends AbstractRepositoryTest {
                 .poistettu(LocalDateTime.now())
                 .aikaleima(LocalDateTime.now().minus(Period.ofMonths(2)))
         );
-        assertThat(kutsuRepository.findExpiredInvitations(Period.ZERO)).isEmpty();
+        assertThat(kutsuRepository.findExpired(Period.ZERO)).isEmpty();
     };
 
     @Test
@@ -128,6 +128,6 @@ public class KutsuRepositoryTest extends AbstractRepositoryTest {
                 .tila(KutsunTila.KAYTETTY)
                 .aikaleima(LocalDateTime.now().minus(Period.ofMonths(2)))
         );
-        assertThat(kutsuRepository.findExpiredInvitations(Period.ZERO)).isEmpty();
+        assertThat(kutsuRepository.findExpired(Period.ZERO)).isEmpty();
     };
 }
