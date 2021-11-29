@@ -345,6 +345,33 @@ public class EmailServiceTest extends AbstractServiceTest {
         assertThat(recipient.getLanguageCode()).isEqualTo(TEST_LANG);
     }
 
+    @Test
+    public void sendDiscardedApplicationNotificationResolveLangFailure() {
+
+        Henkilo henkilo = mock(Henkilo.class);
+        when(henkilo.getKutsumanimiCached()).thenReturn(TEST_FIRST_NAME);
+        when(henkilo.getSukunimiCached()).thenReturn(TEST_LAST_NAME);
+
+        Anomus application = mock(Anomus.class);
+        when(application.getHenkilo()).thenReturn(henkilo);
+        when(application.getSahkopostiosoite()).thenReturn(TEST_EMAIL);
+
+        emailService.sendDiscardedApplicationNotification(application);
+        ArgumentCaptor<EmailData> captor = ArgumentCaptor.forClass(EmailData.class);
+        verify(ryhmasahkopostiClient).sendRyhmasahkoposti(captor.capture());
+
+        EmailData emailData = captor.getValue();
+        assertThat(emailData.getReplacements().isEmpty()).isTrue();
+        assertThat(emailData.getRecipient().size()).isEqualTo(1);
+
+        EmailMessage message = emailData.getEmail();
+        assertThat(message.getTemplateName()).isEqualTo(EmailServiceImpl.DISCARDED_APPLICATION_EMAIL_TEMPLATE);
+
+        EmailRecipient recipient = emailData.getRecipient().get(0);
+        assertThat(recipient.getEmail()).isEqualTo(TEST_EMAIL);
+        assertThat(recipient.getName()).isEqualTo(String.format("%s %s", TEST_FIRST_NAME, TEST_LAST_NAME));
+    }
+
     @Test(expected = RuntimeException.class)
     public void sendDiscardedApplicationNotificationFailure() {
         emailService.sendDiscardedApplicationNotification(Anomus.builder().build());

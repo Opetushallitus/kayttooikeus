@@ -300,8 +300,14 @@ public class EmailServiceImpl implements EmailService {
     }
 
     private String resolveLanguageCode(Henkilo henkilo) {
-        return oppijanumerorekisteriClient.getHenkiloByOid(henkilo.getOidHenkilo())
-                .getAsiointiKieli().getKieliKoodi();
+        try {
+            return oppijanumerorekisteriClient.getHenkiloByOid(henkilo.getOidHenkilo())
+                    .getAsiointiKieli().getKieliKoodi();
+        } catch ( NullPointerException npe) {
+            logger.error("Failed to resolve language code for {}. Using '{}' as fallback",
+                    henkilo.getOidHenkilo(), DEFAULT_LANGUAGE_CODE);
+        }
+        return DEFAULT_LANGUAGE_CODE;
     }
 
     private EmailMessage getMessageTemplate(String templateName, String languageCode) {

@@ -85,7 +85,7 @@ public class TaskExecutorServiceImpl implements TaskExecutorService {
             kutsuService.discardInvitation(invitation);
             emailService.sendDiscardedInvitationNotification(invitation);
         } catch (Exception e) {
-            logger.warn("Error while discarding invitation {}", invitation, e);
+            logger.warn("Error while discarding invitation {}", invitation.getId(), e);
             return false;
         }
         return true;
@@ -114,7 +114,7 @@ public class TaskExecutorServiceImpl implements TaskExecutorService {
             anomusService.discardApplication(application);
             emailService.sendDiscardedApplicationNotification(application);
         } catch (Exception e) {
-            logger.warn("Error while discarding application {}", application, e);
+            logger.warn("Error while discarding application {}", application.getId(), e);
             return false;
         }
         return true;
