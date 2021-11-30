@@ -1,11 +1,10 @@
 package fi.vm.sade.kayttooikeus.config.scheduling;
 
 import com.github.kagkarlsson.scheduler.task.Daily;
-import com.github.kagkarlsson.scheduler.task.ExecutionContext;
-import com.github.kagkarlsson.scheduler.task.RecurringTask;
-import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import fi.vm.sade.kayttooikeus.config.properties.KayttooikeusProperties;
-import fi.vm.sade.kayttooikeus.service.TaskExecutorService;
+import fi.vm.sade.kayttooikeus.model.Kutsu;
+import fi.vm.sade.kayttooikeus.service.EmailService;
+import fi.vm.sade.kayttooikeus.service.KutsuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,23 +12,20 @@ import java.time.LocalTime;
 import java.time.Period;
 
 @Component
-public class DiscardExpiredInvitationsTask extends RecurringTask {
+public class DiscardExpiredInvitationsTask extends AbstractExpiringEntitiesTask<Kutsu> {
 
-    private final Period expirationThreshold;
-
-    private final TaskExecutorService taskExecutorService;
+    private static final String ENTITY_NAME = "invitation";
 
     @Autowired
-    public DiscardExpiredInvitationsTask(KayttooikeusProperties kayttooikeusProperties, TaskExecutorService taskExecutorService) {
-        super(DiscardExpiredInvitationsTask.class.getName(), new Daily(LocalTime.of(
-                kayttooikeusProperties.getScheduling().getConfiguration().getPurgeExpiredInvitationsHour(),
-                kayttooikeusProperties.getScheduling().getConfiguration().getPurgeExpiredInvitationsMinute())));
-        this.expirationThreshold = Period.ofMonths(kayttooikeusProperties.getScheduling().getConfiguration().getExpirationThreshold());
-        this.taskExecutorService = taskExecutorService;
+    public DiscardExpiredInvitationsTask(KayttooikeusProperties kayttooikeusProperties, KutsuService service, EmailService emailService) {
+        super(ENTITY_NAME, new Daily(LocalTime.of(
+                        kayttooikeusProperties.getScheduling().getConfiguration().getPurgeExpiredApplicationsHour(),
+                        kayttooikeusProperties.getScheduling().getConfiguration().getPurgeExpiredApplicationsMinute())),
+                service, emailService, Period.ofMonths(kayttooikeusProperties.getScheduling().getConfiguration().getExpirationThreshold()));
     }
 
     @Override
-    public void execute(TaskInstance<Void> taskInstance, ExecutionContext executionContext) {
-        taskExecutorService.discardExpiredInvitations(expirationThreshold);
+    public void sendNotification(Kutsu invitation) {
+        emailService.sendDiscardNotification(invitation);
     }
 }

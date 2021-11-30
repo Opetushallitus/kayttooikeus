@@ -284,7 +284,7 @@ public class EmailServiceTest extends AbstractServiceTest {
                 .sukunimi(TEST_LAST_NAME)
                 .build();
 
-        emailService.sendDiscardedInvitationNotification(invitation);
+        emailService.sendDiscardNotification(invitation);
         ArgumentCaptor<EmailData> captor = ArgumentCaptor.forClass(EmailData.class);
         verify(ryhmasahkopostiClient).sendRyhmasahkoposti(captor.capture());
 
@@ -305,7 +305,7 @@ public class EmailServiceTest extends AbstractServiceTest {
     @Test(expected = RuntimeException.class)
     public void sendDiscardedInvitationNotificationFailure() {
         when(ryhmasahkopostiClient.sendRyhmasahkoposti(any())).thenThrow(new RuntimeException("BOOM!"));
-        emailService.sendDiscardedInvitationNotification(Kutsu.builder().build());
+        emailService.sendDiscardNotification(Kutsu.builder().build());
     }
 
     @Test
@@ -327,7 +327,7 @@ public class EmailServiceTest extends AbstractServiceTest {
 
         given(oppijanumerorekisteriClient.getHenkiloByOid(any())).willReturn(henkiloDto);
 
-        emailService.sendDiscardedApplicationNotification(application);
+        emailService.sendDiscardNotification(application);
         ArgumentCaptor<EmailData> captor = ArgumentCaptor.forClass(EmailData.class);
         verify(ryhmasahkopostiClient).sendRyhmasahkoposti(captor.capture());
 
@@ -356,7 +356,7 @@ public class EmailServiceTest extends AbstractServiceTest {
         when(application.getHenkilo()).thenReturn(henkilo);
         when(application.getSahkopostiosoite()).thenReturn(TEST_EMAIL);
 
-        emailService.sendDiscardedApplicationNotification(application);
+        emailService.sendDiscardNotification(application);
         ArgumentCaptor<EmailData> captor = ArgumentCaptor.forClass(EmailData.class);
         verify(ryhmasahkopostiClient).sendRyhmasahkoposti(captor.capture());
 
@@ -374,6 +374,6 @@ public class EmailServiceTest extends AbstractServiceTest {
 
     @Test(expected = RuntimeException.class)
     public void sendDiscardedApplicationNotificationFailure() {
-        emailService.sendDiscardedApplicationNotification(Anomus.builder().build());
+        emailService.sendDiscardNotification(Anomus.builder().build());
     }
 }

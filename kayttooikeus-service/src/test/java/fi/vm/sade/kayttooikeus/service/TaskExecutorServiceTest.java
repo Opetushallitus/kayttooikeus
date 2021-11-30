@@ -25,21 +25,11 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringRunner.class)
 public class TaskExecutorServiceTest extends AbstractServiceTest {
 
-    private static final Period TEST_PERIOD = Period.ofMonths(2);
-    private static final Kutsu INVITATION = Mockito.mock(Kutsu.class);
-    private static final Anomus APPLICATION = Mockito.mock(Anomus.class);
-
     @Autowired
     private TaskExecutorService taskExecutorService;
 
     @MockBean
     private KayttoOikeusService kayttoOikeusService;
-
-    @MockBean
-    private KutsuService kutsuService;
-
-    @MockBean
-    private KayttooikeusAnomusService anomusService;
 
     @MockBean
     private EmailService emailService;
@@ -66,67 +56,5 @@ public class TaskExecutorServiceTest extends AbstractServiceTest {
 
         int numberSent = taskExecutorService.sendExpirationReminders(Period.ofWeeks(3), Period.ofWeeks(2));
         assertEquals(1, numberSent);
-    }
-
-    @Test
-    public void discardExpiredInvitations() {
-        given(kutsuService.findExpired(TEST_PERIOD)).willReturn(List.of(INVITATION, INVITATION));
-
-        taskExecutorService.discardExpiredInvitations(TEST_PERIOD);
-
-        verify(kutsuService, times(2)).discard(INVITATION);
-        verify(emailService, times(2)).sendDiscardedInvitationNotification(INVITATION);
-    }
-
-    @Test
-    public void discardExpiredInvitationsNoInvitations() {
-        given(kutsuService.findExpired(TEST_PERIOD)).willReturn(Collections.emptyList());
-
-        taskExecutorService.discardExpiredInvitations(TEST_PERIOD);
-
-        verify(kutsuService, never()).discard(any());
-        verify(emailService, never()).sendDiscardedInvitationNotification(any());
-    }
-
-    @Test
-    public void discardExpiredInvitationsHandlesExceptions() {
-        given(kutsuService.findExpired(TEST_PERIOD)).willReturn(List.of(INVITATION));
-        doThrow(new RuntimeException("Miserable failure")).when(kutsuService).discard(INVITATION);
-
-        taskExecutorService.discardExpiredInvitations(TEST_PERIOD);
-
-        verify(kutsuService, times(1)).discard(INVITATION);
-        verify(emailService, never()).sendDiscardedInvitationNotification(any());
-    }
-
-    @Test
-    public void discardExpiredApplications() {
-        given(anomusService.findExpired(TEST_PERIOD)).willReturn(List.of(APPLICATION, APPLICATION));
-
-        taskExecutorService.discardExpiredApplications(TEST_PERIOD);
-
-        verify(anomusService, times(2)).discard(APPLICATION);
-        verify(emailService, times(2)).sendDiscardedApplicationNotification(APPLICATION);
-    }
-
-    @Test
-    public void discardExpiredApplicationsNoApplications() {
-        given(anomusService.findExpired(TEST_PERIOD)).willReturn(Collections.emptyList());
-
-        taskExecutorService.discardExpiredApplications(TEST_PERIOD);
-
-        verify(anomusService, never()).discard(any());
-        verify(emailService, never()).sendDiscardedApplicationNotification(any());
-    }
-
-    @Test
-    public void discardExpiredApplicationsHandlesExceptions() {
-        given(anomusService.findExpired(TEST_PERIOD)).willReturn(List.of(APPLICATION));
-        doThrow(new RuntimeException("Miserable failure")).when(anomusService).discard(APPLICATION);
-
-        taskExecutorService.discardExpiredApplications(TEST_PERIOD);
-
-        verify(anomusService, times(1)).discard(APPLICATION);
-        verify(emailService, never()).sendDiscardedApplicationNotification(any());
     }
 }

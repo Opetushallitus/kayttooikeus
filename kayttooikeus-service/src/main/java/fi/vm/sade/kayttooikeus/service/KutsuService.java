@@ -12,7 +12,7 @@ import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
-public interface KutsuService extends ExpiringEntities<Kutsu> {
+public interface KutsuService extends ExpiringEntitiesService<Kutsu> {
     List<KutsuReadDto> listKutsus(KutsuOrganisaatioOrder sortBy, Sort.Direction direction, KutsuCriteria kutsuListCriteria, Long offset, Long amount);
 
     /**

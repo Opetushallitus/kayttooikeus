@@ -283,7 +283,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendDiscardedInvitationNotification(Kutsu invitation) {
+    public void sendDiscardNotification(Kutsu invitation) {
         EmailData emailData = new EmailData();
         emailData.setEmail(getMessageTemplate(DISCARDED_INVITATION_EMAIL_TEMPLATE, invitation.getKieliKoodi()));
         emailData.setRecipient(singletonList(resolveRecipient(invitation)));
@@ -291,7 +291,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendDiscardedApplicationNotification(Anomus application) {
+    public void sendDiscardNotification(Anomus application) {
         String languageCode = resolveLanguageCode(application.getHenkilo());
         EmailData emailData = new EmailData();
         emailData.setEmail(getMessageTemplate(DISCARDED_APPLICATION_EMAIL_TEMPLATE, languageCode));

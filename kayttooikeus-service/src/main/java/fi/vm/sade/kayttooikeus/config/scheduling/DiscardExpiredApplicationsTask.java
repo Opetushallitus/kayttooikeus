@@ -1,11 +1,10 @@
 package fi.vm.sade.kayttooikeus.config.scheduling;
 
 import com.github.kagkarlsson.scheduler.task.Daily;
-import com.github.kagkarlsson.scheduler.task.ExecutionContext;
-import com.github.kagkarlsson.scheduler.task.RecurringTask;
-import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import fi.vm.sade.kayttooikeus.config.properties.KayttooikeusProperties;
-import fi.vm.sade.kayttooikeus.service.TaskExecutorService;
+import fi.vm.sade.kayttooikeus.model.Anomus;
+import fi.vm.sade.kayttooikeus.service.EmailService;
+import fi.vm.sade.kayttooikeus.service.KayttooikeusAnomusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,24 +12,21 @@ import java.time.LocalTime;
 import java.time.Period;
 
 @Component
-public class DiscardExpiredApplicationsTask extends RecurringTask {
+public class DiscardExpiredApplicationsTask extends AbstractExpiringEntitiesTask<Anomus> {
 
-    private final Period expirationThreshold;
-
-    private final TaskExecutorService taskExecutorService;
+    private static final String ENTITY_NAME = "application";
 
     @Autowired
-    public DiscardExpiredApplicationsTask(KayttooikeusProperties kayttooikeusProperties, TaskExecutorService taskExecutorService) {
-        super(DiscardExpiredApplicationsTask.class.getName(), new Daily(LocalTime.of(
+    public DiscardExpiredApplicationsTask(KayttooikeusProperties kayttooikeusProperties, KayttooikeusAnomusService service, EmailService emailService) {
+        super(ENTITY_NAME, new Daily(LocalTime.of(
                 kayttooikeusProperties.getScheduling().getConfiguration().getPurgeExpiredApplicationsHour(),
-                kayttooikeusProperties.getScheduling().getConfiguration().getPurgeExpiredApplicationsMinute())));
-        this.expirationThreshold = Period.ofMonths(kayttooikeusProperties.getScheduling().getConfiguration().getExpirationThreshold());
-        this.taskExecutorService = taskExecutorService;
+                kayttooikeusProperties.getScheduling().getConfiguration().getPurgeExpiredApplicationsMinute())),
+                service, emailService, Period.ofMonths(kayttooikeusProperties.getScheduling().getConfiguration().getExpirationThreshold()));
     }
 
     @Override
-    public void execute(TaskInstance<Void> taskInstance, ExecutionContext executionContext) {
-        taskExecutorService.discardExpiredApplications(expirationThreshold);
+    public void sendNotification(Anomus application) {
+        emailService.sendDiscardNotification(application);
     }
 }
 

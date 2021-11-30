@@ -4,12 +4,10 @@ import com.querydsl.core.types.Predicate;
 import fi.vm.sade.kayttooikeus.model.Anomus;
 import fi.vm.sade.kayttooikeus.model.QAnomus;
 
-import java.time.Period;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-public interface AnomusRepositoryCustom extends ExpiringEntities<Anomus>{
+public interface AnomusRepositoryCustom extends ExpiringEntitiesRepository<Anomus> {
 
     List<Anomus> findBy(Function<QAnomus, Predicate> criteria);
 

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface KayttooikeusAnomusService extends ExpiringEntities<Anomus> {
+public interface KayttooikeusAnomusService extends ExpiringEntitiesService<Anomus> {
 
     List<HaettuKayttooikeusryhmaDto> listHaetutKayttoOikeusRyhmat(String oidHenkilo, boolean activeOnly);
 
