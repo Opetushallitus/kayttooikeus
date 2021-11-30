@@ -7,5 +7,5 @@ public interface ExpiringEntitiesService<T> {
 
     Collection<T> findExpired(Period threshold);
 
-    void discard(T Entity);
+    void discard(T entity);
 }

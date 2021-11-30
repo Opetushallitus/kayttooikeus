@@ -22,7 +22,7 @@ public abstract class AbstractExpiringEntitiesTask<T extends Identifiable> exten
     private final String entityName;
     private final Period threshold;
 
-    public AbstractExpiringEntitiesTask(String entityName, Schedule schedule, ExpiringEntitiesService<T> service, EmailService emailService, Period threshold) {
+    protected AbstractExpiringEntitiesTask(String entityName, Schedule schedule, ExpiringEntitiesService<T> service, EmailService emailService, Period threshold) {
         super(String.format("expire-%ss-task", entityName), schedule);
         this.entityName = entityName;
         this.service = service;

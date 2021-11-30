@@ -19,8 +19,8 @@ public class DiscardExpiredApplicationsTask extends AbstractExpiringEntitiesTask
     @Autowired
     public DiscardExpiredApplicationsTask(KayttooikeusProperties kayttooikeusProperties, KayttooikeusAnomusService service, EmailService emailService) {
         super(ENTITY_NAME, new Daily(LocalTime.of(
-                kayttooikeusProperties.getScheduling().getConfiguration().getPurgeExpiredApplicationsHour(),
-                kayttooikeusProperties.getScheduling().getConfiguration().getPurgeExpiredApplicationsMinute())),
+                kayttooikeusProperties.getScheduling().getConfiguration().getDiscardExpiredApplicationsHour(),
+                kayttooikeusProperties.getScheduling().getConfiguration().getDiscardExpiredApplicationsMinute())),
                 service, emailService, Period.ofMonths(kayttooikeusProperties.getScheduling().getConfiguration().getExpirationThreshold()));
     }
 

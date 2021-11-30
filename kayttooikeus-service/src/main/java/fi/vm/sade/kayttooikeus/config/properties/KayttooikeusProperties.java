@@ -29,10 +29,10 @@ public class KayttooikeusProperties {
             private Integer kayttooikeusmuistutusHour = 4;
             private Integer kayttooikeusmuistutusMinute = 30;
             private Integer kayttooikeusanomusilmoituksetHour = 2;
-            private Integer purgeExpiredInvitationsHour = 1;
-            private Integer purgeExpiredInvitationsMinute = 30;
-            private Integer purgeExpiredApplicationsHour = 1;
-            private Integer purgeExpiredApplicationsMinute = 45;
+            private Integer discardExpiredInvitationsHour = 1;
+            private Integer discardExpiredInvitationsMinute = 30;
+            private Integer discardExpiredApplicationsHour = 1;
+            private Integer discardExpiredApplicationsMinute = 45;
             private Integer expirationThreshold = 2;
             private Long henkiloNimiCache = 100000L;
         }
