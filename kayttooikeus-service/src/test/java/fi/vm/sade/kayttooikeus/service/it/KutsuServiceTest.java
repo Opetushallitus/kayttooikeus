@@ -1090,7 +1090,9 @@ public class KutsuServiceTest extends AbstractServiceIntegrationTest {
     @Test
     public void discardInvitation() {
         Kutsu invitation = Mockito.mock(Kutsu.class);
+
         kutsuService.discard(invitation);
-        verify(invitation, times(1)).poista("system");
+
+        verify(invitation, times(1)).poista(anyString());
     }
 }

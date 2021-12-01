@@ -530,6 +530,11 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
     public void discard(Anomus anomus) {
         anomus.setAnomuksenTila(AnomuksenTila.HYLATTY);
         anomus.setAnomusTilaTapahtumaPvm(LocalDateTime.now());
+        anomus.setKasittelija(resolveAdminUser());
+    }
+
+    private Henkilo resolveAdminUser() {
+        return henkiloDataRepository.findByOidHenkilo(commonProperties.getAdminOid()).orElse(null);
     }
 
     private void regularUserChecks(Map<String, Set<Long>> kayttooikeusByOrganisation, Map<String, Set<Long>> myontooikeudet) {

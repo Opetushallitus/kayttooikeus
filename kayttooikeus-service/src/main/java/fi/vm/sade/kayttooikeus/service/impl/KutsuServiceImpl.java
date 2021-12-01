@@ -446,6 +446,6 @@ public class KutsuServiceImpl implements KutsuService {
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void discard(Kutsu invitation) {
-        invitation.poista("system");
+        invitation.poista(commonProperties.getAdminOid());
     }
 }

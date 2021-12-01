@@ -1027,9 +1027,25 @@ public class KayttooikeusAnomusServiceTest {
 
     @Test
     public void discardApplication() {
+        Henkilo admin = mock(Henkilo.class);
+        when(henkiloDataRepository.findByOidHenkilo(any())).thenReturn(Optional.of(admin));
         Anomus application = Mockito.mock(Anomus.class);
+
         kayttooikeusAnomusService.discard(application);
+
         verify(application, times(1)).setAnomuksenTila(AnomuksenTila.HYLATTY);
-        verify(application, times(1)).setAnomusTilaTapahtumaPvm(any());
+        verify(application, times(1)).setAnomusTilaTapahtumaPvm(any(LocalDateTime.class));
+        verify(application, times(1)).setKasittelija(admin);
+    }
+
+    @Test
+    public void discardApplicationAdminNotFound() {
+        Anomus application = Mockito.mock(Anomus.class);
+
+        kayttooikeusAnomusService.discard(application);
+
+        verify(application, times(1)).setAnomuksenTila(AnomuksenTila.HYLATTY);
+        verify(application, times(1)).setAnomusTilaTapahtumaPvm(any(LocalDateTime.class));
+        verify(application, times(1)).setKasittelija(null);
     }
 }
