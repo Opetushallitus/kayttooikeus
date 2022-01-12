@@ -1,0 +1,1 @@
+select insertkayttooikeus('ATARU_HAKEMUS', 'opinto-ohjaaja', 'Opinto-ohjaajan oikeudet atarun hakemuksiin');
