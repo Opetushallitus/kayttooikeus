@@ -3,7 +3,7 @@ package fi.vm.sade.kayttooikeus.service.report.accessrights;
 import fi.vm.sade.kayttooikeus.dto.OrganisaatioWithChildrenDto;
 import fi.vm.sade.kayttooikeus.report.AccessRightReportRow;
 import fi.vm.sade.kayttooikeus.service.OrganisaatioService;
-import fi.vm.sade.kayttooikeus.service.impl.KayttoOikeusServiceImpl;
+import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,14 +25,18 @@ public class AccessRightReportImpl implements AccessRightReport {
 
     private final OrganisaatioService organisaatioService;
 
+    private final OppijanumerorekisteriClient onrClient;
+
     @Override
     public List<AccessRightReportRow> getForOrganisation(final String oid) {
+        final String lang = onrClient.resolveLanguageCodeForCurrentUser();
         final Map<String, OrganisaatioWithChildrenDto> orgs = resolveOrgs(oid);
         @SuppressWarnings("unchecked") final List<AccessRightReportRow> result = em
                 .createNamedQuery("AccessRightReport")
                 .setParameter("oids", orgs.keySet())
+                .setParameter("lang", lang)
                 .getResultList();
-        enrichOrganisationName(result, orgs);
+        enrichOrganisationName(result, orgs, lang);
         return result;
     }
 
@@ -41,18 +45,22 @@ public class AccessRightReportImpl implements AccessRightReport {
                 .collect(Collectors.toMap(OrganisaatioWithChildrenDto::getOid, Function.identity()));
     }
 
-    private List<OrganisaatioWithChildrenDto> flatten(OrganisaatioWithChildrenDto node) {
+    private List<OrganisaatioWithChildrenDto> flatten(final OrganisaatioWithChildrenDto node) {
         return Stream.concat(
                 Stream.of(node),
                 node.getChildren().stream().map(this::flatten).flatMap(Collection::stream)
         ).collect(Collectors.toList());
     }
 
-    private void enrichOrganisationName(final List<AccessRightReportRow> result, final Map<String, OrganisaatioWithChildrenDto> orgs) {
-        result.forEach(resultRow -> resultRow.setOrganisationName(resolveOrgName(resultRow.getOrganisationOid(), orgs)));
+    private void enrichOrganisationName(final List<AccessRightReportRow> result,
+                                        final Map<String, OrganisaatioWithChildrenDto> orgs,
+                                        final String lang) {
+        result.forEach(resultRow -> resultRow.setOrganisationName(resolveOrgName(resultRow.getOrganisationOid(), orgs, lang)));
     }
 
-    private String resolveOrgName(String organisationOid, Map<String, OrganisaatioWithChildrenDto> orgs) {
-        return orgs.get(organisationOid).getNimi().get(KayttoOikeusServiceImpl.FI);
+    private String resolveOrgName(final String organisationOid,
+                                  final Map<String, OrganisaatioWithChildrenDto> orgs,
+                                  final String lang) {
+        return orgs.get(organisationOid).getNimi().get(lang);
     }
 }

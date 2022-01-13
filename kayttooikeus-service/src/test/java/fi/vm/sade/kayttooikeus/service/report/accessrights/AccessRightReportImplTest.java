@@ -55,7 +55,7 @@ public class AccessRightReportImplTest extends AbstractRepositoryTest {
         int rows = 5;
         OrganisaatioWithChildrenDto root = mockOrg(ORG, List.of());
         when(organisaatioService.getByOid(ORG)).thenReturn(root);
-        IntStream.range(0,rows).forEach(i -> createRowData("person" + i, ORG));
+        IntStream.range(0, rows).forEach(i -> createRowData("person" + i, ORG));
 
         List<AccessRightReportRow> report = accessRightReport.getForOrganisation(ORG);
 
@@ -75,8 +75,7 @@ public class AccessRightReportImplTest extends AbstractRepositoryTest {
         assertThat(report).hasSize(2);
     }
 
-
-        @Test
+    @Test
     public void resolveOrgs() {
         OrganisaatioWithChildrenDto level2 = mockOrg("level2", List.of());
         OrganisaatioWithChildrenDto level1 = mockOrg("level1", List.of(level2));
@@ -85,10 +84,11 @@ public class AccessRightReportImplTest extends AbstractRepositoryTest {
 
         Map<String, OrganisaatioWithChildrenDto> result = accessRightReport.resolveOrgs(ORG);
 
-        assertThat(result).hasSize(3);
-        assertThat(result.containsKey(ORG)).isTrue();
-        assertThat(result.containsKey("level1")).isTrue();
-        assertThat(result.containsKey("level2")).isTrue();
+        assertThat(result)
+                .hasSize(3)
+                .containsKey(ORG)
+                .containsKey("level1")
+                .containsKey("level2");
     }
 
     private OrganisaatioWithChildrenDto mockOrg(String oid, List<OrganisaatioWithChildrenDto> children) {

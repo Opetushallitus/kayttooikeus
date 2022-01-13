@@ -28,7 +28,7 @@ import java.util.Set;
                 "       h.oidhenkilo," +
                 "       '' as organisaatio_nimi," +
                 "       oh.organisaatio_oid," +
-                "       kor.name as ryhma_nimi," +
+                "       txt.text as ryhma_nimi," +
                 "       kor.id as ryhma_id," +
                 "       mkt.voimassaalkupvm," +
                 "       mkt.voimassaloppupvm," +
@@ -39,9 +39,12 @@ import java.util.Set;
                 "       henkilo h2," +
                 "       organisaatiohenkilot oh," +
                 "       kayttooikeusryhma kor," +
-                "       myonnetty_kayttooikeusryhma_tapahtuma mkt " +
+                "       myonnetty_kayttooikeusryhma_tapahtuma mkt, " +
+                "       text txt " +
                 "WHERE " +
                 "       h.id = oh.henkilo_id " +
+                "       AND txt.lang = :lang" +
+                "       AND txt.textgroup_id = kor.textgroup_id " +
                 "       AND h2.id = mkt.kasittelija_henkilo_id " +
                 "       AND kor.id = mkt.kayttooikeusryhma_id " +
                 "       AND mkt.organisaatiohenkilo_id = oh.id"
