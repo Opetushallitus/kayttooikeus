@@ -17,6 +17,7 @@ import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
 import fi.vm.sade.kayttooikeus.util.OrganisaatioMyontoPredicate;
 import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -38,9 +39,10 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class OrganisaatioHenkiloServiceImpl extends AbstractService implements OrganisaatioHenkiloService {
+public class OrganisaatioHenkiloServiceImpl implements OrganisaatioHenkiloService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrganisaatioHenkiloServiceImpl.class);
     private static final int LAKKAUTUS_BATCH_SIZE = 50;
@@ -100,11 +102,11 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
     @Override
     @Transactional(readOnly = true)
     public List<KayttajaTyyppi> listPossibleHenkiloTypesAccessibleForCurrentUser() {
-        if (kayttoOikeusRepository.isHenkiloMyonnettyKayttoOikeusToPalveluInRole(getCurrentUserOid(),
+        if (kayttoOikeusRepository.isHenkiloMyonnettyKayttoOikeusToPalveluInRole(UserDetailsUtil.getCurrentUserOid(),
                 PALVELU_KAYTTOOIKEUS, ROLE_REKISTERINPITAJA)) {
             return asList(VIRKAILIJA, PALVELU);
         }
-        if (kayttoOikeusRepository.isHenkiloMyonnettyKayttoOikeusToPalveluInRole(getCurrentUserOid(),
+        if (kayttoOikeusRepository.isHenkiloMyonnettyKayttoOikeusToPalveluInRole(UserDetailsUtil.getCurrentUserOid(),
                 PALVELU_KAYTTOOIKEUS, ROLE_CRUD)) {
             return singletonList(VIRKAILIJA);
         }
@@ -176,7 +178,7 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
                                 .anyMatch((OrganisaatioHenkilo u) -> u.getOrganisaatioOid().equals(t.getOrganisaatioOid()))
                 )
                 .forEach(organisaatioHenkiloUpdateDto -> {
-                    if (!this.getCurrentUserOid().equals(henkiloOid)) {
+                    if (!UserDetailsUtil.getCurrentUserOid().equals(henkiloOid)) {
                         Map<String, List<String>> allowedRoles = Collections.singletonMap(PALVELU_KAYTTOOIKEUS, asList("CRUD"));
                         this.permissionCheckerService.hasRoleForOrganisations(Collections.singletonList(organisaatioHenkiloUpdateDto),
                                 allowedRoles);
@@ -264,7 +266,7 @@ public class OrganisaatioHenkiloServiceImpl extends AbstractService implements O
     private void poistaAnomuksetOrganisaatioista(AnomusCriteria criteria) {
         List<HaettuKayttoOikeusRyhma> haettuKayttoOikeusRyhmas = this.haettuKayttooikeusRyhmaRepository.findBy(criteria.createAnomusSearchCondition(this.organisaatioClient));
 
-        logger.info("Poistetaan {} anomusta ja {} niihin liittyvää haettua käyttöoikeusryhmää",
+        log.info("Poistetaan {} anomusta ja {} niihin liittyvää haettua käyttöoikeusryhmää",
                 haettuKayttoOikeusRyhmas.stream().map(h -> h.getAnomus().getId()).distinct().count(), haettuKayttoOikeusRyhmas.size());
         haettuKayttoOikeusRyhmas.stream().forEach(h -> {
             Anomus anomus = h.getAnomus();

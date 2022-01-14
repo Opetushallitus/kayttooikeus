@@ -24,6 +24,7 @@ import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import fi.vm.sade.kayttooikeus.util.HenkiloUtils;
 import fi.vm.sade.kayttooikeus.util.HenkilohakuBuilder;
+import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloOmattiedotDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -40,8 +41,7 @@ import static fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi.VIRKAILIJA;
 
 @Service
 @RequiredArgsConstructor
-public class HenkiloServiceImpl extends AbstractService implements HenkiloService {
-
+public class HenkiloServiceImpl implements HenkiloService {
 
     private final HenkiloHibernateRepository henkiloHibernateRepository;
 
@@ -108,7 +108,7 @@ public class HenkiloServiceImpl extends AbstractService implements HenkiloServic
         kayttajatiedotRepository.deleteByHenkilo(henkilo);
 
         if (StringUtils.isEmpty(kasittelijaOid)) {
-            kasittelijaOid = getCurrentUserOid();
+            kasittelijaOid = UserDetailsUtil.getCurrentUserOid();
         }
         final String kasittelijaOidFinal = kasittelijaOid;
         Henkilo kasittelija = this.henkiloDataRepository.findByOidHenkilo(kasittelijaOid)

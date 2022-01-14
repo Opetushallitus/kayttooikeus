@@ -15,6 +15,7 @@ import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.ValidationException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,9 +32,10 @@ import static fi.vm.sade.kayttooikeus.model.Identification.STRONG_AUTHENTICATION
 import static fi.vm.sade.kayttooikeus.util.FunctionalUtils.ifPresentOrElse;
 import static java.util.stream.Collectors.joining;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class IdentificationServiceImpl extends AbstractService implements IdentificationService {
+public class IdentificationServiceImpl implements IdentificationService {
 
     private final IdentificationRepository identificationRepository;
     private final HenkiloDataRepository henkiloDataRepository;
@@ -49,7 +51,7 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
     @Override
     @Transactional
     public String generateAuthTokenForHenkilo(String oid, String idpKey, String idpIdentifier) {
-        logger.info("generateAuthTokenForHenkilo henkilo:[{}] idp:[{}] identifier:[{}]", oid, idpKey, idpIdentifier);
+        log.info("generateAuthTokenForHenkilo henkilo:[{}] idp:[{}] identifier:[{}]", oid, idpKey, idpIdentifier);
         Henkilo henkilo = henkiloDataRepository.findByOidHenkilo(oid)
                 .orElseThrow(() -> new NotFoundException("no henkilo found with oid:[" + oid + "]"));
         return this.generateAuthTokenForHenkilo(henkilo, idpKey, idpIdentifier);
@@ -77,7 +79,7 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
     @Override
     @Transactional
     public IdentifiedHenkiloTypeDto findByTokenAndInvalidateToken(String token) {
-        logger.info("validateAuthToken:[{}]", token);
+        log.info("validateAuthToken:[{}]", token);
         Identification identification = identificationRepository.findByAuthtokenIsValid(token)
                 .orElseThrow(() -> new NotFoundException("identification not found or token is invalid"));
         identification.setAuthtoken(null);
@@ -195,7 +197,7 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
     }
 
     private void createIdentification(Henkilo henkilo, String token, String identifier, String idpKey) {
-        logger.info("creating new identification token:[{}]", token);
+        log.info("creating new identification token:[{}]", token);
         Identification identification = new Identification();
         identification.setHenkilo(henkilo);
         identification.setIdentifier(identifier);
@@ -216,7 +218,7 @@ public class IdentificationServiceImpl extends AbstractService implements Identi
     private void updateToken(Identification identification, String token) {
         identification.setAuthtoken(token);
         identification.setAuthTokenCreated(LocalDateTime.now());
-        logger.info("old identification found, setting new token:[{}]", token);
+        log.info("old identification found, setting new token:[{}]", token);
     }
 
     private String generateToken() {

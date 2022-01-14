@@ -21,6 +21,7 @@ import fi.vm.sade.kayttooikeus.service.validators.HaettuKayttooikeusryhmaValidat
 import fi.vm.sade.kayttooikeus.util.OrganisaatioMyontoPredicate;
 import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,9 +42,10 @@ import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-public class KayttooikeusAnomusServiceImpl extends AbstractService implements KayttooikeusAnomusService {
+public class KayttooikeusAnomusServiceImpl implements KayttooikeusAnomusService {
 
     private final HaettuKayttooikeusRyhmaRepository haettuKayttooikeusRyhmaRepository;
     private final HenkiloDataRepository henkiloDataRepository;
@@ -97,12 +99,12 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
             // organisaatio & myöntöviite suodatus
             MyontooikeusCriteria myontooikeusCriteria = MyontooikeusCriteria.oletus();
             Map<String, Set<Long>> myontooikeusByOrganisaatio = kayttoOikeusRyhmaMyontoViiteRepository.getSlaveIdsByMasterHenkiloOid(kayttajaOid, myontooikeusCriteria);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Käyttäjän {} käyttöoikeuksien myöntöoikeudet {}", kayttajaOid, myontooikeusByOrganisaatio);
+            if (log.isDebugEnabled()) {
+                log.debug("Käyttäjän {} käyttöoikeuksien myöntöoikeudet {}", kayttajaOid, myontooikeusByOrganisaatio);
             }
             List<Myontooikeus> myontooikeudet = getMyontooikeudet(myontooikeusByOrganisaatio, criteria);
             if (myontooikeudet.isEmpty()) {
-                logger.info("Käyttäjällä {} ei ole yhtään käyttöoikeuden myöntöoikeutta hakukriteereillä {} (kaikki myöntöoikeudet: {})", kayttajaOid, criteria, myontooikeudet);
+                log.info("Käyttäjällä {} ei ole yhtään käyttöoikeuden myöntöoikeutta hakukriteereillä {} (kaikki myöntöoikeudet: {})", kayttajaOid, criteria, myontooikeudet);
                 return emptyList();
             }
             criteria.setMyontooikeudet(myontooikeudet);
@@ -342,12 +344,12 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
 
         Set<Long> kayttoOikeusRyhmaIds = getHyvaksyjaKayttoOikeusRyhmat(anomuksenKayttooikeusryhmat);
         if (kayttoOikeusRyhmaIds.isEmpty()) {
-            logger.info("Ei löytynyt käyttöoikeusryhmiä, jotka voisivat hyväksyä anomuksen {}", anomus.getId());
+            log.info("Ei löytynyt käyttöoikeusryhmiä, jotka voisivat hyväksyä anomuksen {}", anomus.getId());
             return adminTilaatajaOidit;
         }
         Set<String> organisaatioOids = getHyvaksyjaOrganisaatiot(anomus);
         if (organisaatioOids.isEmpty()) {
-            logger.info("Ei löytynyt organisaatioita, jotka voisivat hyväksyä anomuksen {}", anomus.getId());
+            log.info("Ei löytynyt organisaatioita, jotka voisivat hyväksyä anomuksen {}", anomus.getId());
             return adminTilaatajaOidit;
         }
         Set<String> henkiloOids = henkiloHibernateRepository.findByKayttoOikeusRyhmatAndOrganisaatiot(kayttoOikeusRyhmaIds, organisaatioOids)
@@ -357,7 +359,7 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
                 .filter(t -> !t.equals(anomus.getHenkilo().getOidHenkilo()))
                 .collect(toSet());
         if (henkiloOids.isEmpty()) {
-            logger.info("Anomuksella {} ei ole hyväksyjiä", anomus.getId());
+            log.info("Anomuksella {} ei ole hyväksyjiä", anomus.getId());
         }
         henkiloOids.addAll(adminTilaatajaOidit);
         return henkiloOids;
@@ -391,7 +393,7 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         Henkilo anoja = this.henkiloDataRepository.findByOidHenkilo(anojaOid)
                 .orElseThrow(() -> new NotFoundException("Anoja not found with oid " + anojaOid));
         Henkilo kasittelija = this.henkiloDataRepository.findByOidHenkilo(kasittelijaOid)
-                .orElseThrow(() -> new NotFoundException("Kasittelija not found with oid " + this.getCurrentUserOid()));
+                .orElseThrow(() -> new NotFoundException("Kasittelija not found with oid " + UserDetailsUtil.getCurrentUserOid()));
         Optional.of(myonnettavaKayttoOikeusRyhma)
                 .filter(kayttooikeusRyhma -> kayttooikeusRyhma.isSallittuKayttajatyypilla(anoja.getKayttajaTyyppi()))
                 .orElseThrow(() -> new IllegalStateException(String.format("Yritetään myöntää käyttöoikeutta väärälle käyttäjätyypille %s käyttöoikeusryhmään %d kun sallitaan vain %s", anoja.getKayttajaTyyppi(), myonnettavaKayttoOikeusRyhma.getId(), myonnettavaKayttoOikeusRyhma.getSallittuKayttajatyyppi())));
@@ -449,7 +451,7 @@ public class KayttooikeusAnomusServiceImpl extends AbstractService implements Ka
         HaettuKayttoOikeusRyhma haettuKayttoOikeusRyhma = this.haettuKayttooikeusRyhmaRepository.findById(kayttooikeusRyhmaId)
                 .orElseThrow(() -> new NotFoundException("HaettuKayttooikeusRyhma not found with id " + kayttooikeusRyhmaId));
         Anomus anomus = haettuKayttoOikeusRyhma.getAnomus();
-        String kayttajaOid = getCurrentUserOid();
+        String kayttajaOid = UserDetailsUtil.getCurrentUserOid();
         if (!kayttajaOid.equals(anomus.getHenkilo().getOidHenkilo())) {
             throw new ForbiddenException(String.format("Käyttäjällä '%s' ei ole oikeuksia perua haettua käyttöoikeusryhmää '%s'", kayttajaOid, haettuKayttoOikeusRyhma.getId()));
         }
