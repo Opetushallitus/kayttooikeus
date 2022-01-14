@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +28,7 @@ public class ReportController {
     private final AccessRightReport accessRightReport;
 
     @GetMapping(ACCESS_RIGHTS + "/{oid}")
+    @PreAuthorize("@permissionCheckerServiceImpl.checkRoleForOrganisation({#oid}, {'KAYTTOOIKEUS': {'ACCESS_RIGHTS_REPORT'}})")
     @ApiOperation("Report of access rights for all users under given organisation")
     @ApiResponses(value = {
             @ApiResponse(
