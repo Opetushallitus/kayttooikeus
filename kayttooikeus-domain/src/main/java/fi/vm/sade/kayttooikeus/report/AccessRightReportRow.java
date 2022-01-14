@@ -3,28 +3,27 @@ package fi.vm.sade.kayttooikeus.report;
 import lombok.Generated;
 import lombok.Getter;
 
-import javax.persistence.Id;
+import lombok.Setter;
+
 import java.math.BigInteger;
 import java.util.Date;
 
 @Generated
 @Getter
 public class AccessRightReportRow {
-    @Id
-    private BigInteger id;
-    private String personName;
-    private String personOid;
-    private String organisationName;
-    private String organisationOid;
-    private String accessRightName;
-    private BigInteger accessRightId;
-    private Date startDate;
-    private Date endDate;
-    private Date modified;
-    private String modifiedBy;
 
-    public AccessRightReportRow() {
-    }
+    private final BigInteger id;
+    private final String personName;
+    private final String personOid;
+    private final String organisationOid;
+    private final String accessRightName;
+    private final BigInteger accessRightId;
+    private final Date startDate;
+    private final Date endDate;
+    private final Date modified;
+    private final String modifiedBy;
+    @Setter
+    private String organisationName;
 
     public AccessRightReportRow(
             BigInteger id,
@@ -49,9 +48,5 @@ public class AccessRightReportRow {
         this.endDate = endDate;
         this.modified = modified;
         this.modifiedBy = modifiedBy;
-    }
-
-    public void setOrganisationName(String organisationName) {
-        this.organisationName = organisationName;
     }
 }

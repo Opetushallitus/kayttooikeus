@@ -53,4 +53,6 @@ public interface OppijanumerorekisteriClient {
      * @return haetun käyttäjän omat tiedot
      */
     HenkiloOmattiedotDto getOmatTiedot(String oidHenkilo);
+
+    String resolveLanguageCodeForCurrentUser();
 }

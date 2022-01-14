@@ -10,6 +10,8 @@ import fi.vm.sade.kayttooikeus.service.dto.HenkiloYhteystiedotDto;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.external.ExternalServiceException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
+import fi.vm.sade.kayttooikeus.service.impl.KayttoOikeusServiceImpl;
+import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
 import fi.vm.sade.oppijanumerorekisteri.dto.*;
 import fi.vm.sade.properties.OphProperties;
 import lombok.Getter;
@@ -273,6 +275,18 @@ public class OppijanumerorekisteriClientImpl implements OppijanumerorekisteriCli
                 .mapWith(json -> io(() -> objectMapper.readValue(json, HenkiloOmattiedotDto.class)).get())
                 .orElseThrow(() -> noContentOrNotFoundException(url));
         return retrying(action, 2).get().orFail(mapper(url));
+    }
+
+    @Override
+    public String resolveLanguageCodeForCurrentUser() {
+        try {
+            String currentUserOid = UserDetailsUtil.getCurrentUserOid();
+            HenkiloDto currentUser = getHenkiloByOid(currentUserOid);
+            String languageCode = UserDetailsUtil.getLanguageCode(currentUser);
+            return languageCode.toUpperCase();
+        } catch ( Exception e ) {
+            return KayttoOikeusServiceImpl.FI;
+        }
     }
 
     @Getter @Setter
