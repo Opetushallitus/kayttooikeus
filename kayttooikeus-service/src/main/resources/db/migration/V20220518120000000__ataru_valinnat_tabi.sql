@@ -1,0 +1,1 @@
+select insertkayttooikeus('ATARU_HAKEMUS', 'valinnat-valilehti', 'Hakemuksen Valinnat-välilehden tietojen katseluoikeus');
