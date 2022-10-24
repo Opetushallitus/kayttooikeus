@@ -121,7 +121,7 @@ public class KutsuServiceImpl implements KutsuService {
 
         Kutsu persistedNewKutsu = this.kutsuRepository.save(newKutsu);
 
-        this.emailService.sendInvitationEmail(persistedNewKutsu);
+        this.emailService.sendInvitationEmail(persistedNewKutsu, kutsuCreateDto.getKutsujaForEmail());
 
         return persistedNewKutsu.getId();
     }

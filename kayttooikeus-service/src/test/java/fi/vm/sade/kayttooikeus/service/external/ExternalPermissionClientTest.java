@@ -23,18 +23,27 @@ public class ExternalPermissionClientTest extends AbstractClientTest {
 
     @Test
     public void getPermission() {
-        onRequest().havingMethod(is("POST"))
+        onRequest().havingMethod(is("POST")).havingBodyEqualTo("{\"personOidsForSamePerson\":null,\"organisationOids\":[],\"loggedInUserRoles\":null,\"loggedInUserOid\":\"1.2.2.1\"}")
                 .respond().withStatus(OK).withContentType(MediaType.APPLICATION_JSON.getType()).withBody("{}");
+        onRequest().havingMethod(is("POST")).havingBodyEqualTo("{\"personOidsForSamePerson\":null,\"organisationOids\":[],\"loggedInUserRoles\":null,\"loggedInUserOid\":\"1.2.2.2\"}")
+                .respond().withStatus(OK).withContentType(MediaType.APPLICATION_JSON.getType()).withBody("{\"accessAllowed\":true,\"errorMessage\":null}");
 
         Arrays.stream(ExternalPermissionService.values()).forEach(this::getPermission);
     }
 
     private void getPermission(ExternalPermissionService service) {
-        PermissionCheckRequestDto request = new PermissionCheckRequestDto();
+        PermissionCheckRequestDto dto = new PermissionCheckRequestDto();
+        if (service == ExternalPermissionService.HAKU_APP) {
+            dto.setLoggedInUserOid("1.2.2.2");
+            PermissionCheckResponseDto response = client.getPermission(service, dto);
 
-        PermissionCheckResponseDto response = client.getPermission(service, request);
+            assertThat(response).returns(true, PermissionCheckResponseDto::isAccessAllowed);
+        } else {
+            dto.setLoggedInUserOid("1.2.2.1");
+            PermissionCheckResponseDto response = client.getPermission(service, dto);
 
-        assertThat(response).returns(false, PermissionCheckResponseDto::isAccessAllowed);
+            assertThat(response).returns(false, PermissionCheckResponseDto::isAccessAllowed);
+        }
     }
 
 }

@@ -2,10 +2,7 @@ package fi.vm.sade.kayttooikeus.service.impl;
 
 import com.google.common.collect.Lists;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
-import fi.vm.sade.kayttooikeus.dto.AnomusKasiteltyRecipientDto;
-import fi.vm.sade.kayttooikeus.dto.KayttoOikeudenTila;
-import fi.vm.sade.kayttooikeus.dto.TextGroupMapDto;
-import fi.vm.sade.kayttooikeus.dto.UpdateHaettuKayttooikeusryhmaDto;
+import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.model.Anomus;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.KayttoOikeusRyhma;
@@ -231,9 +228,12 @@ public class EmailServiceImpl implements EmailService {
 
     public void sendInvitationEmail(Kutsu kutsu) {
         HenkiloDto kutsuja = this.oppijanumerorekisteriClient.getHenkiloByOid(kutsu.getKutsuja());
+        String kutsujaForEmail = String.format("%s %s", kutsuja.getKutsumanimi(), kutsuja.getSukunimi());
+        sendInvitationEmail(kutsu, kutsujaForEmail);
+    }
 
+    public void sendInvitationEmail(Kutsu kutsu, String kutsujaForEmail) {
         EmailData emailData = new EmailData();
-
         EmailMessage email = new EmailMessage();
         email.setTemplateName(KUTSUTTU_EMAIL_TEMPLATE_NAME);
         email.setLanguageCode(kutsu.getKieliKoodi());
@@ -272,7 +272,7 @@ public class EmailServiceImpl implements EmailService {
                                 )
                         ).sorted(comparing(OranizationReplacement::getName)).collect(toList())),
                 replacement("saate", kutsu.getSaate()),
-                replacement("kutsuja", mapper.map(kutsuja, SahkopostiHenkiloDto.class)),
+                replacement("kutsuja", kutsujaForEmail),
                 replacement("voimassa", kutsu.getAikaleima().plusMonths(1).format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
         ));
         emailData.setRecipient(singletonList(recipient));

@@ -16,6 +16,8 @@ public interface EmailService {
 
     void sendNewRequisitionNotificationEmails(Set<String> henkiloOids);
 
+    void sendInvitationEmail(Kutsu kutsu, String kutsujaForEmail);
+
     void sendInvitationEmail(Kutsu kutsu);
 
     void sendDiscardNotification(Kutsu invitation);

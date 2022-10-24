@@ -19,6 +19,8 @@ public class KutsuCreateDto {
 
     private String kutsujaOid;
 
+    private String kutsujaForEmail;
+
     @NotEmpty
     private String etunimi;
     @NotEmpty

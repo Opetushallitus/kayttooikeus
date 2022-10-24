@@ -1,16 +1,15 @@
 package fi.vm.sade.kayttooikeus.service;
 
 import com.google.common.collect.Sets;
+import fi.vm.sade.kayttooikeus.dto.KutsuCreateDto;
 import fi.vm.sade.kayttooikeus.dto.TextGroupDto;
 import fi.vm.sade.kayttooikeus.dto.UpdateHaettuKayttooikeusryhmaDto;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.KayttoOikeusRyhmaRepository;
 import fi.vm.sade.kayttooikeus.repositories.dto.ExpiringKayttoOikeusDto;
-import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
-import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
-import fi.vm.sade.kayttooikeus.service.external.OrganisaatioPerustieto;
-import fi.vm.sade.kayttooikeus.service.external.RyhmasahkopostiClient;
+import fi.vm.sade.kayttooikeus.service.external.*;
 import fi.vm.sade.kayttooikeus.service.impl.EmailServiceImpl;
+import fi.vm.sade.kayttooikeus.service.impl.email.SahkopostiHenkiloDto;
 import fi.vm.sade.kayttooikeus.util.CreateUtil;
 import fi.vm.sade.kayttooikeus.util.YhteystietoUtil;
 import fi.vm.sade.oppijanumerorekisteri.dto.*;
@@ -31,11 +30,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Collections.singleton;
 import static java.util.Optional.of;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -237,6 +238,9 @@ public class EmailServiceTest extends AbstractServiceTest {
         organisaatioPerustieto.setNimi(new HashMap<String, String>() {{
             put("fi", "suomenkielinennimi");
         }});
+        SahkopostiHenkiloDto kutsuja = new SahkopostiHenkiloDto();
+        kutsuja.setKutsumanimi("kutsun");
+        kutsuja.setSukunimi("kutsuja");
         given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any()))
                 .willReturn(Optional.of(organisaatioPerustieto));
         given(this.oppijanumerorekisteriClient.getHenkiloByOid(any()))
@@ -263,8 +267,58 @@ public class EmailServiceTest extends AbstractServiceTest {
         assertThat(emailData.getRecipient().get(0).getRecipientReplacements())
                 .extracting("name")
                 .containsExactlyInAnyOrder("vastaanottaja", "organisaatiot", "linkki", "kutsuja", "voimassa", "saate");
-        assertThat(emailData.getRecipient().get(0).getOid()).isEqualTo("");
-        assertThat(emailData.getRecipient().get(0).getOidType()).isEqualTo("");
+        assertTrue(emailData.getRecipient().get(0).getRecipientReplacements().stream().anyMatch(r -> Objects.equals(r.getName(), "kutsuja") && Objects.equals(r.getValue(), kutsuja.toString()) ));
+        assertThat(emailData.getRecipient().get(0).getOid()).isEmpty();
+        assertThat(emailData.getRecipient().get(0).getOidType()).isEmpty();
+        assertThat(emailData.getRecipient().get(0).getEmail()).isEqualTo("arpa@kuutio.fi");
+        assertThat(emailData.getRecipient().get(0).getName()).isEqualTo("arpa kuutio");
+        assertThat(emailData.getRecipient().get(0).getLanguageCode()).isEqualTo("fi");
+
+        assertThat(emailData.getEmail().getCallingProcess()).isEqualTo("kayttooikeus");
+        assertThat(emailData.getEmail().getLanguageCode()).isEqualTo("fi");
+        assertThat(emailData.getEmail().getFrom()).isNull();
+        assertThat(emailData.getEmail().getTemplateName()).isEqualTo("kayttooikeus_kutsu_v2");
+    }
+
+    @Test
+    public void sendInvitationEmailAsServiceKutsuja() {
+        OrganisaatioPerustieto organisaatioPerustieto = new OrganisaatioPerustieto();
+        organisaatioPerustieto.setNimi(new HashMap<String, String>() {{
+            put("fi", "suomenkielinennimi");
+        }});
+
+        String expectedKutsuja =  "Varda Info";
+
+        given(this.organisaatioClient.getOrganisaatioPerustiedotCached(any()))
+                .willReturn(Optional.of(organisaatioPerustieto));
+        given(this.oppijanumerorekisteriClient.getHenkiloByOid(any()))
+                .willReturn(HenkiloDto.builder().kutsumanimi("kutsun").sukunimi("kutsuja").build());
+        Kutsu kutsu = Kutsu.builder()
+                .kieliKoodi("fi")
+                .sahkoposti("arpa@kuutio.fi")
+                .salaisuus("salaisuushash")
+                .etunimi("arpa")
+                .sukunimi("kuutio")
+                .saate(null)
+                .organisaatiot(Sets.newHashSet(KutsuOrganisaatio.builder()
+                        .organisaatioOid("1.2.3.4.1")
+                        .ryhmat(Sets.newHashSet(KayttoOikeusRyhma.builder().nimi(new TextGroup()).build()))
+                        .build()))
+                .aikaleima(LocalDateTime.now())
+                .build();
+
+        this.emailService.sendInvitationEmail(kutsu, expectedKutsuja);
+        ArgumentCaptor<EmailData> emailDataArgumentCaptor = ArgumentCaptor.forClass(EmailData.class);
+        verify(this.ryhmasahkopostiClient).sendRyhmasahkoposti(emailDataArgumentCaptor.capture());
+        EmailData emailData = emailDataArgumentCaptor.getValue();
+        assertThat(emailData.getRecipient()).hasSize(1);
+        assertThat(emailData.getRecipient().get(0).getRecipientReplacements())
+                .extracting("name")
+                .containsExactlyInAnyOrder("vastaanottaja", "organisaatiot", "linkki", "kutsuja", "voimassa", "saate");
+
+        assertTrue(emailData.getRecipient().get(0).getRecipientReplacements().stream().anyMatch(r -> Objects.equals(r.getName(), "kutsuja") && Objects.equals(r.getValue(), expectedKutsuja) ));
+        assertThat(emailData.getRecipient().get(0).getOid()).isEmpty();
+        assertThat(emailData.getRecipient().get(0).getOidType()).isEmpty();
         assertThat(emailData.getRecipient().get(0).getEmail()).isEqualTo("arpa@kuutio.fi");
         assertThat(emailData.getRecipient().get(0).getName()).isEqualTo("arpa kuutio");
         assertThat(emailData.getRecipient().get(0).getLanguageCode()).isEqualTo("fi");

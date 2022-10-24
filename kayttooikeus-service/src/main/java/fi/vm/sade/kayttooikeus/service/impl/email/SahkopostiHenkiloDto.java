@@ -11,4 +11,8 @@ public class SahkopostiHenkiloDto {
     private String kutsumanimi;
     private String sukunimi;
 
+    @Override
+    public String toString() {
+        return kutsumanimi + " " + sukunimi;
+    }
 }
