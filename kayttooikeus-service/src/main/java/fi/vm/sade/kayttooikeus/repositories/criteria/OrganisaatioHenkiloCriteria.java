@@ -20,6 +20,7 @@ public class OrganisaatioHenkiloCriteria {
     private Set<String> organisaatioOids;
     private Set<String> kayttoOikeusRyhmaNimet;
     private Collection<String> kayttooikeudet;
+    private Boolean organisaatioVoimassa;
 
     public boolean setOrRetainOrganisaatioOids(Collection<String> oids) {
         if (organisaatioOids == null) {

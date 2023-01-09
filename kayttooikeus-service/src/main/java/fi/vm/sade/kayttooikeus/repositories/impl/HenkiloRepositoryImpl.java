@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 import static com.querydsl.core.types.ExpressionUtils.eq;
 import static java.util.stream.Collectors.toSet;
 
+import java.time.LocalDate;
+
 @Repository
 @RequiredArgsConstructor
 public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implements HenkiloHibernateRepository {
@@ -39,6 +41,12 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
                 -> query.where(qOrganisaatio.passivoitu.eq(passivoitu)));
         Optional.ofNullable(criteria.getOrganisaatioOids()).ifPresent(organisaatioOid
                 -> query.where(qOrganisaatio.organisaatioOid.in(organisaatioOid)));
+        Optional.ofNullable(criteria.getOrganisaatioVoimassa()).ifPresent(voimassa -> {
+            if (voimassa) {
+                query.where(qOrganisaatio.voimassaAlkuPvm.loe(LocalDate.now()));
+                query.where(qOrganisaatio.voimassaLoppuPvm.goe(LocalDate.now()));
+            }
+        });
 
         if (criteria.getKayttoOikeusRyhmaNimet() != null || criteria.getKayttooikeudet() != null) {
             QMyonnettyKayttoOikeusRyhmaTapahtuma qMyonnettyKayttoOikeusRyhma = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;
@@ -86,6 +94,12 @@ public class HenkiloRepositoryImpl extends BaseRepositoryImpl<Henkilo> implement
         });
         Optional.ofNullable(criteria.getOrganisaatioOids()).ifPresent(organisaatioOid
                 -> query.where(qOrganisaatio.organisaatioOid.in(organisaatioOid)));
+        Optional.ofNullable(criteria.getOrganisaatioVoimassa()).ifPresent(voimassa -> {
+            if (voimassa) {
+                query.where(qOrganisaatio.voimassaAlkuPvm.loe(LocalDate.now()));
+                query.where(qOrganisaatio.voimassaLoppuPvm.goe(LocalDate.now()));
+            }
+        });
 
         if (criteria.getKayttoOikeusRyhmaNimet() != null || criteria.getKayttooikeudet() != null) {
             QMyonnettyKayttoOikeusRyhmaTapahtuma qMyonnettyKayttoOikeusRyhma = QMyonnettyKayttoOikeusRyhmaTapahtuma.myonnettyKayttoOikeusRyhmaTapahtuma;

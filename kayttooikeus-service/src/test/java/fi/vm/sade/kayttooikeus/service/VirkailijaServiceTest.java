@@ -1,8 +1,11 @@
 package fi.vm.sade.kayttooikeus.service;
 
+import fi.vm.sade.kayttooikeus.dto.KayttajaReadDto;
 import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import fi.vm.sade.kayttooikeus.dto.VirkailijaCreateDto;
+import fi.vm.sade.kayttooikeus.dto.VirkailijaCriteriaDto;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
+import fi.vm.sade.kayttooikeus.repositories.HenkiloHibernateRepository;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import fi.vm.sade.kayttooikeus.service.it.AbstractServiceIntegrationTest;
@@ -18,6 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.Set;
 
 @RunWith(SpringRunner.class)
 public class VirkailijaServiceTest extends AbstractServiceIntegrationTest {

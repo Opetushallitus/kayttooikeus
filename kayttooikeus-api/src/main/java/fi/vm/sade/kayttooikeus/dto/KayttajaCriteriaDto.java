@@ -21,4 +21,7 @@ public class KayttajaCriteriaDto {
     private Boolean passivoitu;
     private Boolean duplikaatti;
 
+    // organisaatiohenkilo.voimassa
+    private Boolean organisaatioVoimassa;
+
 }

@@ -20,4 +20,6 @@ public class VirkailijaCriteriaDto {
     private Boolean passivoitu;
     private Boolean duplikaatti;
 
+    // organisaatiohenkilo.voimassa
+    private Boolean organisaatioVoimassa;
 }
