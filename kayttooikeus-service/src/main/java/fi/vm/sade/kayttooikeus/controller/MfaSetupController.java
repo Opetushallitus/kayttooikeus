@@ -41,8 +41,8 @@ public class MfaSetupController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/gauth/testsuomifi")
-    public String isSuomiFi(HttpServletRequest request, @RequestBody String token) {
+    @GetMapping("/gauth/testsuomifi")
+    public String isSuomiFi(HttpServletRequest request) {
       Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
       try {
         if (principal instanceof SuomiFiAuthenticationDetails) {
