@@ -11,6 +11,7 @@ public class SuomiFiAuthenticationDetails extends PreAuthenticatedGrantedAuthori
     public final String hetu;
     public final String sukunimi;
     public final String etunimet;
+    public final boolean suomiFi = true;
 
     public SuomiFiAuthenticationDetails(HttpServletRequest request,
                                         Collection<? extends GrantedAuthority> authorities,

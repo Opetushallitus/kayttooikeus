@@ -42,6 +42,7 @@ public class SuomiFiAuthenticationProcessingFilter extends AbstractPreAuthentica
                     SuomiFiUserDetails details = extractUserDetails(assertion);
                     // asetetaan requestiin, SuomiFiAuthenticationDetailsSourcen saataville
                     request.setAttribute(SUOMI_FI_DETAILS_ATTR_KEY, details);
+                    request.getSession().setAttribute("SUOMIFI_SESSION", true);
                     return String.join(", ", details.sukunimi, details.etunimet);
                 } else {
                     LOGGER.warn("Invalid ticket: \"{}\"", ticket);
