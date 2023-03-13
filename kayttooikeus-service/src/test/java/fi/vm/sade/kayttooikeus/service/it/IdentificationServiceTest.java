@@ -110,6 +110,7 @@ public class IdentificationServiceTest extends AbstractServiceIntegrationTest {
         assertEquals("1.2.3.4.5", dto.getOidHenkilo());
         assertEquals(KayttajaTyyppi.VIRKAILIJA, dto.getHenkiloTyyppi());
         assertEquals("hakakäyttäjä", dto.getKayttajatiedot().getUsername());
+        assertEquals("haka", dto.getIdpEntityId());
     }
 
     @Test(expected = NotFoundException.class)
