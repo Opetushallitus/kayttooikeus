@@ -6,6 +6,7 @@ import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.HenkilohakuCriteriaDto;
 import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.repositories.criteria.HenkiloCriteria;
+import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.MyonnettyKayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
@@ -62,6 +63,8 @@ public class HenkiloServiceImplTest {
     private ObjectMapper objectMapper;
     @Mock
     private KayttoOikeusRyhmaRepository kayttoOikeusRyhmaRepository;
+    @Mock
+    private IdentificationService identificationService;
 
     @Before
     public void setup() {
@@ -74,6 +77,7 @@ public class HenkiloServiceImplTest {
                 henkiloDataRepositoryMock,
                 kayttajatiedotRepositoryMock,
                 kayttoOikeusRyhmaRepository,
+                identificationService,
                 commonPropertiesMock,
                 oppijanumerorekisteriClientMock,
                 mapper,

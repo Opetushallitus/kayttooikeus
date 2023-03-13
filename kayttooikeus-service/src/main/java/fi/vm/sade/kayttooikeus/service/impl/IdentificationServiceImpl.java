@@ -8,7 +8,6 @@ import fi.vm.sade.kayttooikeus.repositories.IdentificationRepository;
 import fi.vm.sade.kayttooikeus.repositories.KutsuRepository;
 import fi.vm.sade.kayttooikeus.repositories.TunnistusTokenDataRepository;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
-import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
 import fi.vm.sade.kayttooikeus.service.exception.LoginTokenNotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
@@ -16,6 +15,9 @@ import fi.vm.sade.kayttooikeus.service.exception.ValidationException;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.security.cas.authentication.CasAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,9 +43,6 @@ public class IdentificationServiceImpl implements IdentificationService {
     private final HenkiloDataRepository henkiloDataRepository;
     private final KutsuRepository kutsuRepository;
     private final TunnistusTokenDataRepository tunnistusTokenDataRepository;
-
-    private final KayttoOikeusService kayttoOikeusService;
-
     private final OrikaBeanMapper mapper;
 
     private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
@@ -218,6 +218,13 @@ public class IdentificationServiceImpl implements IdentificationService {
         tunnistusToken.setKaytetty(LocalDateTime.now());
         Kayttajatiedot kayttajatiedot = henkilo.getKayttajatiedot();
         return generateAuthTokenForHenkilo(henkilo, authentication_idp, kayttajatiedot.getUsername());
+    }
+
+    @Override
+    public String getIdpEntityIdForCurrentSession() {
+        CasAuthenticationToken token = (CasAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        Map<String, Object> attributes = token.getAssertion().getPrincipal().getAttributes();
+        return (String) attributes.get("idpEntityId");
     }
 
     private List<Identification> findIdentificationsByHenkiloAndIdp(String oid, String idp) {

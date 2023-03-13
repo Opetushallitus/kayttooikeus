@@ -15,6 +15,7 @@ import fi.vm.sade.kayttooikeus.repositories.criteria.KayttooikeusCriteria;
 import fi.vm.sade.kayttooikeus.repositories.criteria.OrganisaatioHenkiloCriteria;
 import fi.vm.sade.kayttooikeus.repositories.dto.HenkilohakuResultDto;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
+import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.KayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.MyonnettyKayttoOikeusService;
 import fi.vm.sade.kayttooikeus.service.PermissionCheckerService;
@@ -27,6 +28,7 @@ import fi.vm.sade.kayttooikeus.util.HenkilohakuBuilder;
 import fi.vm.sade.kayttooikeus.util.UserDetailsUtil;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloOmattiedotDto;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -53,6 +55,7 @@ public class HenkiloServiceImpl implements HenkiloService {
     private final HenkiloDataRepository henkiloDataRepository;
     private final KayttajatiedotRepository kayttajatiedotRepository;
     private final KayttoOikeusRyhmaRepository kayttoOikeusRyhmaRepository;
+    private final IdentificationService identificationService;
 
     private final CommonProperties commonProperties;
     private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
@@ -111,7 +114,7 @@ public class HenkiloServiceImpl implements HenkiloService {
     }
 
     private Henkilo resolveKasittelija(String kasittelijaOid) {
-        if (StringUtils.isEmpty(kasittelijaOid)) {
+        if (!StringUtils.hasText(kasittelijaOid)) {
             kasittelijaOid = UserDetailsUtil.getCurrentUserOid();
         }
         final String kasittelijaOidFinal = kasittelijaOid;
@@ -227,6 +230,7 @@ public class HenkiloServiceImpl implements HenkiloService {
         Henkilo currentUser = henkiloDataRepository.findByOidHenkilo(currentUserOid)
                 .orElseThrow(() -> new IllegalStateException(String.format("Kirjautunutta käyttäjää %s ei löydy käyttöoikeuspalvelusta", currentUserOid)));
         omatTiedotDto.setMfaProvider(currentUser.getKayttajatiedot().getMfaProvider());
+        omatTiedotDto.setIdpEntityId(identificationService.getIdpEntityIdForCurrentSession());
         Collection<Long> tilatutAnomusilmoitukset = currentUser.getAnomusilmoitus().stream()
                 .map(KayttoOikeusRyhma::getId)
                 .collect(Collectors.toSet());

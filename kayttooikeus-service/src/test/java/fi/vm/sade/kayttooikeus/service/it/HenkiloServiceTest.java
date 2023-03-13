@@ -13,6 +13,7 @@ import fi.vm.sade.kayttooikeus.repositories.MyonnettyKayttoOikeusRyhmaTapahtumaR
 import fi.vm.sade.kayttooikeus.repositories.OrganisaatioHenkiloRepository;
 import fi.vm.sade.kayttooikeus.repositories.dto.HenkilohakuResultDto;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
+import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.external.OrganisaatioClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,6 +55,9 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
 
     @Autowired
     private MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
+
+    @MockBean
+    private IdentificationService identificationService;
 
     @Autowired
     private CommonProperties commonProperties;
@@ -246,6 +250,8 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     @Test
     @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA", "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA_1.2.246.562.10.00000000001"})
     public void getOmatTiedotAdmin() {
+        given(this.identificationService.getIdpEntityIdForCurrentSession())
+                .willReturn("haka");
         populate(kayttajatiedot(henkilo("1.2.3.4.1"), "username", MfaProvider.GAUTH));
         populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3.4.1", "1.2.3.4.100"),
                 kayttoOikeusRyhma("tunniste").withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_REKISTERINPITAJA))));
@@ -253,6 +259,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
         assertThat(omatTiedotDto.getIsAdmin()).isTrue();
         assertThat(omatTiedotDto.getIsMiniAdmin()).isTrue();
         assertThat(omatTiedotDto.getMfaProvider()).isEqualTo(MfaProvider.GAUTH);
+        assertThat(omatTiedotDto.getIdpEntityId()).isEqualTo("haka");
         assertThat(omatTiedotDto.getOidHenkilo()).isEqualTo("1.2.3.4.1");
         assertThat(omatTiedotDto.getOrganisaatiot())
                 .extracting(KayttooikeusPerustiedotDto.KayttooikeusOrganisaatiotDto::getOrganisaatioOid)
@@ -270,6 +277,8 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     @Test
     @WithMockUser(value = "1.2.3.4.1", authorities = {"ROLE_APP_KAYTTOOIKEUS_CRUD", "ROLE_APP_KAYTTOOIKEUS_CRUD_1.2.246.562.10.00000000001"})
     public void getOmatTiedotOphVirkailija() {
+        given(this.identificationService.getIdpEntityIdForCurrentSession())
+                .willReturn("vetuma");
         populate(kayttajatiedot(henkilo("1.2.3.4.1"), "username"));
         populate(myonnettyKayttoOikeus(organisaatioHenkilo("1.2.3.4.1", "1.2.3.4.100"),
                 kayttoOikeusRyhma("tunniste").withOikeus(oikeus(PALVELU_KAYTTOOIKEUS, ROLE_CRUD))));
@@ -277,6 +286,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
         assertThat(omatTiedotDto.getIsAdmin()).isFalse();
         assertThat(omatTiedotDto.getIsMiniAdmin()).isTrue();
         assertThat(omatTiedotDto.getMfaProvider()).isNull();
+        assertThat(omatTiedotDto.getIdpEntityId()).isEqualTo("vetuma");
         assertThat(omatTiedotDto.getOidHenkilo()).isEqualTo("1.2.3.4.1");
         assertThat(omatTiedotDto.getOrganisaatiot())
                 .extracting(KayttooikeusPerustiedotDto.KayttooikeusOrganisaatiotDto::getOrganisaatioOid)
