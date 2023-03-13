@@ -17,4 +17,5 @@ public class OmatTiedotDto extends KayttooikeusPerustiedotDto {
     Boolean isMiniAdmin;
     Collection<Long> anomusilmoitus = new HashSet<>();
     MfaProvider mfaProvider;
+    String idpEntityId;
 }
