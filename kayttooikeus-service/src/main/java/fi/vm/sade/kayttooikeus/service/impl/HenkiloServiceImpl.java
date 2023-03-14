@@ -114,7 +114,7 @@ public class HenkiloServiceImpl implements HenkiloService {
     }
 
     private Henkilo resolveKasittelija(String kasittelijaOid) {
-        if (StringUtils.hasText(kasittelijaOid)) {
+        if (!StringUtils.hasText(kasittelijaOid)) {
             kasittelijaOid = UserDetailsUtil.getCurrentUserOid();
         }
         final String kasittelijaOidFinal = kasittelijaOid;

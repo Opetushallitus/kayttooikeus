@@ -56,7 +56,7 @@ public class HenkiloServiceTest extends AbstractServiceIntegrationTest {
     @Autowired
     private MyonnettyKayttoOikeusRyhmaTapahtumaRepository myonnettyKayttoOikeusRyhmaTapahtumaRepository;
 
-    @Autowired
+    @MockBean
     private IdentificationService identificationService;
 
     @Autowired
