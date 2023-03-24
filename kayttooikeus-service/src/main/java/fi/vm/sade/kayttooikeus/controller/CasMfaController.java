@@ -46,9 +46,7 @@ public class CasMfaController {
             "'ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_READ', " +
             "'ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_CRUD')")
     public void getMfaProvider(HttpServletResponse response, @Valid @RequestBody MfaTriggerDto dto) throws IOException {
-        var mfaProvider = kayttajatiedotService
-                .getMfaProvider(dto.getPrincipalId())
-                .orElse("");
+        String mfaProvider = kayttajatiedotService.getMfaProviderAndConsumeBypass(dto.getPrincipalId());
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write(mfaProvider);
         response.getWriter().flush();

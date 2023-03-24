@@ -37,7 +37,7 @@ public interface KayttajatiedotService {
 
     KayttajatiedotReadDto getByUsernameAndPassword(String username, String password);
 
-    Optional<String> getMfaProvider(String username);
+    String getMfaProviderAndConsumeBypass(String username);
 
     Optional<GoogleAuthToken> getGoogleAuthToken(String username);
 }

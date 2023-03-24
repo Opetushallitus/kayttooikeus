@@ -57,7 +57,7 @@ public class CasMfaControllerTest extends AbstractControllerTest {
 
     @Test
     public void getMfaTriggerRequiresBasicAuth() throws Exception {
-        when(kayttajatiedotService.getMfaProvider(any())).thenReturn(Optional.of("mfa-gauth"));
+        when(kayttajatiedotService.getMfaProviderAndConsumeBypass(any())).thenReturn("mfa-gauth");
         mvc.perform(post("/mfa/trigger")
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"principalId\":\"username\",\"serviceId\":\"service\"}"))
@@ -66,7 +66,7 @@ public class CasMfaControllerTest extends AbstractControllerTest {
 
     @Test
     public void getMfaTriggerReturnsMfaProvider() throws Exception {
-        when(kayttajatiedotService.getMfaProvider(any())).thenReturn(Optional.of("mfa-gauth"));
+        when(kayttajatiedotService.getMfaProviderAndConsumeBypass(any())).thenReturn("mfa-gauth");
         mvc.perform(post("/mfa/trigger")
             .with(httpBasic(username, password))
             .contentType(MediaType.APPLICATION_JSON)
@@ -77,7 +77,7 @@ public class CasMfaControllerTest extends AbstractControllerTest {
 
     @Test
     public void getMfaTriggerReturnsEmptyStringIfNoMfaProvider() throws Exception {
-        when(kayttajatiedotService.getMfaProvider(any())).thenReturn(Optional.empty());
+        when(kayttajatiedotService.getMfaProviderAndConsumeBypass(any())).thenReturn("");
         mvc.perform(post("/mfa/trigger")
             .with(httpBasic(username, password))
             .contentType(MediaType.APPLICATION_JSON)

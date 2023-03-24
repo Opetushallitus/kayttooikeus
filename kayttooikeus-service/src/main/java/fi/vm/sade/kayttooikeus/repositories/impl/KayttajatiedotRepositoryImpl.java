@@ -5,7 +5,6 @@ import com.querydsl.jpa.impl.JPAQuery;
 
 import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import fi.vm.sade.kayttooikeus.dto.KayttajatiedotReadDto;
-import fi.vm.sade.kayttooikeus.dto.MfaProvider;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaContext;
@@ -60,18 +59,6 @@ public class KayttajatiedotRepositoryImpl implements KayttajatiedotRepositoryCus
                 .select(qHenkilo.oidHenkilo)
                 .fetchOne();
         return Optional.ofNullable(oid);
-    }
-
-    @Override
-    public Optional<String> findMfaProviderByUsername(String username) {
-        QKayttajatiedot qKayttajatiedot = QKayttajatiedot.kayttajatiedot;
-
-        MfaProvider mfaProvider = new JPAQuery<>(em)
-                .from(qKayttajatiedot)
-                .where(qKayttajatiedot.username.equalsIgnoreCase(username))
-                .select(qKayttajatiedot.mfaProvider)
-                .fetchOne();
-        return Optional.ofNullable(mfaProvider).flatMap(m -> Optional.of(m.getMfaProvider()));
     }
 
     @Override

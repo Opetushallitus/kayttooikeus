@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -27,6 +28,8 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
     private final HenkiloDataRepository henkiloDataRepository;
     private final OrikaBeanMapper mapper;
     private final CryptoService cryptoService;
+
+    private final int MFA_BYPASS_MAX_AGE_SECONDS = 30;
 
     @Override
     @Transactional
@@ -59,12 +62,10 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
             Optional<Kayttajatiedot> kayttajatiedot = this.kayttajatiedotRepository.findByHenkiloOidHenkilo(oidHenkilo);
             if (kayttajatiedot.isPresent()) {
                 kayttajatiedot.get().setUsername(username);
-            }
-            else {
+            } else {
                 this.create(oidHenkilo, new KayttajatiedotCreateDto(username));
             }
-        }
-        else {
+        } else {
             log.warn("Tried to create or update empty username.");
         }
     }
@@ -84,13 +85,16 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
 
     @Override
     @Transactional
-    public KayttajatiedotReadDto updateKayttajatiedot(String henkiloOid, KayttajatiedotUpdateDto kayttajatiedotUpdateDto) {
+    public KayttajatiedotReadDto updateKayttajatiedot(String henkiloOid,
+            KayttajatiedotUpdateDto kayttajatiedotUpdateDto) {
         return henkiloDataRepository.findByOidHenkilo(henkiloOid)
                 .map(henkilo -> updateKayttajatiedot(henkilo, kayttajatiedotUpdateDto))
-                .orElseThrow(() -> new NotFoundException(String.format("Käyttäjää ei löytynyt OID:lla %s", henkiloOid)));
+                .orElseThrow(
+                        () -> new NotFoundException(String.format("Käyttäjää ei löytynyt OID:lla %s", henkiloOid)));
     }
 
-    private KayttajatiedotReadDto updateKayttajatiedot(Henkilo henkilo, KayttajatiedotUpdateDto kayttajatiedotUpdateDto) {
+    private KayttajatiedotReadDto updateKayttajatiedot(Henkilo henkilo,
+            KayttajatiedotUpdateDto kayttajatiedotUpdateDto) {
         Kayttajatiedot kayttajatiedot = Optional.ofNullable(henkilo.getKayttajatiedot()).orElseGet(() -> {
             if (!KayttajaTyyppi.PALVELU.equals(henkilo.getKayttajaTyyppi())) {
                 throw new ValidationException("Vain palvelukäyttäjälle voi lisätä käyttäjätunnuksen");
@@ -130,7 +134,7 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
 
     @Override
     public void throwIfUsernameIsNotValid(String username) {
-        if(!username.matches(Constants.USERNAME_REGEXP)) {
+        if (!username.matches(Constants.USERNAME_REGEXP)) {
             throw new IllegalArgumentException("Username is not valid with pattern " + Constants.USERNAME_REGEXP);
         }
     }
@@ -140,7 +144,7 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
         Kayttajatiedot kayttajatiedot = this.kayttajatiedotRepository.findByHenkiloOidHenkilo(oidHenkilo)
                 .orElseThrow(() -> new ValidationException("Käyttäjätunnus on asetettava ennen salasanaa"));
 
-        if(this.cryptoService.check(newPassword, kayttajatiedot.getPassword(), kayttajatiedot.getSalt())){
+        if (this.cryptoService.check(newPassword, kayttajatiedot.getPassword(), kayttajatiedot.getSalt())) {
             throw new PasswordException("Salasana on jo käytössä");
         }
     }
@@ -171,8 +175,25 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
     }
 
     @Override
-    public Optional<String> getMfaProvider(String username) {
-        return kayttajatiedotRepository.findMfaProviderByUsername(username);
+    @Transactional
+    public String getMfaProviderAndConsumeBypass(String username) {
+        Kayttajatiedot kayttajatiedot = kayttajatiedotRepository.findByUsername(username).orElseThrow();
+        String mfaProvider = "";
+        boolean isBypass = kayttajatiedot.getMfaBypass() != null
+                && kayttajatiedot.getMfaBypass().isAfter(LocalDateTime.now().minusSeconds(MFA_BYPASS_MAX_AGE_SECONDS));
+        if (kayttajatiedot.getMfaBypass() != null) {
+            log.info("db: " + kayttajatiedot.getMfaBypass().toString());
+            log.info("now minus seconds: " + LocalDateTime.now().minusSeconds(MFA_BYPASS_MAX_AGE_SECONDS).toString());
+            log.info("is after: " + kayttajatiedot.getMfaBypass().isAfter(LocalDateTime.now().minusSeconds(MFA_BYPASS_MAX_AGE_SECONDS)));
+            log.info("is bypass: " + isBypass);
+        }
+        if (kayttajatiedot.getMfaProvider() != null && !isBypass) {
+            log.info("mfaprovider: " + kayttajatiedot.getMfaProvider().getMfaProvider());
+            mfaProvider = kayttajatiedot.getMfaProvider().getMfaProvider();
+        }
+        kayttajatiedot.setMfaBypass(null);
+        kayttajatiedotRepository.save(kayttajatiedot);
+        return mfaProvider;
     }
 
     @Override

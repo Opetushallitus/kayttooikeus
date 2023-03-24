@@ -4,17 +4,17 @@ import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import fi.vm.sade.kayttooikeus.dto.VahvaTunnistusRequestDto;
 import fi.vm.sade.kayttooikeus.dto.VahvaTunnistusResponseDto;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
+import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.model.TunnistusToken;
 import fi.vm.sade.kayttooikeus.repositories.HenkiloDataRepository;
+import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
 import fi.vm.sade.kayttooikeus.service.VahvaTunnistusService;
 import fi.vm.sade.kayttooikeus.service.dto.HenkiloVahvaTunnistusDto;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
-import fi.vm.sade.kayttooikeus.util.HenkiloUtils;
 import fi.vm.sade.kayttooikeus.util.YhteystietoUtil;
 import fi.vm.sade.oppijanumerorekisteri.dto.HenkiloDto;
-import fi.vm.sade.oppijanumerorekisteri.dto.YhteystietoTyyppi;
 import fi.vm.sade.properties.OphProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +27,8 @@ import java.util.Optional;
 import static fi.vm.sade.kayttooikeus.model.Identification.STRONG_AUTHENTICATION_IDP;
 import static java.util.Collections.singletonMap;
 
+import java.time.LocalDateTime;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -37,6 +39,7 @@ public class VahvaTunnistusServiceImpl implements VahvaTunnistusService {
     private final KayttajatiedotService kayttajatiedotService;
 
     private final HenkiloDataRepository henkiloDataRepository;
+    private final KayttajatiedotRepository kayttajatiedotRepository;
 
     private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
     private final OphProperties ophProperties;
@@ -63,6 +66,11 @@ public class VahvaTunnistusServiceImpl implements VahvaTunnistusService {
                     kayttajatiedotService.throwIfOldPassword(henkiloOid,    salasana);
                     kayttajatiedotService.changePasswordAsAdmin(henkiloOid, salasana);
                 });
+
+        Kayttajatiedot kayttajatiedot = henkiloByLoginToken.getKayttajatiedot();
+        log.info("setting mfabypass to " + LocalDateTime.now().toString());
+        kayttajatiedot.setMfaBypass(LocalDateTime.now());
+        kayttajatiedotRepository.save(kayttajatiedot);
 
         String authToken = identificationService.consumeLoginToken(tunnistusToken.getLoginToken(), STRONG_AUTHENTICATION_IDP);
         henkiloByLoginToken.setVahvastiTunnistettu(true);

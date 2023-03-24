@@ -4,6 +4,7 @@ import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import fi.vm.sade.kayttooikeus.dto.KayttajatiedotCreateDto;
 import fi.vm.sade.kayttooikeus.dto.KayttajatiedotReadDto;
 import fi.vm.sade.kayttooikeus.dto.KayttajatiedotUpdateDto;
+import fi.vm.sade.kayttooikeus.dto.MfaProvider;
 import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.repositories.KayttajatiedotRepository;
 import fi.vm.sade.kayttooikeus.service.HenkiloService;
@@ -11,12 +12,14 @@ import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.UnauthorizedException;
 import fi.vm.sade.kayttooikeus.service.exception.ValidationException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static fi.vm.sade.kayttooikeus.repositories.populate.HenkiloPopulator.henkilo;
@@ -154,5 +157,41 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
         userDetails = kayttajatiedotRepository.findByUsername("counterTest").orElseThrow();
         assertThat(userDetails.getLoginCounter()).isNotNull();
         assertThat(userDetails.getLoginCounter().getCount()).isEqualTo(2);
+    }
+
+    @Test
+    public void returnsNoMfaProviderWithoutOne() {
+        populate(henkilo("mfaProvider"));
+        populate(kayttajatiedot(henkilo("mfaProvider"), "mfaProvider", null, null));
+        
+        String mfaProvider = kayttajatiedotService.getMfaProviderAndConsumeBypass("mfaProvider");
+        assertThat(mfaProvider).isEqualTo("");
+    }
+
+    @Test
+    public void returnsMfaProviderWithoutBypass() {
+        populate(henkilo("mfaProvider"));
+        populate(kayttajatiedot(henkilo("mfaProvider"), "mfaProvider", MfaProvider.GAUTH, null));
+        
+        String mfaProvider = kayttajatiedotService.getMfaProviderAndConsumeBypass("mfaProvider");
+        assertThat(mfaProvider).isEqualTo(MfaProvider.GAUTH.getMfaProvider());
+    }
+
+    @Test
+    public void returnsMfaProviderWithOldBypass() {
+        populate(henkilo("mfaProvider"));
+        populate(kayttajatiedot(henkilo("mfaProvider"), "mfaProvider", MfaProvider.GAUTH, LocalDateTime.now().minusSeconds(45)));
+        
+        String mfaProvider = kayttajatiedotService.getMfaProviderAndConsumeBypass("mfaProvider");
+        assertThat(mfaProvider).isEqualTo(MfaProvider.GAUTH.getMfaProvider());
+    }
+
+    @Test
+    public void returnsNoMfaProviderWithBypass() {
+        populate(henkilo("mfaProvider"));
+        populate(kayttajatiedot(henkilo("mfaProvider"), "mfaProvider", MfaProvider.GAUTH, LocalDateTime.now().minusSeconds(1)));
+        
+        String mfaProvider = kayttajatiedotService.getMfaProviderAndConsumeBypass("mfaProvider");
+        assertThat(mfaProvider).isEqualTo("");
     }
 }
