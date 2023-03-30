@@ -181,7 +181,14 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
         String mfaProvider = "";
         boolean isBypass = kayttajatiedot.getMfaBypass() != null
                 && kayttajatiedot.getMfaBypass().isAfter(LocalDateTime.now().minusSeconds(MFA_BYPASS_MAX_AGE_SECONDS));
+        if (kayttajatiedot.getMfaBypass() != null) {
+            log.info("db: " + kayttajatiedot.getMfaBypass().toString());
+            log.info("now minus seconds: " + LocalDateTime.now().minusSeconds(MFA_BYPASS_MAX_AGE_SECONDS).toString());
+            log.info("is after: " + kayttajatiedot.getMfaBypass().isAfter(LocalDateTime.now().minusSeconds(MFA_BYPASS_MAX_AGE_SECONDS)));
+            log.info("is bypass: " + isBypass);
+        }
         if (kayttajatiedot.getMfaProvider() != null && !isBypass) {
+            log.info("mfaprovider: " + kayttajatiedot.getMfaProvider().getMfaProvider());
             mfaProvider = kayttajatiedot.getMfaProvider().getMfaProvider();
         }
         kayttajatiedot.setMfaBypass(null);
