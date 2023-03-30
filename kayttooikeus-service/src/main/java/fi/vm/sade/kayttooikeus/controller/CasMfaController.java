@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
@@ -45,10 +46,21 @@ public class CasMfaController {
     @PreAuthorize("hasAnyRole(" +
             "'ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_READ', " +
             "'ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_CRUD')")
-    public void getMfaProvider(HttpServletResponse response, @Valid @RequestBody MfaTriggerDto dto) throws IOException {
+    public void getMfaProvider(HttpServletRequest request, HttpServletResponse response, @Valid @RequestBody MfaTriggerDto dto) throws IOException {
         log.info("/trigger " + dto.getPrincipalId());
-        for (var s: response.getHeaderNames()) {
-            log.info("header " + s + ": " + response.getHeader(s));
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String name = headerNames.nextElement();
+            log.info("header " + name + ": " + request.getHeader(name));
+        }
+        log.info("query: " + request.getQueryString());
+        log.info("requested session id: " + request.getRequestedSessionId());
+        if (request.getSession() != null) {
+            log.info("session id: " + request.getSession().getId());
+        }
+        if (request.getUserPrincipal() != null) {
+            log.info("principal: " + request.getUserPrincipal().getName());
+            log.info("principal class: " + request.getUserPrincipal().getClass().getName());
         }
         String mfaProvider = kayttajatiedotService.getMfaProviderAndConsumeBypass(dto.getPrincipalId());
         response.setStatus(HttpServletResponse.SC_OK);
