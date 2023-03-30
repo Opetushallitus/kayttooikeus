@@ -67,13 +67,12 @@ public class VahvaTunnistusServiceImpl implements VahvaTunnistusService {
                     kayttajatiedotService.changePasswordAsAdmin(henkiloOid, salasana);
                 });
 
-        Kayttajatiedot kayttajatiedot = henkiloByLoginToken.getKayttajatiedot();
-        log.info("setting mfabypass to " + LocalDateTime.now().toString());
-        kayttajatiedot.setMfaBypass(LocalDateTime.now());
-        kayttajatiedotRepository.save(kayttajatiedot);
-
         String authToken = identificationService.consumeLoginToken(tunnistusToken.getLoginToken(), STRONG_AUTHENTICATION_IDP);
         henkiloByLoginToken.setVahvastiTunnistettu(true);
+
+        Kayttajatiedot kayttajatiedot = henkiloByLoginToken.getKayttajatiedot();
+        kayttajatiedot.setMfaBypass(LocalDateTime.now());
+        kayttajatiedotRepository.save(kayttajatiedot);
 
         return VahvaTunnistusResponseDto.builder()
                 .authToken(authToken)
