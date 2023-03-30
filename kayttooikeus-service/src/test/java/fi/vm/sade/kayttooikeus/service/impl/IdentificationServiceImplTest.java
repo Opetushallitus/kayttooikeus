@@ -9,6 +9,8 @@ import fi.vm.sade.kayttooikeus.repositories.IdentificationRepository;
 import fi.vm.sade.kayttooikeus.repositories.KutsuRepository;
 import fi.vm.sade.kayttooikeus.repositories.TunnistusTokenDataRepository;
 import fi.vm.sade.kayttooikeus.service.exception.ValidationException;
+import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,12 +42,14 @@ public class IdentificationServiceImplTest {
     private TunnistusTokenDataRepository tunnistusTokenDataRepositoryMock;
     @Mock
     private OrikaBeanMapper mapperMock;
+    @Mock
+    private OppijanumerorekisteriClient oppijanumerorekisteriClient;
 
     @Before
     public void setup() {
         identificationServiceImpl = new IdentificationServiceImpl(identificationRepositoryMock,
                 henkiloDataRepositoryMock, kutsuRepositoryMock, tunnistusTokenDataRepositoryMock,
-                mapperMock);
+                mapperMock, oppijanumerorekisteriClient);
     }
 
     @Test

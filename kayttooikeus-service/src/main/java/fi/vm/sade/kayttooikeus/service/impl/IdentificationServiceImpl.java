@@ -12,6 +12,7 @@ import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
 import fi.vm.sade.kayttooikeus.service.exception.LoginTokenNotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.ValidationException;
+import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,6 +44,7 @@ public class IdentificationServiceImpl implements IdentificationService {
     private final KutsuRepository kutsuRepository;
     private final TunnistusTokenDataRepository tunnistusTokenDataRepository;
     private final OrikaBeanMapper mapper;
+    private final OppijanumerorekisteriClient oppijanumerorekisteriClient;
 
     @Override
     @Transactional
