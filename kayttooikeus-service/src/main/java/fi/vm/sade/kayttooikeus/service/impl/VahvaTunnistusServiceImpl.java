@@ -70,6 +70,7 @@ public class VahvaTunnistusServiceImpl implements VahvaTunnistusService {
         Kayttajatiedot kayttajatiedot = henkiloByLoginToken.getKayttajatiedot();
         log.info("setting mfabypass to " + LocalDateTime.now().toString());
         kayttajatiedot.setMfaBypass(LocalDateTime.now());
+        kayttajatiedot.setMfaBypassCount(0);
         kayttajatiedotRepository.save(kayttajatiedot);
 
         String authToken = identificationService.consumeLoginToken(tunnistusToken.getLoginToken(), STRONG_AUTHENTICATION_IDP);

@@ -162,7 +162,7 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
     @Test
     public void returnsNoMfaProviderWithoutOne() {
         populate(henkilo("mfaProvider"));
-        populate(kayttajatiedot(henkilo("mfaProvider"), "mfaProvider", null, null));
+        populate(kayttajatiedot(henkilo("mfaProvider"), "mfaProvider", null, null, 0));
         
         String mfaProvider = kayttajatiedotService.getMfaProviderAndConsumeBypass("mfaProvider");
         assertThat(mfaProvider).isEqualTo("");
@@ -171,7 +171,7 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
     @Test
     public void returnsMfaProviderWithoutBypass() {
         populate(henkilo("mfaProvider"));
-        populate(kayttajatiedot(henkilo("mfaProvider"), "mfaProvider", MfaProvider.GAUTH, null));
+        populate(kayttajatiedot(henkilo("mfaProvider"), "mfaProvider", MfaProvider.GAUTH, null, 0));
         
         String mfaProvider = kayttajatiedotService.getMfaProviderAndConsumeBypass("mfaProvider");
         assertThat(mfaProvider).isEqualTo(MfaProvider.GAUTH.getMfaProvider());
@@ -180,18 +180,24 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
     @Test
     public void returnsMfaProviderWithOldBypass() {
         populate(henkilo("mfaProvider"));
-        populate(kayttajatiedot(henkilo("mfaProvider"), "mfaProvider", MfaProvider.GAUTH, LocalDateTime.now().minusSeconds(45)));
+        populate(kayttajatiedot(henkilo("mfaProvider"), "mfaProvider", MfaProvider.GAUTH, LocalDateTime.now().minusSeconds(45), 0));
         
         String mfaProvider = kayttajatiedotService.getMfaProviderAndConsumeBypass("mfaProvider");
         assertThat(mfaProvider).isEqualTo(MfaProvider.GAUTH.getMfaProvider());
     }
 
     @Test
-    public void returnsNoMfaProviderWithBypass() {
-        populate(henkilo("mfaProvider"));
-        populate(kayttajatiedot(henkilo("mfaProvider"), "mfaProvider", MfaProvider.GAUTH, LocalDateTime.now().minusSeconds(1)));
+    public void returnsNoMfaProviderWithBypassForTwoTimes() {
+        populate(henkilo("mfaProvider3"));
+        populate(kayttajatiedot(henkilo("mfaProvider3"), "mfaProvider3", MfaProvider.GAUTH, LocalDateTime.now().minusSeconds(1), 0));
         
-        String mfaProvider = kayttajatiedotService.getMfaProviderAndConsumeBypass("mfaProvider");
-        assertThat(mfaProvider).isEqualTo("");
+        String mfaProvider1 = kayttajatiedotService.getMfaProviderAndConsumeBypass("mfaProvider3");
+        assertThat(mfaProvider1).isEqualTo("");
+
+        String mfaProvider2 = kayttajatiedotService.getMfaProviderAndConsumeBypass("mfaProvider3");
+        assertThat(mfaProvider2).isEqualTo("");
+
+        String mfaProvider3 = kayttajatiedotService.getMfaProviderAndConsumeBypass("mfaProvider3");
+        assertThat(mfaProvider3).isEqualTo("mfa-gauth");
     }
 }

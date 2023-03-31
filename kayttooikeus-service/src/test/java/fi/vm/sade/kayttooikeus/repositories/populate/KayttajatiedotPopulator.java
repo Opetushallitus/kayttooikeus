@@ -14,24 +14,29 @@ public class KayttajatiedotPopulator implements Populator<Kayttajatiedot> {
     private final String username;
     private final MfaProvider mfaProvider;
     private final LocalDateTime mfaBypass;
+    private final Integer mfaBypassCount;
 
-    public KayttajatiedotPopulator(Populator<Henkilo> henkilo, String username, MfaProvider mfaProvider, LocalDateTime mfaBypass) {
+    public KayttajatiedotPopulator(Populator<Henkilo> henkilo, String username, MfaProvider mfaProvider,
+            LocalDateTime mfaBypass, Integer mfaBypassCount) {
         this.henkilo = henkilo;
         this.username = username;
         this.mfaProvider = mfaProvider;
         this.mfaBypass = mfaBypass;
+        this.mfaBypassCount = mfaBypassCount;
     }
 
     public static KayttajatiedotPopulator kayttajatiedot(Populator<Henkilo> henkilo, String username) {
-        return new KayttajatiedotPopulator(henkilo, username, null, null);
+        return new KayttajatiedotPopulator(henkilo, username, null, null, 0);
     }
 
-    public static KayttajatiedotPopulator kayttajatiedot(Populator<Henkilo> henkilo, String username, MfaProvider mfaProvider) {
-        return new KayttajatiedotPopulator(henkilo, username, mfaProvider, null);
+    public static KayttajatiedotPopulator kayttajatiedot(Populator<Henkilo> henkilo, String username,
+            MfaProvider mfaProvider) {
+        return new KayttajatiedotPopulator(henkilo, username, mfaProvider, null, 0);
     }
 
-    public static KayttajatiedotPopulator kayttajatiedot(Populator<Henkilo> henkilo, String username, MfaProvider mfaProvider, LocalDateTime mfaBypass) {
-        return new KayttajatiedotPopulator(henkilo, username, mfaProvider, mfaBypass);
+    public static KayttajatiedotPopulator kayttajatiedot(Populator<Henkilo> henkilo, String username,
+            MfaProvider mfaProvider, LocalDateTime mfaBypass, Integer mfaBypassCount) {
+        return new KayttajatiedotPopulator(henkilo, username, mfaProvider, mfaBypass, mfaBypassCount);
     }
 
     @Override
@@ -42,6 +47,7 @@ public class KayttajatiedotPopulator implements Populator<Kayttajatiedot> {
         kayttajatiedot.setUsername(username);
         kayttajatiedot.setMfaProvider(mfaProvider);
         kayttajatiedot.setMfaBypass(mfaBypass);
+        kayttajatiedot.setMfaBypassCount(mfaBypassCount);
         t.persist(kayttajatiedot);
         henkilo.setKayttajatiedot(kayttajatiedot);
         return kayttajatiedot;

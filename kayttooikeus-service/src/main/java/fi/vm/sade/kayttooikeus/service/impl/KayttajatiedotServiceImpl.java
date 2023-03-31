@@ -180,19 +180,18 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
         Kayttajatiedot kayttajatiedot = kayttajatiedotRepository.findByUsername(username).orElseThrow();
         String mfaProvider = "";
         boolean isBypass = kayttajatiedot.getMfaBypass() != null
-                && kayttajatiedot.getMfaBypass().isAfter(LocalDateTime.now().minusSeconds(MFA_BYPASS_MAX_AGE_SECONDS));
-        if (kayttajatiedot.getMfaBypass() != null) {
-            log.info("db: " + kayttajatiedot.getMfaBypass().toString());
-            log.info("now minus seconds: " + LocalDateTime.now().minusSeconds(MFA_BYPASS_MAX_AGE_SECONDS).toString());
-            log.info("is after: " + kayttajatiedot.getMfaBypass().isAfter(LocalDateTime.now().minusSeconds(MFA_BYPASS_MAX_AGE_SECONDS)));
-            log.info("is bypass: " + isBypass);
+                && kayttajatiedot.getMfaBypass().isAfter(LocalDateTime.now().minusSeconds(MFA_BYPASS_MAX_AGE_SECONDS))
+                && kayttajatiedot.getMfaBypassCount() < 2;
+        if (kayttajatiedot.getMfaProvider() != null) {
+            if (isBypass) {
+                kayttajatiedot.setMfaBypassCount(kayttajatiedot.getMfaBypassCount() + 1);
+            } else {
+                kayttajatiedot.setMfaBypass(null);
+                kayttajatiedot.setMfaBypassCount(0);
+                mfaProvider = kayttajatiedot.getMfaProvider().getMfaProvider();
+            }
+            kayttajatiedotRepository.save(kayttajatiedot);
         }
-        if (kayttajatiedot.getMfaProvider() != null && !isBypass) {
-            log.info("mfaprovider: " + kayttajatiedot.getMfaProvider().getMfaProvider());
-            mfaProvider = kayttajatiedot.getMfaProvider().getMfaProvider();
-        }
-        kayttajatiedot.setMfaBypass(null);
-        kayttajatiedotRepository.save(kayttajatiedot);
         return mfaProvider;
     }
 

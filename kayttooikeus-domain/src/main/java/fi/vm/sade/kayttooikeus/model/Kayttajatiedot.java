@@ -69,6 +69,9 @@ public class Kayttajatiedot extends IdentifiableAndVersionedEntity {
     @Column(name = "mfabypass")
     private LocalDateTime mfaBypass;
 
+    @Column(name = "mfabypasscount")
+    private Integer mfaBypassCount;
+
     public void incrementLoginCount() {
         loginCounter = Optional.ofNullable(loginCounter)
                 .orElse(LoginCounter.builder().kayttajatiedot(this).build());
