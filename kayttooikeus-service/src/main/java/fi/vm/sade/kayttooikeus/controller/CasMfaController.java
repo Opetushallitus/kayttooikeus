@@ -46,11 +46,8 @@ public class CasMfaController {
             "'ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_READ', " +
             "'ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_CRUD')")
     public void getMfaProvider(HttpServletResponse response, @Valid @RequestBody MfaTriggerDto dto) throws IOException {
-        log.info("/trigger " + dto.getPrincipalId());
-        for (var s: response.getHeaderNames()) {
-            log.info("header " + s + ": " + response.getHeader(s));
-        }
         String mfaProvider = kayttajatiedotService.getMfaProviderAndConsumeBypass(dto.getPrincipalId());
+        log.info("/trigger " + dto.getPrincipalId() +  " returns '" + mfaProvider + "'");
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().write(mfaProvider);
         response.getWriter().flush();
@@ -109,6 +106,7 @@ public class CasMfaController {
             "'ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_READ', " +
             "'ROLE_APP_KAYTTOOIKEUS_PALVELUKAYTTAJA_CRUD')")
     public Object getGoogleAuthToken(HttpServletRequest request, HttpServletResponse response) {
+        log.info("/token " + request.getHeader("username"));
         var username = request.getHeader("username");
         return kayttajatiedotService
                 .getGoogleAuthToken(username)
