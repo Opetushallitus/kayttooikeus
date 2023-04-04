@@ -31,4 +31,10 @@ public class MfaSetupController {
     public boolean setupMfa(@RequestBody String token) {
       return mfaService.enableGoogleAuth(token);
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/gauth/disable")
+    public boolean disableMfa() {
+      return mfaService.disableGoogleAuth();
+    }
 }

@@ -54,11 +54,16 @@ public class MfaServiceImpl implements MfaService {
         return secretKey;
     }
 
-    @Override
-    public GoogleAuthSetupDto setupGoogleAuth() {
+    private Henkilo getCurrentUserOrThrow() {
         String currentUserOid = permissionCheckerService.getCurrentUserOid();
-        Henkilo currentUser = henkiloDataRepository.findByOidHenkilo(currentUserOid)
+        return henkiloDataRepository.findByOidHenkilo(currentUserOid)
                 .orElseThrow(() -> new IllegalStateException(String.format("Käyttäjää %s ei löydy", currentUserOid)));
+    }
+
+    @Override
+    @Transactional
+    public GoogleAuthSetupDto setupGoogleAuth() {
+        Henkilo currentUser = getCurrentUserOrThrow();
         String username = currentUser.getKayttajatiedot().getUsername();
 
         try {
@@ -87,10 +92,9 @@ public class MfaServiceImpl implements MfaService {
     }
 
     @Override
+    @Transactional
     public boolean enableGoogleAuth(String tokenToVerify) {
-        String currentUserOid = this.permissionCheckerService.getCurrentUserOid();
-        Henkilo currentUser = henkiloDataRepository.findByOidHenkilo(currentUserOid)
-                .orElseThrow(() -> new IllegalStateException(String.format("Käyttäjää %s ei löydy", currentUserOid)));
+        Henkilo currentUser = getCurrentUserOrThrow();
         Kayttajatiedot kayttajatiedot = currentUser.getKayttajatiedot();
         GoogleAuthToken token = kayttajatiedotRepository.findGoogleAuthToken(kayttajatiedot.getUsername())
                 .orElseThrow();
@@ -115,6 +119,21 @@ public class MfaServiceImpl implements MfaService {
         googleAuthTokenRepository.save(token);
         kayttajatiedot.setMfaProvider(MfaProvider.GAUTH);
         kayttajatiedotRepository.save(kayttajatiedot);
+
+        return true;
+    }
+
+    @Override
+    @Transactional
+    public boolean disableGoogleAuth() {
+        Henkilo currentUser = getCurrentUserOrThrow();
+        Kayttajatiedot kayttajatiedot = currentUser.getKayttajatiedot();
+        GoogleAuthToken token = kayttajatiedotRepository.findGoogleAuthToken(kayttajatiedot.getUsername())
+                .orElseThrow();
+
+        kayttajatiedot.setMfaProvider(null);
+        kayttajatiedotRepository.save(kayttajatiedot);
+        googleAuthTokenRepository.delete(token);
 
         return true;
     }

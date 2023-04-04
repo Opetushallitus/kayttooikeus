@@ -14,4 +14,10 @@ public interface MfaService {
      * @return true if successfully enabled
      */
     boolean enableGoogleAuth(String tokenToVerify);
+
+    /**
+     * Sets users MFA provider to null
+     * @return true if successfully disabled
+     */
+    boolean disableGoogleAuth();
 }
