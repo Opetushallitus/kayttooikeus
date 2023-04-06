@@ -19,6 +19,7 @@ import dev.samstevens.totp.qr.QrGenerator;
 import dev.samstevens.totp.qr.ZxingPngQrGenerator;
 import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
+import fi.vm.sade.kayttooikeus.aspects.HenkiloHelper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.GoogleAuthSetupDto;
 import fi.vm.sade.kayttooikeus.dto.MfaProvider;
@@ -64,6 +65,8 @@ public class MfaServiceImplTest {
     private GoogleAuthTokenRepository googleAuthTokenRepository;
     @Mock
     private CommonProperties commonProperties;
+    @Mock
+    private HenkiloHelper henkiloHelper;
 
     private String secretKey = secretGenerator.generate();
     private Kayttajatiedot kayttajatiedot = Kayttajatiedot.builder().build();
@@ -86,7 +89,8 @@ public class MfaServiceImplTest {
                 henkiloDataRepository,
                 kayttajatiedotRepository,
                 googleAuthTokenRepository,
-                commonProperties);
+                commonProperties,
+                henkiloHelper);
     }
 
     @Test
@@ -130,6 +134,7 @@ public class MfaServiceImplTest {
         assertEquals(result, true);
         verify(googleAuthTokenRepository, times(1)).save(any());
         verify(kayttajatiedotRepository, times(1)).save(any());
+        verify(henkiloHelper, times(1)).logEnableGauthMfa("1.2.3.4.5");
     }
 
     @Test

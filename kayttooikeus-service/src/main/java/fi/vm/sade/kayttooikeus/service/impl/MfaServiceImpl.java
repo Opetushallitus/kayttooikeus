@@ -6,6 +6,7 @@ import dev.samstevens.totp.qr.QrData;
 import dev.samstevens.totp.qr.QrDataFactory;
 import dev.samstevens.totp.qr.QrGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
+import fi.vm.sade.kayttooikeus.aspects.HenkiloHelper;
 import fi.vm.sade.kayttooikeus.config.properties.CommonProperties;
 import fi.vm.sade.kayttooikeus.dto.GoogleAuthSetupDto;
 import fi.vm.sade.kayttooikeus.dto.MfaProvider;
@@ -42,6 +43,7 @@ public class MfaServiceImpl implements MfaService {
     private final KayttajatiedotRepository kayttajatiedotRepository;
     private final GoogleAuthTokenRepository googleAuthTokenRepository;
     private final CommonProperties commonProperties;
+    private final HenkiloHelper henkiloHelper;
 
     private String getNewGoogleAuthSecretKey(Henkilo henkilo) throws Exception {
         String secretKey = secretGenerator.generate();
@@ -119,6 +121,7 @@ public class MfaServiceImpl implements MfaService {
         googleAuthTokenRepository.save(token);
         kayttajatiedot.setMfaProvider(MfaProvider.GAUTH);
         kayttajatiedotRepository.save(kayttajatiedot);
+        henkiloHelper.logEnableGauthMfa(permissionCheckerService.getCurrentUserOid());
 
         return true;
     }
@@ -134,6 +137,7 @@ public class MfaServiceImpl implements MfaService {
         kayttajatiedot.setMfaProvider(null);
         kayttajatiedotRepository.save(kayttajatiedot);
         googleAuthTokenRepository.delete(token);
+        henkiloHelper.logDisableGauthMfa(permissionCheckerService.getCurrentUserOid());
 
         return true;
     }

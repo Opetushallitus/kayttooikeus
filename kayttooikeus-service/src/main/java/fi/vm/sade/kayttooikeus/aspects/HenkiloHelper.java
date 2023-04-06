@@ -76,4 +76,22 @@ public class HenkiloHelper {
                 .build();
         auditLogger.log(KayttooikeusOperation.CREATE_HENKILO_BY_KUTSU, target, changes);
     }
+
+    public void logEnableGauthMfa(String henkiloOid) {
+        Target target = new Target.Builder()
+                .setField("oid", henkiloOid)
+                .build();
+        Changes changes = new Changes.Builder()
+                .build();
+        auditLogger.log(KayttooikeusOperation.ENABLE_MFA_GAUTH, target, changes);
+    }
+
+    public void logDisableGauthMfa(String henkiloOid) {
+        Target target = new Target.Builder()
+                .setField("oid", henkiloOid)
+                .build();
+        Changes changes = new Changes.Builder()
+                .build();
+        auditLogger.log(KayttooikeusOperation.DISABLE_MFA_GAUTH, target, changes);
+    }
 }
