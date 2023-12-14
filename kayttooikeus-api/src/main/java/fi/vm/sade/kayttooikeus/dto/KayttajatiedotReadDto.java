@@ -1,18 +1,10 @@
 package fi.vm.sade.kayttooikeus.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class KayttajatiedotReadDto {
-
     private final String username;
     private final MfaProvider mfaProvider;
-
-    public KayttajatiedotReadDto(String username, MfaProvider mfaProvider) {
-        this.username = username;
-        this.mfaProvider = mfaProvider;
-    }
-
+    private final KayttajaTyyppi kayttajaTyyppi;
 }

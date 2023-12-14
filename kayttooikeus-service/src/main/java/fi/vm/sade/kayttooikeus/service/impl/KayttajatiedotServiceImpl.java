@@ -179,7 +179,11 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
                 .filter(entity -> cryptoService.check(password, entity.getPassword(), entity.getSalt()))
                 .map(userDetails -> {
                     userDetails.incrementLoginCount();
-                    return mapper.map(userDetails, KayttajatiedotReadDto.class);
+                    return new KayttajatiedotReadDto(
+                            userDetails.getUsername(),
+                            userDetails.getMfaProvider(),
+                            userDetails.getHenkilo().getKayttajaTyyppi()
+                    );
                 })
                 .orElseThrow(UnauthorizedException::new);
     }

@@ -21,8 +21,13 @@ public class IdentificationConverter extends CustomConverter<Identification, Ide
                 .henkiloTyyppi(henkilo.getKayttajaTyyppi())
                 .kayttajatiedot(
                         henkilo.getKayttajatiedot() != null
-                                ? new KayttajatiedotReadDto(henkilo.getKayttajatiedot().getUsername(),
-                                        henkilo.getKayttajatiedot().getMfaProvider())
+                                ? new KayttajatiedotReadDto(
+                                        henkilo.getKayttajatiedot().getUsername(),
+                                        henkilo.getKayttajatiedot().getMfaProvider(),
+                                        // Tässä on vähän hassusti käyttäjätyyppi tuplana, mutta /userDetails palauttaa vain KayttajatiedotReadDto objektin
+                                        // ja siinäkin tarvitaan sama tieto
+                                        henkilo.getKayttajaTyyppi()
+                                    )
                                 : null)
                 .idpEntityId(identification.getIdpEntityId())
                 .build();
