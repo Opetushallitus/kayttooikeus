@@ -113,7 +113,11 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
         kayttajatiedot.setHenkilo(henkilo);
         henkilo.setKayttajatiedot(kayttajatiedot);
         henkilo = henkiloDataRepository.save(henkilo);
-        return mapper.map(henkilo.getKayttajatiedot(), KayttajatiedotReadDto.class);
+        return new KayttajatiedotReadDto(
+                henkilo.getKayttajatiedot().getUsername(),
+                henkilo.getKayttajatiedot().getMfaProvider(),
+                henkilo.getKayttajaTyyppi()
+        );
     }
 
     @Override
