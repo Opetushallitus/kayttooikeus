@@ -4,9 +4,6 @@ Käyttöoikeuspalvelu on henkilö-palvelusta eriytetty käyttöoikeusryhmien ja 
 
 ## Teknologiat
 
-## Vaatimukset
-- Java 11
-
 ### Avainteknologiat
 
 * Spring Boot
