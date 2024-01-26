@@ -8,6 +8,7 @@ import fi.vm.sade.kayttooikeus.model.OrganisaatioHenkilo;
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 public class OrganisaatioHenkiloKayttoOikeusPopulator implements Populator<MyonnettyKayttoOikeusRyhmaTapahtuma> {
     private final Populator<OrganisaatioHenkilo> henkilo;
@@ -39,7 +40,7 @@ public class OrganisaatioHenkiloKayttoOikeusPopulator implements Populator<Myonn
         MyonnettyKayttoOikeusRyhmaTapahtuma tapahtuma = new MyonnettyKayttoOikeusRyhmaTapahtuma();
         OrganisaatioHenkilo organisaatioHenkilo = henkilo.apply(entityManager);
         tapahtuma.setOrganisaatioHenkilo(organisaatioHenkilo);
-        tapahtuma.setAikaleima(LocalDateTime.now());
+        tapahtuma.setAikaleima(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS));
         tapahtuma.setSyy("syy");
         tapahtuma.setKasittelija(organisaatioHenkilo.getHenkilo());
         tapahtuma.setTila(KayttoOikeudenTila.MYONNETTY);
