@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
@@ -46,6 +47,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 @RunWith(SpringRunner.class)
+@Sql("/truncate_tables.sql")
 public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
     @Autowired
     private KayttoOikeusService kayttoOikeusService;
@@ -306,13 +308,14 @@ public class KayttoOikeusServiceTest extends AbstractServiceIntegrationTest {
     @Test
     @WithMockUser(username = "1.2.3.4.5")
     public void findSubRyhmasByMasterRyhmaTest(){
+        Long masterId = populate(kayttoOikeusRyhma("MASTER").withNimi(text("FI", "Master").put("EN", "Master"))).getId();
         Long id = populate(kayttoOikeusRyhma("RYHMA").withNimi(text("FI", "Käyttäjähallinta")
                 .put("EN", "User management"))
                 .withOikeus(oikeus("HENKILOHALLINTA", "CRUD"))
                 .withOikeus(oikeus("KOODISTO", "READ"))).getId();
-        populate(kayttoOikeusRyhmaMyontoViite(23432L, id));
+        populate(kayttoOikeusRyhmaMyontoViite(masterId, id));
 
-        List<KayttoOikeusRyhmaDto> ryhmas = kayttoOikeusService.findSubRyhmasByMasterRyhma(23432L);
+        List<KayttoOikeusRyhmaDto> ryhmas = kayttoOikeusService.findSubRyhmasByMasterRyhma(masterId);
         assertEquals(1, ryhmas.size());
         assertEquals("RYHMA", ryhmas.get(0).getName());
 

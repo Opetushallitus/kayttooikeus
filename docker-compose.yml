@@ -8,15 +8,13 @@ services:
       - POSTGRES_USER=oph
       - POSTGRES_PASSWORD=oph
     ports:
-      - target: 5432
-        host_ip: "127.0.0.1"
+      - 5436:5432
   test-database:
     container_name: kayttooikeus-test-db
     image: postgres:13.4
     environment:
       - POSTGRES_DB=kayttooikeus
-      - POSTGRES_USER=oph
-      - POSTGRES_PASSWORD=oph
+      - POSTGRES_USER=app
+      - POSTGRES_PASSWORD=kayttooikeus
     ports:
-      - target: 5432
-        host_ip: "127.0.0.1"
+      - 5437:5432

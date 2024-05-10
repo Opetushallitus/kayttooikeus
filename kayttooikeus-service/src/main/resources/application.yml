@@ -2,6 +2,23 @@ logging.level.org:
   springframework.web: info
   hibernate: info
 
+spring.datasource.url: jdbc:postgresql://localhost:5436/kayttooikeus
+spring.datasource.username: app
+spring.datasource.password: kayttooikeus
+spring.datasource.hikari.maximum-pool-size: 2
+spring.datasource.hikari.connection-timeout: 10000
+spring.datasource.hikari.max-lifetime: 900000
+spring.jpa.generate-ddl: false
+spring.jpa.hibernate.ddl-auto: validate
+spring.jpa.hibernate.naming.implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
+spring.jpa.hibernate.use-new-id-generator-mappings: true
+spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation: true
+spring.flyway.enabled: true
+spring.flyway.locations: classpath:db/migration
+spring.flyway.table: schema_table_ko2
+spring.flyway.baseline-on-migrate: true
+spring.flyway.baseline-version: 20240508000000000
+
 spring:
   main:
     banner-mode: "off"
@@ -12,35 +29,6 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: true
-  datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/kayttooikeus?ApplicationName=kayttooikeus-service
-    username: oph
-    password: oph
-    hikari:
-      maximum-pool-size: 2
-      connection-timeout: 10000
-      max-lifetime: 900000
-  flyway:
-    enabled: true
-    table: schema_table_ko
-    out-of-order: true
-    # Only for initial production release, set false afterwards
-    baseline-on-migrate: false
-    # If DB is not empty will not run migrations until this version
-    baseline-version: 20180419161113283
-  jpa:
-    hibernate:
-      naming:
-        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
-      ddl-auto: validate
-      use-new-id-generator-mappings: true
-    show-sql: false
-    database-platform: org.hibernate.dialect.PostgreSQL95Dialect
-    properties:
-      # https://hibernate.atlassian.net/browse/HHH-12368
-      hibernate.jdbc.lob.non_contextual_creation: true
   messages:
     use-code-as-default-message: true
 

@@ -190,11 +190,6 @@
 
         <!-- Test -->
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
@@ -355,30 +350,6 @@
                         <goals>
                             <goal>stop</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-maven-plugin</artifactId>
-                <version>6.4.2</version>
-                <executions>
-                    <execution>
-                        <id>test-migrations</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>migrate</goal>
-                        </goals>
-                        <configuration>
-                            <schemas>
-                                <schema>public</schema>
-                            </schemas>
-                            <user>${database.user}</user>
-                            <password>${database.password}</password>
-                            <driver>org.postgresql.Driver</driver>
-                            <!--suppress UnresolvedMavenProperty -->
-                            <url>jdbc:postgresql://localhost:${database.port}/${database.name}</url>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

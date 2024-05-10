@@ -25,10 +25,8 @@ public class DatabaseService {
     private TransactionTemplate transactionTemplate;
 
     public void truncate() {
-        jdbcTemplate.execute("set referential_integrity false");
-        jdbcTemplate.query("show tables", (ResultSet rs, int rowNum) -> rs.getString("table_name"))
-                .forEach(tableName -> jdbcTemplate.execute(String.format("truncate table %s", tableName)));
-        jdbcTemplate.execute("set referential_integrity true");
+        var tables = jdbcTemplate.query("select tablename from pg_tables where schemaname = 'public' and tablename != 'schema_table_ko2'", (ResultSet rs, int rowNum) -> rs.getString("tablename"));
+        tables.forEach(tableName -> jdbcTemplate.execute(String.format("truncate table %s cascade", tableName)));
     }
 
     public void runInTransaction(Runnable runnable) {

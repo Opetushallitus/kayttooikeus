@@ -1,7 +1,6 @@
 package fi.vm.sade.kayttooikeus.rest;
 
 import fi.vm.sade.kayttooikeus.DatabaseService;
-import fi.vm.sade.kayttooikeus.config.ApplicationTest;
 import fi.vm.sade.kayttooikeus.config.security.TunnistusSecurityConfig;
 import fi.vm.sade.kayttooikeus.dto.KutsunTila;
 import fi.vm.sade.kayttooikeus.service.external.OppijanumerorekisteriClient;
@@ -48,7 +47,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@ApplicationTest
 @AutoConfigureMockMvc
 public class CasRestTest {
 
