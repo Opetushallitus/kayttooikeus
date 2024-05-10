@@ -111,10 +111,10 @@ public class ExportService {
         jdbcTemplate.execute("ALTER TABLE exportnew.kayttooikeus ADD CONSTRAINT kayttooikeus_pk PRIMARY KEY (id)");
         jdbcTemplate.execute("ALTER TABLE exportnew.kayttooikeusryhma ADD CONSTRAINT kayttooikeusryhma_pk PRIMARY KEY (id)");
         jdbcTemplate.execute("ALTER TABLE exportnew.kayttooikeusryhma_kayttooikeus ADD CONSTRAINT kayttooikeusryhma_kayttooikeus_pk PRIMARY KEY (kayttooikeusryhma_id, kayttooikeus_id)");
-        jdbcTemplate.execute("ALTER TABLE exportnew.kayttooikeusryhma_kayttooikeus ADD CONSTRAINT kayttooikeusryhma_kayttooikeus_kayttooikeusryhma_fk FOREIGN KEY (kayttooikeusryhma_id) REFERENCES kayttooikeusryhma (id)");
-        jdbcTemplate.execute("ALTER TABLE exportnew.kayttooikeusryhma_kayttooikeus ADD CONSTRAINT kayttooikeusryhma_kayttooikeus_kayttooikeus_fk FOREIGN KEY (kayttooikeus_id) REFERENCES kayttooikeus(id)");
-        jdbcTemplate.execute("ALTER TABLE exportnew.henkilo_kayttooikeusryhma ADD CONSTRAINT henkilo_kayttooikeusryhma_kayttooikeusryhma_fk FOREIGN KEY (kayttooikeusryhma_id) REFERENCES kayttooikeusryhma(id)");
-        jdbcTemplate.execute("ALTER TABLE exportnew.henkilo_kayttooikeusryhma_historia ADD CONSTRAINT henkilo_kayttooikeusryhma_historia_kayttooikeusryhma_fk FOREIGN KEY (kayttooikeusryhma_id) REFERENCES kayttooikeusryhma(id)");
+        jdbcTemplate.execute("ALTER TABLE exportnew.kayttooikeusryhma_kayttooikeus ADD CONSTRAINT kayttooikeusryhma_kayttooikeus_kayttooikeusryhma_fk FOREIGN KEY (kayttooikeusryhma_id) REFERENCES exportnew.kayttooikeusryhma (id)");
+        jdbcTemplate.execute("ALTER TABLE exportnew.kayttooikeusryhma_kayttooikeus ADD CONSTRAINT kayttooikeusryhma_kayttooikeus_kayttooikeus_fk FOREIGN KEY (kayttooikeus_id) REFERENCES exportnew.kayttooikeus(id)");
+        jdbcTemplate.execute("ALTER TABLE exportnew.henkilo_kayttooikeusryhma ADD CONSTRAINT henkilo_kayttooikeusryhma_kayttooikeusryhma_fk FOREIGN KEY (kayttooikeusryhma_id) REFERENCES exportnew.kayttooikeusryhma(id)");
+        jdbcTemplate.execute("ALTER TABLE exportnew.henkilo_kayttooikeusryhma_historia ADD CONSTRAINT henkilo_kayttooikeusryhma_historia_kayttooikeusryhma_fk FOREIGN KEY (kayttooikeusryhma_id) REFERENCES exportnew.kayttooikeusryhma(id)");
 
         jdbcTemplate.execute("DROP SCHEMA IF EXISTS export CASCADE");
         jdbcTemplate.execute("ALTER SCHEMA exportnew RENAME TO export");
