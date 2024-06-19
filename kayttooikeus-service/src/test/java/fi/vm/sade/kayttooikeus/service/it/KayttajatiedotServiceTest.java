@@ -141,8 +141,8 @@ public class KayttajatiedotServiceTest extends AbstractServiceIntegrationTest {
         kayttajatiedotService.changePasswordAsAdmin("oid2", TEST_PASSWORD);
         assertThatThrownBy(() -> kayttajatiedotService.getByUsernameAndPassword("user2", "pass2"))
                 .isInstanceOf(UnauthorizedException.class);
-        KayttajatiedotReadDto readDto = kayttajatiedotService.getByUsernameAndPassword("USER2", TEST_PASSWORD);
-        assertThat(readDto).extracting(KayttajatiedotReadDto::getUsername).isEqualTo("user2");
+        Kayttajatiedot readDto = kayttajatiedotService.getByUsernameAndPassword("USER2", TEST_PASSWORD);
+        assertThat(readDto).extracting(Kayttajatiedot::getUsername).isEqualTo("user2");
 
         // käyttäjä on passivoitu
         henkiloService.passivoi("oid2", "oid1");

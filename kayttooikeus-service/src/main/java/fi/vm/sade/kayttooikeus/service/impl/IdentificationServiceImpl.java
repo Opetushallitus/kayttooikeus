@@ -1,7 +1,7 @@
 package fi.vm.sade.kayttooikeus.service.impl;
 
+import fi.vm.sade.kayttooikeus.CasUserAttributes;
 import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
-import fi.vm.sade.kayttooikeus.dto.IdentifiedHenkiloTypeDto;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
@@ -91,13 +91,12 @@ public class IdentificationServiceImpl implements IdentificationService {
 
     @Override
     @Transactional
-    public IdentifiedHenkiloTypeDto findByTokenAndInvalidateToken(String token) {
+    public CasUserAttributes findByTokenAndInvalidateToken(String token) {
         log.info("validateAuthToken:[{}]", token);
         Identification identification = identificationRepository.findByAuthtokenIsValid(token)
                 .orElseThrow(() -> new NotFoundException("identification not found or token is invalid"));
         identification.setAuthtoken(null);
-
-        return mapper.map(identification, IdentifiedHenkiloTypeDto.class);
+        return CasUserAttributes.fromIdentification(identification);
     }
 
     @Override

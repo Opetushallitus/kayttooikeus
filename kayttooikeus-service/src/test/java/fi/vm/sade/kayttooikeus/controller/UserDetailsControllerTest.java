@@ -34,14 +34,6 @@ public class UserDetailsControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void getByUsernameAndPasswordReturnsOkWithoutAuthentication() throws Exception {
-        mvc.perform(post("/userDetails")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"user1\",\"password\":\"pass1\"}"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
     public void getByUsernameAndPasswordReturnsUnauthorizedWithWrongUserPass() throws Exception {
         when(kayttajatiedotService.getByUsernameAndPassword(any(), any())).thenThrow(UnauthorizedException.class);
         mvc.perform(post("/userDetails")

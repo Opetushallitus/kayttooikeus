@@ -1,6 +1,7 @@
 package fi.vm.sade.kayttooikeus.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import fi.vm.sade.kayttooikeus.CasUserAttributes;
 import fi.vm.sade.kayttooikeus.config.security.casoppija.SuomiFiAuthenticationDetails;
 import fi.vm.sade.kayttooikeus.dto.*;
 import fi.vm.sade.kayttooikeus.dto.enumeration.LogInRedirectType;
@@ -109,7 +110,7 @@ public class CasController {
     @ApiOperation(value = "Hakee henkilön identiteetitiedot.",
             notes = "Hakee henkilön identieettitiedot annetun autentikointitokenin avulla ja invalidoi autentikointitokenin.")
     @RequestMapping(value = "/auth/token/{token}", method = RequestMethod.GET)
-    public IdentifiedHenkiloTypeDto getIdentityByAuthToken(@PathVariable("token") String authToken) {
+    public CasUserAttributes getIdentityByAuthToken(@PathVariable("token") String authToken) {
         return identificationService.findByTokenAndInvalidateToken(authToken);
     }
 

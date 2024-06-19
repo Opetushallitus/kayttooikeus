@@ -1,6 +1,6 @@
 package fi.vm.sade.kayttooikeus.service;
 
-import fi.vm.sade.kayttooikeus.dto.IdentifiedHenkiloTypeDto;
+import fi.vm.sade.kayttooikeus.CasUserAttributes;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
 import fi.vm.sade.kayttooikeus.model.TunnistusToken;
 
@@ -14,7 +14,7 @@ public interface IdentificationService {
 
     String getHenkiloOidByIdpAndIdentifier(String idpKey, String idpIdentifier);
 
-    IdentifiedHenkiloTypeDto findByTokenAndInvalidateToken(String authToken);
+    CasUserAttributes findByTokenAndInvalidateToken(String authToken);
 
     String updateIdentificationAndGenerateTokenForHenkiloByOid(String oidHenkilo);
 

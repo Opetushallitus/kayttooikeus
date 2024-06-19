@@ -178,16 +178,12 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
 
     @Override
     @Transactional
-    public KayttajatiedotReadDto getByUsernameAndPassword(String username, String password) {
+    public Kayttajatiedot getByUsernameAndPassword(String username, String password) {
         return kayttajatiedotRepository.findByUsername(username)
                 .filter(entity -> cryptoService.check(password, entity.getPassword(), entity.getSalt()))
                 .map(userDetails -> {
                     userDetails.incrementLoginCount();
-                    return new KayttajatiedotReadDto(
-                            userDetails.getUsername(),
-                            userDetails.getMfaProvider(),
-                            userDetails.getHenkilo().getKayttajaTyyppi()
-                    );
+                    return userDetails;
                 })
                 .orElseThrow(UnauthorizedException::new);
     }

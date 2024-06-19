@@ -1,9 +1,11 @@
 package fi.vm.sade.kayttooikeus.controller;
 
-import fi.vm.sade.kayttooikeus.dto.KayttajatiedotReadDto;
+import fi.vm.sade.kayttooikeus.CasUserAttributes;
 import fi.vm.sade.kayttooikeus.dto.LoginDto;
+import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,8 +35,9 @@ public class UserDetailsController {
 
     // Palomuurilla rajoitettu pääsy vain verkon sisältä
     @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public KayttajatiedotReadDto getByUsernameAndPassword(@Valid @RequestBody LoginDto dto) {
-        return kayttajatiedotService.getByUsernameAndPassword(dto.getUsername(), dto.getPassword());
+    @ApiOperation(value = "Rajapinta vain CAS:n käyttöön")
+    public CasUserAttributes getByUsernameAndPassword(@Valid @RequestBody LoginDto dto) {
+        Kayttajatiedot kayttajatiedot = kayttajatiedotService.getByUsernameAndPassword(dto.getUsername(), dto.getPassword());
+        return CasUserAttributes.fromKayttajatiedot(kayttajatiedot);
     }
-
 }
