@@ -15,6 +15,7 @@ import fi.vm.sade.kayttooikeus.service.exception.*;
 import fi.vm.sade.properties.OphProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -22,6 +23,7 @@ import org.springframework.util.StringUtils;
 import static fi.vm.sade.kayttooikeus.model.Identification.CAS_AUTHENTICATION_IDP;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -35,6 +37,7 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
     private final CryptoService cryptoService;
     private final IdentificationService identificationService;
     private final OphProperties ophProperties;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     @Transactional
@@ -186,6 +189,31 @@ public class KayttajatiedotServiceImpl implements KayttajatiedotService {
                     return userDetails;
                 })
                 .orElseThrow(UnauthorizedException::new);
+    }
+
+    @Override
+    public List<String> fetchKayttooikeudet(String henkiloOid) {
+        var sql = """
+                with voimassaolevat_kayttooikeudet as (
+                    select palvelu.name, kayttooikeus.rooli, organisaatiohenkilo.organisaatio_oid
+                    from kayttajatiedot
+                    join henkilo on kayttajatiedot.henkiloid = henkilo.id
+                    join organisaatiohenkilo on organisaatiohenkilo.henkilo_id = kayttajatiedot.henkiloid
+                    join myonnetty_kayttooikeusryhma_tapahtuma on myonnetty_kayttooikeusryhma_tapahtuma.organisaatiohenkilo_id = organisaatiohenkilo.id
+                    join kayttooikeusryhma on myonnetty_kayttooikeusryhma_tapahtuma.kayttooikeusryhma_id = kayttooikeusryhma.id
+                    join kayttooikeusryhma_kayttooikeus on kayttooikeusryhma.id = kayttooikeusryhma_kayttooikeus.kayttooikeusryhma_id
+                    join kayttooikeus on kayttooikeusryhma_kayttooikeus.kayttooikeus_id = kayttooikeus.id
+                    join palvelu on kayttooikeus.palvelu_id = palvelu.id
+                    where henkilo.oidhenkilo = ?
+                    and not organisaatiohenkilo.passivoitu
+                    and not kayttooikeusryhma.hidden
+                )
+                select concat('ROLE_APP_', name) as authority from voimassaolevat_kayttooikeudet
+                union select concat('ROLE_APP_', name, '_', rooli) as authority from voimassaolevat_kayttooikeudet
+                union select concat('ROLE_APP_', name, '_', rooli, '_', organisaatio_oid) as authority from voimassaolevat_kayttooikeudet
+                order by authority
+                """;
+        return jdbcTemplate.queryForList(sql, String.class, henkiloOid);
     }
 
     private void changePassword(String oid, String newPassword) {

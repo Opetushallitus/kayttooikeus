@@ -8,6 +8,7 @@ import fi.vm.sade.kayttooikeus.dto.KayttajatiedotUpdateDto;
 import fi.vm.sade.kayttooikeus.model.GoogleAuthToken;
 import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface KayttajatiedotService {
@@ -40,6 +41,8 @@ public interface KayttajatiedotService {
     void throwIfOldPassword(String oidHenkilo, String password);
 
     Kayttajatiedot getByUsernameAndPassword(String username, String password);
+
+    List<String> fetchKayttooikeudet(String henkiloOid);
 
     Optional<String> getMfaProvider(String username);
 

@@ -5,6 +5,7 @@ import fi.vm.sade.kayttooikeus.config.OrikaBeanMapper;
 import fi.vm.sade.kayttooikeus.model.*;
 import fi.vm.sade.kayttooikeus.repositories.*;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
+import fi.vm.sade.kayttooikeus.service.KayttajatiedotService;
 import fi.vm.sade.kayttooikeus.service.exception.DataInconsistencyException;
 import fi.vm.sade.kayttooikeus.service.exception.LoginTokenNotFoundException;
 import fi.vm.sade.kayttooikeus.service.exception.NotFoundException;
@@ -91,12 +92,12 @@ public class IdentificationServiceImpl implements IdentificationService {
 
     @Override
     @Transactional
-    public CasUserAttributes findByTokenAndInvalidateToken(String token) {
+    public Identification findByTokenAndInvalidateToken(String token) {
         log.info("validateAuthToken:[{}]", token);
         Identification identification = identificationRepository.findByAuthtokenIsValid(token)
                 .orElseThrow(() -> new NotFoundException("identification not found or token is invalid"));
         identification.setAuthtoken(null);
-        return CasUserAttributes.fromIdentification(identification);
+        return identification;
     }
 
     @Override

@@ -2,6 +2,7 @@ package fi.vm.sade.kayttooikeus.service;
 
 import fi.vm.sade.kayttooikeus.CasUserAttributes;
 import fi.vm.sade.kayttooikeus.model.Henkilo;
+import fi.vm.sade.kayttooikeus.model.Identification;
 import fi.vm.sade.kayttooikeus.model.TunnistusToken;
 
 import java.util.Optional;
@@ -14,7 +15,7 @@ public interface IdentificationService {
 
     String getHenkiloOidByIdpAndIdentifier(String idpKey, String idpIdentifier);
 
-    CasUserAttributes findByTokenAndInvalidateToken(String authToken);
+    Identification findByTokenAndInvalidateToken(String authToken);
 
     String updateIdentificationAndGenerateTokenForHenkiloByOid(String oidHenkilo);
 

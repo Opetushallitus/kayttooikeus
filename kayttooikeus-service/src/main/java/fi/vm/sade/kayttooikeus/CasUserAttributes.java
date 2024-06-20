@@ -5,6 +5,7 @@ import fi.vm.sade.kayttooikeus.dto.MfaProvider;
 import fi.vm.sade.kayttooikeus.model.Identification;
 import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 
+import java.util.List;
 import java.util.Optional;
 
 public record CasUserAttributes(
@@ -14,9 +15,10 @@ public record CasUserAttributes(
         KayttajaTyyppi kayttajaTyyppi,
         @Deprecated KayttajaTyyppi henkiloTyyppi, // for SAMLAuthenticationHandler, removed later when it reads kayttajaTyyppi field
         String idpEntityId,
-        @Deprecated KayttajatiedotForCas kayttajatiedot // for SAMLAuthenticationHandler, removed later when it reads username from top level field
+        @Deprecated KayttajatiedotForCas kayttajatiedot, // for SAMLAuthenticationHandler, removed later when it reads username from top level field
+        List<String> roles
 ) {
-    public static CasUserAttributes fromIdentification(Identification identification) {
+    public static CasUserAttributes fromIdentification(Identification identification, List<String> roles) {
         var h = identification.getHenkilo();
         var kt = Optional.ofNullable(h.getKayttajatiedot());
         var username = kt.map(Kayttajatiedot::getUsername).orElse(null);
@@ -28,11 +30,12 @@ public record CasUserAttributes(
                 h.getKayttajaTyyppi(),
                 h.getKayttajaTyyppi(),
                 identification.getIdpEntityId(),
-                new KayttajatiedotForCas(username)
+                new KayttajatiedotForCas(username),
+                roles
         );
     }
 
-    public static CasUserAttributes fromKayttajatiedot(Kayttajatiedot kt) {
+    public static CasUserAttributes fromKayttajatiedot(Kayttajatiedot kt, List<String> roles) {
         var h = kt.getHenkilo();
         return new CasUserAttributes(
                 kt.getHenkilo().getOidHenkilo(),
@@ -41,7 +44,8 @@ public record CasUserAttributes(
                 h.getKayttajaTyyppi(),
                 h.getKayttajaTyyppi(),
                 null,
-                new KayttajatiedotForCas(kt.getUsername())
+                new KayttajatiedotForCas(kt.getUsername()),
+                roles
         );
     }
 }

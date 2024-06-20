@@ -1,9 +1,10 @@
 package fi.vm.sade.kayttooikeus.controller;
 
 
-import fi.vm.sade.kayttooikeus.CasUserAttributes;
-import fi.vm.sade.kayttooikeus.KayttajatiedotForCas;
 import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
+import fi.vm.sade.kayttooikeus.model.Henkilo;
+import fi.vm.sade.kayttooikeus.model.Identification;
+import fi.vm.sade.kayttooikeus.model.Kayttajatiedot;
 import fi.vm.sade.kayttooikeus.service.IdentificationService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,8 +53,20 @@ public class CasControllerTest extends AbstractControllerTest {
     @Test
     @WithMockUser(username = "1.2.3.4.5", authorities = "ROLE_APP_KAYTTOOIKEUS_REKISTERINPITAJA")
     public void getIdentityByAuthTokenTest() throws Exception {
-        var attributes = new CasUserAttributes("1.2.3.4.5", "teemuuser", null, KayttajaTyyppi.VIRKAILIJA, KayttajaTyyppi.VIRKAILIJA, null, new KayttajatiedotForCas("teemuuser"));
-        given(identificationService.findByTokenAndInvalidateToken("mytoken")).willReturn(attributes);
+        var identification = Identification.builder()
+                .henkilo(Henkilo.builder()
+                        .oidHenkilo("1.2.3.4.5")
+                        .kayttajatiedot(Kayttajatiedot.builder()
+                                .username("teemuuser")
+                                .mfaProvider(null)
+                                .build())
+                        .kayttajaTyyppi(KayttajaTyyppi.VIRKAILIJA)
+                        .build())
+                .idpEntityId(null)
+                .identifier("mytoken")
+                .build();
+
+        given(identificationService.findByTokenAndInvalidateToken("mytoken")).willReturn(identification);
 
         this.mvc.perform(get("/cas/auth/token/mytoken"))
                 .andExpect(status().isOk())

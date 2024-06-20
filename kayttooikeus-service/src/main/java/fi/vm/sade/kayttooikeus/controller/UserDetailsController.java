@@ -38,6 +38,7 @@ public class UserDetailsController {
     @ApiOperation(value = "Rajapinta vain CAS:n käyttöön")
     public CasUserAttributes getByUsernameAndPassword(@Valid @RequestBody LoginDto dto) {
         Kayttajatiedot kayttajatiedot = kayttajatiedotService.getByUsernameAndPassword(dto.getUsername(), dto.getPassword());
-        return CasUserAttributes.fromKayttajatiedot(kayttajatiedot);
+        var roles = kayttajatiedotService.fetchKayttooikeudet(kayttajatiedot.getHenkilo().getOidHenkilo());
+        return CasUserAttributes.fromKayttajatiedot(kayttajatiedot, roles);
     }
 }

@@ -1,7 +1,6 @@
 package fi.vm.sade.kayttooikeus.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -10,6 +9,8 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @Table(name = "identification", uniqueConstraints = {
         @UniqueConstraint(name = "identification_uk1", columnNames = {"idpentityid", "identifier"}),
 })

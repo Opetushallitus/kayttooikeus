@@ -111,7 +111,9 @@ public class CasController {
             notes = "Hakee henkilön identieettitiedot annetun autentikointitokenin avulla ja invalidoi autentikointitokenin.")
     @RequestMapping(value = "/auth/token/{token}", method = RequestMethod.GET)
     public CasUserAttributes getIdentityByAuthToken(@PathVariable("token") String authToken) {
-        return identificationService.findByTokenAndInvalidateToken(authToken);
+        var identification = identificationService.findByTokenAndInvalidateToken(authToken);
+        var roles = kayttajatiedotService.fetchKayttooikeudet(identification.getHenkilo().getOidHenkilo());
+        return CasUserAttributes.fromIdentification(identification, roles);
     }
 
     @ApiOperation(value = "Virkailijan hetu-tunnistuksen jälkeinen käsittely. (rekisteröinti, hetu tunnistuksen pakotus, " +

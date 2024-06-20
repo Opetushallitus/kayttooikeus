@@ -1,6 +1,5 @@
 package fi.vm.sade.kayttooikeus.service.it;
 
-import fi.vm.sade.kayttooikeus.CasUserAttributes;
 import fi.vm.sade.kayttooikeus.controller.KutsuPopulator;
 import fi.vm.sade.kayttooikeus.dto.KayttajaTyyppi;
 import fi.vm.sade.kayttooikeus.model.Identification;
@@ -112,11 +111,11 @@ public class IdentificationServiceTest extends AbstractServiceIntegrationTest {
         kayttajatiedot.setUsername("hakakäyttäjä");
         identification.getHenkilo().setKayttajatiedot(kayttajatiedot);
 
-        CasUserAttributes dto = identificationService.findByTokenAndInvalidateToken("12345");
-        assertEquals("1.2.3.4.5", dto.oidHenkilo());
-        assertEquals(KayttajaTyyppi.VIRKAILIJA, dto.henkiloTyyppi());
-        assertEquals("hakakäyttäjä", dto.kayttajatiedot().username());
-        assertEquals("haka", dto.idpEntityId());
+        Identification dto = identificationService.findByTokenAndInvalidateToken("12345");
+        assertEquals("1.2.3.4.5", dto.getHenkilo().getOidHenkilo());
+        assertEquals(KayttajaTyyppi.VIRKAILIJA, dto.getHenkilo().getKayttajaTyyppi());
+        assertEquals("hakakäyttäjä", dto.getHenkilo().getKayttajatiedot().getUsername());
+        assertEquals("haka", dto.getIdpEntityId());
     }
 
     @Test(expected = NotFoundException.class)
