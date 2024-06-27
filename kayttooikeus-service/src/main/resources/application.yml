@@ -3,8 +3,8 @@ logging.level.org:
   hibernate: info
 
 spring.datasource.url: jdbc:postgresql://localhost:5436/kayttooikeus
-spring.datasource.username: app
-spring.datasource.password: kayttooikeus
+spring.datasource.username: oph
+spring.datasource.password: oph
 spring.datasource.hikari.maximum-pool-size: 2
 spring.datasource.hikari.connection-timeout: 10000
 spring.datasource.hikari.max-lifetime: 900000

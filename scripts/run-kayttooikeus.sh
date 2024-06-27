@@ -6,10 +6,11 @@ function main {
   cd "$repo"
 
   wait_for_postgres
-  DB_HOST_AND_PORT="$( docker compose port database 5432 )"
   use_correct_jvm_version
+  cd "$repo"
+  mvn install -Dmaven.test.skip=true
   cd "$repo/kayttooikeus-service"
-  mvn spring-boot:run -Dspring-boot.run.jvmArguments="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED -Dserver.port=8101 -Dspring.datasource.url=\"jdbc:postgresql://${DB_HOST_AND_PORT}/kayttooikeus?ApplicationName=kayttooikeus-service\""
+  mvn spring-boot:run -Dspring-boot.run.jvmArguments="--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED -Dserver.port=8101"
 }
 
 function wait_for_postgres {
