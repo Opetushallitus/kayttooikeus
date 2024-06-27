@@ -4,3 +4,40 @@ kayttooikeus.tasks.export.copy-to-lampi: true
 kayttooikeus.tasks.export.lampi-bucket-name: oph-lampi-dev
 kayttooikeus.tasks.export.lampi-role-arn: ${ssm_lampi_role_arn}
 kayttooikeus.tasks.export.lampi-external-id: ${ssm_lampi_external_id}
+
+spring.messages.use-code-as-default-message: true
+spring.datasource.url: jdbc:postgresql://kayttooikeus.db.untuvaopintopolku.fi:5432/kayttooikeus?ApplicationName=kayttooikeus-service
+spring.datasource.username: app
+spring.datasource.password: ${ssm_postgresql_kayttooikeus_app_password}
+spring.datasource.hikari.maximum-pool-size: 20
+spring.datasource.hikari.connection-timeout: 10000
+spring.datasource.hikari.max-lifetime: 900000
+
+cas.service: https://virkailija.untuvaopintopolku.fi/kayttooikeus-service
+cas.mfa.username: ${ssm_cas_mfa_username}
+cas.mfa.password: ${ssm_cas_mfa_password}
+cas.mfa.encryption-key: ${ssm_cas_gauth_encryption_key}
+cas.mfa.signing-key: ${ssm_cas_gauth_signing_key}
+
+host.host-virkailija: "virkailija.untuvaopintopolku.fi"
+host.host-oppija: "untuvaopintopolku.fi"
+host.host-cas: "virkailija.untuvaopintopolku.fi"
+host.host-shibboleth: "tunnistus.untuvaopintopolku.fi"
+host.host-varda: "frontend-qa.varda-db.csc.fi"
+
+service-users.viestinta.username: ${ssm_authentication_app_username_to_viestinta}
+service-users.viestinta.password: ${ssm_authentication_app_password_to_viestinta}
+service-users.organisaatio.username: ${ssm_kayttooikeus_username}
+service-users.organisaatio.password: ${ssm_kayttooikeus_password}
+service-users.oppijanumerorekisteri.username: ${ssm_authentication_app_username_to_oppijanumerorekisteri}
+service-users.oppijanumerorekisteri.password: ${ssm_authentication_app_password_to_oppijanumerorekisteri}
+
+common.admin-oid: "1.2.246.562.24.00000000001"
+common.crypto-password: ${ssm_kayttooikeus_crypto_password}
+
+kayttooikeus.uses-ssl-proxy: true
+kayttooikeus.disable-same-site-cookie: true
+kayttooikeus.scheduling.enabled: true
+kayttooikeus.kutsu.allowlist-oids: ${ssm_kayttooikeus_kutsu_allowlist}
+
+auth.crypto-service.static-salt: ${ssm_auth_cryptoservice_static_salt}
