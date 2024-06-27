@@ -278,6 +278,7 @@ CREATE TABLE scheduled_tasks
     last_failure   timestamp WITH TIME ZONE,
     last_heartbeat timestamp WITH TIME ZONE,
     version        bigint                   NOT NULL,
+    consecutive_failures INT,
     CONSTRAINT scheduled_tasks_pkey
         PRIMARY KEY (task_name, task_instance)
 );
