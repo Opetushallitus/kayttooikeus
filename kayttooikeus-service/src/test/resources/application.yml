@@ -32,16 +32,8 @@ host:
   host-shibboleth: localhost
   host-varda: localhost
 
-service-users:
-  viestinta:
-    username: test
-    password: test
-  organisaatio:
-    username: test
-    password: test
-  oppijanumerorekisteri:
-    username: test
-    password: test
+palvelukayttaja.username: test
+palvelukayttaja.password: test
 
 common:
   root-organization-oid: 1.2.246.562.10.00000000001

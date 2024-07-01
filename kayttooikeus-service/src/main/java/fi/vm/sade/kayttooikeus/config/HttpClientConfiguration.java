@@ -3,10 +3,10 @@ package fi.vm.sade.kayttooikeus.config;
 import fi.vm.sade.javautils.httpclient.apache.ApacheOphHttpClient;
 import fi.vm.sade.javautils.http.auth.CasAuthenticator;
 import fi.vm.sade.javautils.httpclient.OphHttpClient;
-import fi.vm.sade.kayttooikeus.config.properties.ServiceUsersProperties;
 import fi.vm.sade.kayttooikeus.config.properties.UrlConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -22,6 +22,11 @@ public class HttpClientConfiguration {
     public static final String HTTP_CLIENT_ORGANISAATIO = "httpClientOrganisaatio";
     public static final String HTTP_CLIENT_VIESTINTA = "httpClientViestinta";
 
+    @Value("${palvelukayttaja.username}")
+    private String username;
+    @Value("${palvelukayttaja.password}")
+    private String password;
+
     @Bean
     @Primary
     public OphHttpClient httpClient() {
@@ -30,10 +35,10 @@ public class HttpClientConfiguration {
 
 
     @Bean(HTTP_CLIENT_OPPIJANUMEROREKISTERI)
-    public fi.vm.sade.javautils.http.OphHttpClient httpClientOppijanumerorekisteri(UrlConfiguration properties, ServiceUsersProperties serviceUsersProperties) {
+    public fi.vm.sade.javautils.http.OphHttpClient httpClientOppijanumerorekisteri(UrlConfiguration properties) {
         CasAuthenticator authenticator = new CasAuthenticator.Builder()
-                .username(serviceUsersProperties.getOppijanumerorekisteri().getUsername())
-                .password(serviceUsersProperties.getOppijanumerorekisteri().getPassword())
+                .username(username)
+                .password(password)
                 .webCasUrl(properties.url("cas.url"))
                 .casServiceUrl(properties.url("oppijanumerorekisteri-service.security-check"))
                 .build();
@@ -41,12 +46,12 @@ public class HttpClientConfiguration {
     }
 
     @Bean(HTTP_CLIENT_ORGANISAATIO)
-    public fi.vm.sade.javautils.http.OphHttpClient httpClientOrganisaatio(UrlConfiguration properties, ServiceUsersProperties serviceUsersProperties) {
+    public fi.vm.sade.javautils.http.OphHttpClient httpClientOrganisaatio(UrlConfiguration properties) {
         int timeout = Integer.parseInt(properties.getOrElse("organisaatio-service.timeout", DEFAULT_TIMEOUT));
         LOGGER.info("Organisaatio HTTP client timeout: {} ms", timeout);
         CasAuthenticator authenticator = new CasAuthenticator.Builder()
-                .username(serviceUsersProperties.getOrganisaatio().getUsername())
-                .password(serviceUsersProperties.getOrganisaatio().getPassword())
+                .username(username)
+                .password(password)
                 .webCasUrl(properties.url("cas.url"))
                 .casServiceUrl(properties.url("organisaatio-service.security-check"))
                 .build();
@@ -58,10 +63,10 @@ public class HttpClientConfiguration {
     }
 
     @Bean(HTTP_CLIENT_VIESTINTA)
-    public fi.vm.sade.javautils.http.OphHttpClient httpClientViestinta(UrlConfiguration properties, ServiceUsersProperties serviceUsersProperties) {
+    public fi.vm.sade.javautils.http.OphHttpClient httpClientViestinta(UrlConfiguration properties) {
         CasAuthenticator authenticator = new CasAuthenticator.Builder()
-                .username(serviceUsersProperties.getViestinta().getUsername())
-                .password(serviceUsersProperties.getViestinta().getPassword())
+                .username(username)
+                .password(password)
                 .webCasUrl(properties.url("cas.url"))
                 .casServiceUrl(properties.url("ryhmasahkoposti-service.security-check"))
                 .build();

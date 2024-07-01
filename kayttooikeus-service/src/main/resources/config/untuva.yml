@@ -25,12 +25,8 @@ host.host-cas: "virkailija.untuvaopintopolku.fi"
 host.host-shibboleth: "tunnistus.untuvaopintopolku.fi"
 host.host-varda: "frontend-qa.varda-db.csc.fi"
 
-service-users.viestinta.username: ${ssm_authentication_app_username_to_viestinta}
-service-users.viestinta.password: ${ssm_authentication_app_password_to_viestinta}
-service-users.organisaatio.username: ${ssm_kayttooikeus_username}
-service-users.organisaatio.password: ${ssm_kayttooikeus_password}
-service-users.oppijanumerorekisteri.username: ${ssm_authentication_app_username_to_oppijanumerorekisteri}
-service-users.oppijanumerorekisteri.password: ${ssm_authentication_app_password_to_oppijanumerorekisteri}
+palvelukayttaja.username: ${ssm_kayttooikeus_username}
+palvelukayttaja.password: ${ssm_kayttooikeus_password}
 
 common.admin-oid: "1.2.246.562.24.00000000001"
 common.crypto-password: ${ssm_kayttooikeus_crypto_password}

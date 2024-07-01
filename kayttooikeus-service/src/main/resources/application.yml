@@ -64,19 +64,8 @@ host:
   host-shibboleth: localhost:${server.port}
   host-varda: localhost:${server.port}
 
-service-users:
-  default:
-    username: kayttooikeus
-    password: kayttooikeus
-  viestinta:
-    username: ${service-users.default.username}
-    password: ${service-users.default.password}
-  organisaatio:
-    username: ${service-users.default.username}
-    password: ${service-users.default.password}
-  oppijanumerorekisteri:
-    username: ${service-users.default.username}
-    password: ${service-users.default.password}
+palvelukayttaja.username: kayttooikeus
+palvelukayttaja.password: kayttooikeus
 
 common:
   root-organization-oid: 1.2.246.562.10.00000000001

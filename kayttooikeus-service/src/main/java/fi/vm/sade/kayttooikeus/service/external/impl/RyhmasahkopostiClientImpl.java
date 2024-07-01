@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.vm.sade.javautils.http.OphHttpClient;
 import fi.vm.sade.javautils.http.OphHttpEntity;
 import fi.vm.sade.javautils.http.OphHttpRequest;
-import fi.vm.sade.kayttooikeus.config.properties.ServiceUsersProperties;
 import fi.vm.sade.kayttooikeus.service.external.RyhmasahkopostiClient;
 import fi.vm.sade.properties.OphProperties;
 import fi.vm.sade.ryhmasahkoposti.api.dto.EmailData;
@@ -32,8 +31,7 @@ public class RyhmasahkopostiClientImpl implements RyhmasahkopostiClient {
     @Autowired
     public RyhmasahkopostiClientImpl(ObjectMapper objectMapper,
                                      @Qualifier(HTTP_CLIENT_VIESTINTA) OphHttpClient httpClient,
-                                     OphProperties urlProperties,
-                                     ServiceUsersProperties serviceUsersProperties) {
+                                     OphProperties urlProperties) {
         this.objectMapper = objectMapper;
         this.httpClient = httpClient;
         this.urlProperties = urlProperties;
