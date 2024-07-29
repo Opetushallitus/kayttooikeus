@@ -7,7 +7,7 @@ COPY kayttooikeus-api ./kayttooikeus-api
 COPY kayttooikeus-domain ./kayttooikeus-domain
 RUN mvn clean package -DskipTests
 
-FROM amazoncorretto:21
+FROM amazoncorretto:21.0.4
 
 WORKDIR /app
 COPY --from=build /app/kayttooikeus-service/target/kayttooikeus-service-1.1.4-SNAPSHOT.jar .
